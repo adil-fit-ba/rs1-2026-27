@@ -54,6 +54,10 @@ export class ProductFormService {
 
     const errors = control.errors;
 
+    // greška sa backenda (postavlja je applyServerErrors iz core/forms/server-errors.ts)
+    if (errors['server']) {
+      return errors['server'];
+    }
     if (errors['required']) {
       return 'This field is required';
     }

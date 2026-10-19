@@ -1,7 +1,14 @@
 <h2 mat-dialog-title>{{ title }}</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" *ngIf="!isLoading && form">
+  <!-- Forma ostaje vidljiva i dok se snima i nakon greške (da korisnik vidi i ispravi podatke) -->
+  <form [formGroup]="form" *ngIf="form">
+    <!-- Server Error Message -->
+    <div *ngIf="errorMessage" class="error-banner">
+      <mat-icon>error</mat-icon>
+      <span>{{ errorMessage }}</span>
+    </div>
+
     <!-- Category Name -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>{{ 'PRODUCT_CATEGORIES.FORM.NAME' | translate }}</mat-label>

@@ -1,6 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { trigger, transition, style, animate } from '@angular/animations';
 import { AuthFacadeService } from '../../../core/services/auth/auth-facade.service';
 
 @Component({
@@ -8,20 +7,13 @@ import { AuthFacadeService } from '../../../core/services/auth/auth-facade.servi
   standalone: false,
   templateUrl: './logout.component.html',
   styleUrl: './logout.component.scss',
-  animations: [
-    trigger('fadeInUp', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(10px)' }),
-        animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
-    ])
-  ]
 })
-export class LogoutComponent implements OnInit {
+export class LogoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private auth = inject(AuthFacadeService);
 
   countdownSeconds = 2;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     // Call logout (handles API call + clears state)
@@ -31,14 +23,26 @@ export class LogoutComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    // korisnik je napustio stranicu prije isteka odbrojavanja → ugasi interval
+    this.stopCountdown();
+  }
+
   private startCountdown(): void {
-    const intervalId = setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.countdownSeconds--;
 
       if (this.countdownSeconds <= 0) {
-        clearInterval(intervalId);
-        this.router.navigate(['/login']);
+        this.stopCountdown();
+        this.router.navigate(['/auth/login']);
       }
     }, 1000);
+  }
+
+  private stopCountdown(): void {
+    if (this.intervalId !== null) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
   }
 }

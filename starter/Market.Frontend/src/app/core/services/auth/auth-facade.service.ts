@@ -47,6 +47,9 @@ export class AuthFacadeService {
   isManager = computed(() => this._currentUser()?.isManager ?? false);
   isEmployee = computed(() => this._currentUser()?.isEmployee ?? false);
 
+  /** Istek access tokena (ms od epohe), iz JWT "exp" claima. */
+  private accessTokenExpiresAtMs: number | null = null;
+
   constructor() {
     // pokušaj inicijalizacije iz postojećeg access tokena
     this.initializeFromToken();
@@ -106,11 +109,30 @@ export class AuthFacadeService {
   }
 
   /**
-   * Utility za guardove/interceptore – očisti auth state i prebaci na /login.
+   * Utility za guardove/interceptore – očisti auth state i prebaci na /auth/login.
    */
   redirectToLogin(): void {
     this.clearUserState();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/auth/login']);
+  }
+
+  /**
+   * Da li korisnik ima sesiju koju još može koristiti (koristi je guard):
+   * - nije prijavljen → ne
+   * - ima refresh token koji nije istekao → da (interceptor će na 401 obnoviti access token)
+   * - nema (važećeg) refresh tokena → access token mora još važiti
+   */
+  hasValidSession(): boolean {
+    if (!this._currentUser()) {
+      return false;
+    }
+
+    const refreshToken = this.storage.getRefreshToken();
+    if (refreshToken && !this.isInPast(this.storage.getRefreshTokenExpiresAtUtc())) {
+      return true;
+    }
+
+    return !this.isInPast(this.accessTokenExpiresAtMs);
   }
 
   // =========================================================
@@ -162,9 +184,11 @@ export class AuthFacadeService {
       };
 
       this._currentUser.set(user);
+      this.accessTokenExpiresAtMs = payload.exp ? payload.exp * 1000 : null;
     } catch (error) {
       console.error('Failed to decode JWT token:', error);
       this._currentUser.set(null);
+      this.accessTokenExpiresAtMs = null;
     }
   }
 
@@ -173,6 +197,18 @@ export class AuthFacadeService {
    */
   private clearUserState(): void {
     this._currentUser.set(null);
+    this.accessTokenExpiresAtMs = null;
     this.storage.clear();
+  }
+
+  /**
+   * true ako je trenutak (ISO string ili ms) prošao; nepoznat istek (null) se ne smatra isteklim.
+   */
+  private isInPast(value: string | number | null): boolean {
+    if (value === null) {
+      return false;
+    }
+    const time = typeof value === 'number' ? value : Date.parse(value);
+    return !Number.isNaN(time) && time <= Date.now();
   }
 }

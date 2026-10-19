@@ -28,7 +28,12 @@ export enum OrderStatusType {
  */
 export class ListOrdersRequest extends BasePagedQuery {
   search?: string | null;
-  // Future filters: status?, dateFrom?, dateTo?, userId?
+  /**
+   * Filter po statusu. Šalje se kao broj (?status=3) – API serijalizuje enume kao brojeve.
+   * null/undefined → parametar se ne šalje (sve narudžbe).
+   */
+  status?: OrderStatusType | null;
+  // Future filters: dateFrom?, dateTo?, userId?
   constructor() {
     super();
   }

@@ -10,7 +10,6 @@
       "EMAIL_PLACEHOLDER": "Unesite email",
       "PASSWORD_LABEL": "Lozinka",
       "PASSWORD_PLACEHOLDER": "Unesite lozinku",
-      "REMEMBER_ME": "Zapamti me",
       "BUTTON": "Prijavi se",
       "LOADING": "Prijavljivanje..."
     },
@@ -18,6 +17,22 @@
       "TITLE": "Odjava",
       "MESSAGE": "Odjavljivanje sa sistema...",
       "REDIRECT_IN": "Preusmjeravanje za {{seconds}}s"
+    }
+  },
+  "PUBLIC": {
+    "NAV": {
+      "SEARCH_PRODUCTS": "Pretraga proizvoda",
+      "MY_ACCOUNT": "Moj nalog",
+      "LOGIN": "Prijava"
+    }
+  },
+  "CLIENT": {
+    "HOME": {
+      "TITLE": "Dobrodošli",
+      "LOGGED_IN_AS": "Prijavljeni ste kao {{email}}.",
+      "DESCRIPTION": "Pregledajte ponudu proizvoda ili se odjavite.",
+      "SEARCH_PRODUCTS": "Pretraga proizvoda",
+      "LOGOUT": "Odjava"
     }
   },
   "ADMIN_PANEL": {
@@ -361,7 +376,8 @@
     "NETWORK": "Greška u mreži. Provjerite konekciju.",
     "TIMEOUT": "Isteklo vrijeme zahtjeva. Pokušajte ponovo.",
     "UNAUTHORIZED": "Niste autorizovani za ovu akciju.",
-    "FORBIDDEN": "Pristup zabranjen.",
+    "LOGIN_REQUIRED": "Sesija je istekla ili niste prijavljeni. Prijavite se ponovo.",
+    "FORBIDDEN": "Nemate dozvolu za ovu akciju.",
     "NOT_FOUND": "Resurs nije pronađen.",
     "SERVER_ERROR": "Greška na serveru. Pokušajte kasnije.",
     "BAD_REQUEST": "Neispravan zahtjev.",

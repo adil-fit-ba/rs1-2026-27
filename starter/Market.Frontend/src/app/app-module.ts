@@ -1,6 +1,5 @@
 import { NgModule, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { provideAnimations} from '@angular/platform-browser/animations';
 import {HttpClient, provideHttpClient, withInterceptors} from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing-module';
@@ -31,10 +30,12 @@ import {SharedModule} from './modules/shared/shared-module';
     materialModules,
   ],
   providers: [
-    provideAnimations(),
     provideBrowserGlobalErrorListeners(),
+    // Aplikacija koristi zone.js (učitan preko "polyfills" u angular.json)
     provideZoneChangeDetection(),
     provideHttpClient(
+      // Redoslijed je bitan: zahtjev prolazi kroz interceptore ovim redom,
+      // a odgovor/greška obrnutim (errorLogging prvi vidi grešku sa servera).
       withInterceptors([
         loadingBarInterceptor,
         authInterceptor,

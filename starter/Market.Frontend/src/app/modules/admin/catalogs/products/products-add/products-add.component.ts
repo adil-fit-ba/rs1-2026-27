@@ -11,7 +11,8 @@ import {ToasterService} from '../../../../../core/services/toaster.service';
 import {
   ListProductCategoriesQueryDto
 } from '../../../../../api-services/product-categories/product-categories-api.model';
-import {largePaging} from '../../../../../core/models/paging/paging-utils';
+import {allItemsPaging} from '../../../../../core/models/paging/paging-utils';
+import {applyServerErrors} from '../../../../../core/forms/server-errors';
 
 @Component({
   selector: 'app-products-add',
@@ -62,14 +63,16 @@ export class ProductsAddComponent
         this.router.navigate(['/admin/products']);
       },
       error: (err) => {
-        this.stopLoading('Failed to create product');
+        // greške polja idu u mat-error, opšta poruka u error-banner; forma ostaje popunjena
+        this.stopLoading(applyServerErrors(this.form, err));
         console.error('Create product error:', err);
       }
     });
   }
 
   private loadCategories(): void {
-    this.categoriesApi.list({ onlyEnabled: true, paging: largePaging }).subscribe({
+    // dropdown treba SVE kategorije → allItemsPaging (default paging je 10 po stranici)
+    this.categoriesApi.list({ onlyEnabled: true, paging: allItemsPaging }).subscribe({
       next: (response) => {
         this.categories = response.items;
       },

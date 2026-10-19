@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Glavne boje - teget paleta #4976b5
 $primary-color: #4976b5;
 $primary-light: #6b96d1;
@@ -320,7 +322,7 @@ $hover-bg: rgba(73, 118, 181, 0.04);
           }
 
           &[disabled] {
-            background: linear-gradient(135deg, lighten($border-color, 5%) 0%, $border-color 100%);
+            background: linear-gradient(135deg, color.adjust($border-color, $lightness: 5%) 0%, $border-color 100%);
             color: $text-disabled;
             box-shadow: none;
             cursor: not-allowed;

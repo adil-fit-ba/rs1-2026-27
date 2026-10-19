@@ -1,7 +1,7 @@
 // === COMMANDS (WRITE) ===
 
 /**
- * Command for POST /Auth/login
+ * Command for POST /api/auth/login
  * Corresponds to: LoginCommand.cs
  */
 export interface LoginCommand {
@@ -11,21 +11,25 @@ export interface LoginCommand {
 }
 
 /**
- * Response for POST /Auth/login
- * Corresponds to: LoginCommandDto.cs
+ * Response for POST /api/auth/login
+ * Corresponds to: LoginCommandDto.cs (isti oblik kao odgovor na refresh)
  */
 export interface LoginCommandDto {
   accessToken: string;
   refreshToken: string;
   /**
-   * ISO string (UTC) returned by backend
+   * ISO string (UTC) when access token expires
    * Example: "2025-12-02T23:59:59Z"
    */
-  expiresAtUtc: string;
+  accessTokenExpiresAtUtc: string;
+  /**
+   * ISO string (UTC) when refresh token expires
+   */
+  refreshTokenExpiresAtUtc: string;
 }
 
 /**
- * Command for POST /Auth/refresh
+ * Command for POST /api/auth/refresh
  * Corresponds to: RefreshTokenCommand.cs
  */
 export interface RefreshTokenCommand {
@@ -34,7 +38,7 @@ export interface RefreshTokenCommand {
 }
 
 /**
- * Response for POST /Auth/refresh
+ * Response for POST /api/auth/refresh
  * Corresponds to: RefreshTokenCommandDto.cs
  */
 export interface RefreshTokenCommandDto {
@@ -51,7 +55,7 @@ export interface RefreshTokenCommandDto {
 }
 
 /**
- * Command for POST /Auth/logout
+ * Command for POST /api/auth/logout
  * Corresponds to: LogoutCommand.cs
  */
 export interface LogoutCommand {

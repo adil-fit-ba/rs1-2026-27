@@ -1,50 +1,56 @@
-// src/app/core/guards/auth.guard.ts
+// src/app/core/guards/my-auth-guard.ts
 import { inject } from '@angular/core';
 import { CanActivateFn, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { AuthFacadeService } from '../services/auth/auth-facade.service';
 import { CurrentUserService } from '../services/auth/current-user.service';
 
+/**
+ * Guard za rute koje traže prijavu i/ili ulogu.
+ *
+ * Pravila se zadaju u ruti preko helpera myAuthData():
+ *   {
+ *     path: 'admin',
+ *     canActivate: [myAuthGuard],
+ *     data: myAuthData({ requireAuth: true, requireAdmin: true }),
+ *     ...
+ *   }
+ *
+ * Napomena: guard samo štiti UI (navigaciju). Pravu zaštitu podataka radi backend
+ * ([Authorize] / policy) – frontend se uvijek može zaobići.
+ */
 export const myAuthGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+  const auth = inject(AuthFacadeService);
   const currentUser = inject(CurrentUserService);
   const router = inject(Router);
 
-  const requireAuth = route.data['requireAuth'] === true;
-  const requireAdmin = route.data['requireAdmin'] === true;
-  const requireManager = route.data['requireManager'] === true;
-  const requireEmployee = route.data['requireEmployee'] === true;
+  // myAuthData() pakuje pravila pod ključ "auth"
+  const authData = (route.data['auth'] ?? {}) as MyAuthRouteData;
 
-  const isAuth = currentUser.isAuthenticated();
-
-  // 1) ako ruta traži auth, a user nije logiran → login
-  if (requireAuth && !isAuth) {
-    router.navigate(['/auth/login']);
-    return false;
-  }
+  const requireAdmin = authData.requireAdmin === true;
+  const requireManager = authData.requireManager === true;
+  const requireEmployee = authData.requireEmployee === true;
+  // traženje bilo koje uloge podrazumijeva i prijavu
+  const requireAuth =
+    authData.requireAuth === true || requireAdmin || requireManager || requireEmployee;
 
   // Ako ne traži auth → pusti (javne rute)
   if (!requireAuth) {
     return true;
   }
 
-  // 2) role check – admin > manager > employee
+  // 1) user nije logiran ili mu je sesija istekla → login
   const user = currentUser.snapshot;
-  if (!user) {
-    router.navigate(['/auth/login']);
-    return false;
+  if (!user || !auth.hasValidSession()) {
+    return router.createUrlTree(['/auth/login']);
   }
 
-  if (requireAdmin && !user.isAdmin) {
-    router.navigate([currentUser.getDefaultRoute()]);
-    return false;
-  }
-
-  if (requireManager && !user.isManager) {
-    router.navigate([currentUser.getDefaultRoute()]);
-    return false;
-  }
-
-  if (requireEmployee && !user.isEmployee) {
-    router.navigate([currentUser.getDefaultRoute()]);
-    return false;
+  // 2) role check – ako user nema traženu ulogu → njegova početna ruta
+  if (
+    (requireAdmin && !user.isAdmin) ||
+    (requireManager && !user.isManager) ||
+    (requireEmployee && !user.isEmployee)
+  ) {
+    return router.createUrlTree([currentUser.getDefaultRoute()]);
   }
 
   return true;

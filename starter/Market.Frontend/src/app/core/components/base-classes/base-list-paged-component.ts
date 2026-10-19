@@ -27,6 +27,13 @@ export abstract class BaseListPagedComponent<TItem, TRequest extends BasePagedQu
     this.items = result.items;
     this.totalItems = result.totalItems;
     this.totalPages = result.totalPages;
+
+    // Tražena stranica više ne postoji (npr. obrisan je zadnji red na zadnjoj stranici)
+    // → učitaj zadnju postojeću stranicu umjesto prikaza prazne tabele.
+    const lastPage = Math.max(1, result.totalPages);
+    if (result.items.length === 0 && this.paging.page > lastPage) {
+      this.goToPage(lastPage);
+    }
   }
 
   goToPage(page: number): void {

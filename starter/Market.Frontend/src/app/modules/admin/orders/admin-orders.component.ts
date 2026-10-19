@@ -106,8 +106,8 @@ export class AdminOrdersComponent
 
   onStatusFilterChange(status: OrderStatusType | null): void {
     this.statusFilter = status;
-    // Note: Backend needs to support status filter
-    // For now, we filter client-side or update backend
+    // null → buildHttpParams preskače parametar, pa backend vraća sve statuse
+    this.request.status = status;
     this.request.paging.page = 1;
     this.loadPagedData();
   }
@@ -116,6 +116,7 @@ export class AdminOrdersComponent
     this.searchControl.setValue('', { emitEvent: false });
     this.statusFilter = null;
     this.request.search = null;
+    this.request.status = null;
     this.request.paging.page = 1;
     this.loadPagedData();
   }

@@ -9,6 +9,7 @@ import {
   UpdateProductCategoryCommand
 } from '../../../../../api-services/product-categories/product-categories-api.model';
 import {ProductCategoryFormService} from "../services/product-category-form.service";
+import {applyServerErrors} from '../../../../../core/forms/server-errors';
 
 export interface ProductCategoryDialogData {
   mode: 'create' | 'edit';
@@ -31,6 +32,8 @@ export class ProductCategoryUpsertComponent implements OnInit {
 
   form!: FormGroup;
   isLoading = false;
+  /** opšta poruka greške sa backenda (prikazuje se iznad polja) */
+  errorMessage: string | null = null;
   isEditMode = false;
   title = '';
 
@@ -68,6 +71,7 @@ export class ProductCategoryUpsertComponent implements OnInit {
     }
 
     this.isLoading = true;
+    this.errorMessage = null;
 
     if (this.isEditMode && this.data.categoryId) {
       this.updateCategory();
@@ -88,6 +92,8 @@ export class ProductCategoryUpsertComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
+        // greške polja idu u mat-error, opšta poruka iznad forme; dijalog ostaje otvoren
+        this.errorMessage = applyServerErrors(this.form, err);
         console.error('Create category error:', err);
       }
     });
@@ -105,6 +111,7 @@ export class ProductCategoryUpsertComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
+        this.errorMessage = applyServerErrors(this.form, err);
         console.error('Update category error:', err);
       }
     });

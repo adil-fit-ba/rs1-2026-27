@@ -10,7 +10,6 @@
       "EMAIL_PLACEHOLDER": "Enter email",
       "PASSWORD_LABEL": "Password",
       "PASSWORD_PLACEHOLDER": "Enter password",
-      "REMEMBER_ME": "Remember me",
       "BUTTON": "Login",
       "LOADING": "Logging in..."
     },
@@ -18,6 +17,22 @@
       "TITLE": "Logout",
       "MESSAGE": "Logging you out of the system...",
       "REDIRECT_IN": "Redirecting in {{seconds}}s"
+    }
+  },
+  "PUBLIC": {
+    "NAV": {
+      "SEARCH_PRODUCTS": "Search products",
+      "MY_ACCOUNT": "My account",
+      "LOGIN": "Log in"
+    }
+  },
+  "CLIENT": {
+    "HOME": {
+      "TITLE": "Welcome",
+      "LOGGED_IN_AS": "You are logged in as {{email}}.",
+      "DESCRIPTION": "Browse our products or log out.",
+      "SEARCH_PRODUCTS": "Search products",
+      "LOGOUT": "Log out"
     }
   },
   "ADMIN_PANEL": {
@@ -361,7 +376,8 @@
     "NETWORK": "Network error. Please check your connection.",
     "TIMEOUT": "Request timeout. Please try again.",
     "UNAUTHORIZED": "You are not authorized to perform this action.",
-    "FORBIDDEN": "Access forbidden.",
+    "LOGIN_REQUIRED": "Your session has expired or you are not logged in. Please log in again.",
+    "FORBIDDEN": "You do not have permission for this action.",
     "NOT_FOUND": "Resource not found.",
     "SERVER_ERROR": "Server error. Please try again later.",
     "BAD_REQUEST": "Invalid request.",

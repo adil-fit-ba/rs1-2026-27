@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Colors
 $primary-color: #4976b5;
 $primary-light: #6b92c9;
@@ -71,6 +73,24 @@ mat-dialog-content {
     .full-width {
       margin-top: 50px;
       width: 100%;
+    }
+
+    // Server Error Message
+    .error-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: #ffebee;
+      border: 1px solid #ef9a9a;
+      border-radius: 12px;
+      color: #c62828;
+      font-weight: 500;
+
+      mat-icon {
+        color: $error-color;
+      }
     }
 
     mat-form-field {
@@ -293,7 +313,7 @@ mat-dialog-actions {
       }
 
       &[disabled] {
-        background: linear-gradient(135deg, lighten($border-color, 5%) 0%, $border-color 100%);
+        background: linear-gradient(135deg, color.adjust($border-color, $lightness: 5%) 0%, $border-color 100%);
         color: $text-light;
         box-shadow: none;
         cursor: not-allowed;

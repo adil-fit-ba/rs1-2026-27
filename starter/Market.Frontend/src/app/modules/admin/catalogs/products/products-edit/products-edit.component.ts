@@ -12,7 +12,8 @@ import {ToasterService} from '../../../../../core/services/toaster.service';
 import {
   ListProductCategoriesQueryDto
 } from '../../../../../api-services/product-categories/product-categories-api.model';
-import {largePaging} from '../../../../../core/models/paging/paging-utils';
+import {allItemsPaging} from '../../../../../core/models/paging/paging-utils';
+import {applyServerErrors} from '../../../../../core/forms/server-errors';
 
 
 @Component({
@@ -47,7 +48,8 @@ export class ProductsEditComponent
     // Load product and categories in parallel
     forkJoin({
       product: this.api.getById(this.productId),
-      categories: this.categoriesApi.list({ onlyEnabled: true, paging: largePaging })
+      // dropdown treba SVE kategorije → allItemsPaging (default paging je 10 po stranici)
+      categories: this.categoriesApi.list({ onlyEnabled: true, paging: allItemsPaging })
     }).subscribe({
       next: ({ product, categories }) => {
         this.model = product;
@@ -85,7 +87,8 @@ export class ProductsEditComponent
         this.router.navigate(['/admin/products']);
       },
       error: (err) => {
-        this.stopLoading('Failed to update product');
+        // greške polja idu u mat-error, opšta poruka u error-banner; forma ostaje popunjena
+        this.stopLoading(applyServerErrors(this.form, err));
         console.error('Update product error:', err);
       }
     });

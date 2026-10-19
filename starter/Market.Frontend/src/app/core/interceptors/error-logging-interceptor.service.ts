@@ -1,34 +1,56 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { catchError, throwError } from 'rxjs';
 import { ToasterService } from '../services/toaster.service';
 
 /**
  * HTTP interceptor that logs errors.
  *
- * IMPORTANT: This interceptor only LOGS errors, it does NOT show toasters.
- * Toaster notifications should be handled in individual components where you
- * can provide context-specific error messages.
+ * IMPORTANT: This interceptor shows a toaster ONLY for 403 (no permission) – that message is
+ * the same everywhere, so components do not need to handle it. All other toaster/form
+ * messages should be handled in individual components where you can provide
+ * context-specific error messages (see getErrorMessage below and core/forms/server-errors.ts).
  *
  * Features:
- * - Logs all HTTP errors to console
+ * - Logs HTTP errors to console (except 401 – see below)
+ * - 401 is handled by authInterceptor (token refresh, or logout + redirect to /auth/login);
+ *   the login form shows its own 401 message ("Pogrešan email ili lozinka.")
+ * - 403 → translated toaster "You do not have permission for this action."
+ *   (checked by status – a 403 produced by the ASP.NET policy may have an empty body)
  * - Can be extended to send errors to logging service (Sentry, etc.)
  * - Re-throws errors so components can handle them
  */
 export const errorLoggingInterceptor: HttpInterceptorFn = (req, next) => {
+  // ToasterService/TranslateService uzimamo tek kad zatrebaju, ne odmah:
+  // TranslateService i sam koristi HttpClient (učitava /i18n/*.json), pa bi ga rani
+  // inject() u interceptoru mogao uvesti u kružnu zavisnost (NG0200).
+  const injector = inject(Injector);
+
   return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      // Log error to console
-      // In production, send to logging service like Sentry
-      console.error('HTTP Error:', {
-        url: req.url,
-        method: req.method,
-        status: error.status,
-        statusText: error.statusText,
-        message: error.message,
-        error: error.error,
-        timestamp: new Date().toISOString()
-      });
+    catchError((error: unknown) => {
+      if (!(error instanceof HttpErrorResponse)) {
+        return throwError(() => error);
+      }
+
+      if (error.status !== 401) {
+        // Log error to console
+        // In production, send to logging service like Sentry
+        console.error('HTTP Error:', {
+          url: req.url,
+          method: req.method,
+          status: error.status,
+          statusText: error.statusText,
+          message: error.message,
+          error: error.error,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      if (error.status === 403) {
+        const translate = injector.get(TranslateService);
+        injector.get(ToasterService).error(translate.instant('ERRORS.FORBIDDEN'));
+      }
 
       // Optional: Send to external logging service
       // logToSentry(error, req);
@@ -62,16 +84,26 @@ export const errorLoggingInterceptor: HttpInterceptorFn = (req, next) => {
  * Can be used by components to extract error messages
  */
 export function getErrorMessage(error: HttpErrorResponse): string {
-  // Check if error has a custom message from backend
-  if (error.error?.message) {
+  // Check if error has a custom message from backend (ErrorDto.message)
+  if (typeof error.error?.message === 'string' && error.error.message) {
     return error.error.message;
   }
 
   // Check for validation errors
-  if (error.error?.errors && typeof error.error.errors === 'object') {
-    const errors = Object.values(error.error.errors).flat();
-    if (errors.length > 0) {
-      return errors.join(', ');
+  const errors = error.error?.errors;
+  if (Array.isArray(errors)) {
+    // ErrorDto.errors: [{ field, message }]
+    const messages = errors
+      .map((e: { message?: string }) => e?.message)
+      .filter((m): m is string => !!m);
+    if (messages.length > 0) {
+      return messages.join(' ');
+    }
+  } else if (errors && typeof errors === 'object') {
+    // ProblemDetails: { field: string[] }
+    const messages = Object.values(errors).flat();
+    if (messages.length > 0) {
+      return messages.join(', ');
     }
   }
 
