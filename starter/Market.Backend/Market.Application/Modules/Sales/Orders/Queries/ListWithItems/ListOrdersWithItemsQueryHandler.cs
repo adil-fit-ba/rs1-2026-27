@@ -19,9 +19,10 @@ public sealed class ListOrdersWithItemsQueryHandler(IAppDbContext ctx, IAppCurre
             q = q.Where(x => x.ReferenceNumber.ToLower().Contains(searchTerm));
         }
 
-        // ThenBy(Id) makes the order stable (OrderedAtUtc is not unique), so paging never skips or repeats rows.
-        var projectedQuery = q.OrderBy(x => x.OrderedAtUtc)
-            .ThenBy(x => x.Id)
+        // Newest orders first; ThenByDescending(Id) makes the order stable (OrderedAtUtc is not unique),
+        // so paging never skips or repeats rows.
+        var projectedQuery = q.OrderByDescending(x => x.OrderedAtUtc)
+            .ThenByDescending(x => x.Id)
             .Select(x => new ListOrdersWithItemsQueryDto
             {
                 Id = x.Id,

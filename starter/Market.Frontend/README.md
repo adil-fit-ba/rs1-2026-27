@@ -1,59 +1,29 @@
-# Rs1Frontend202526
+# Market.Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.0.
+Angular 21 aplikacija (NgModules, Angular Material, ngx-translate). Pokretanje, korisnici i okruženja su opisani u [`../README.md`](../README.md).
 
-## Development server
+## Komande
 
-To start a local development server, run:
+| Komanda | Šta radi |
+|---|---|
+| `npm ci` | instalira tačne verzije iz `package-lock.json` |
+| `npm start` | `ng serve`, development, `http://localhost:4200` |
+| `npm run build` | produkcijski build u `dist/market-frontend/browser` |
+| `npx ng build --configuration staging` | staging build |
+| `npm run watch` | development build uz praćenje izmjena |
 
-```bash
-ng serve
-```
+Starter nema podešen test runner (`npm test` ne postoji).
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Struktura `src/app`
 
-## Code scaffolding
+| Folder | Sadržaj |
+|---|---|
+| `api-services/` | tanak sloj prema API-ju: jedan servis i modeli po backend modulu |
+| `core/` | guard, interceptori (token, greške, loading), auth servisi, bazne klase komponenti, `server-errors.ts` (greške s backenda u formi) |
+| `modules/admin/` | admin dio (`/admin`) |
+| `modules/client/` | dio za prijavljene kupce (`/client`) |
+| `modules/public/` | javni dio (`/`) |
+| `modules/auth/` | prijava i odjava (`/auth/...`) |
+| `modules/shared/` | zajedničke `fit-*` komponente i servisi |
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Prevodi su u `public/i18n/bs.json` i `public/i18n/en.json`; oba fajla moraju imati iste ključeve.

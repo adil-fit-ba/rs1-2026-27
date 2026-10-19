@@ -39,16 +39,39 @@ api-services/
 ├── auth/
 │   ├── auth-api.model.ts
 │   └── auth-api.service.ts
+├── catalog/
+│   ├── catalog-api.model.ts
+│   └── catalog-api.service.ts
+├── currencies/
+│   ├── currencies-api.model.ts
+│   └── currencies-api.service.ts
+├── orders/
+│   ├── order-status.helper.ts
+│   ├── orders-api.models.ts
+│   └── orders-api.service.ts
 ├── product-categories/
 │   ├── product-categories-api.model.ts
 │   └── product-categories-api.service.ts
 ├── products/
 │   ├── products-api.models.ts
 │   └── products-api.service.ts
+├── promotions/
+│   ├── promotions-api.model.ts
+│   └── promotions-api.service.ts
 └── readme.md
 ```
 
-Svaki folder predstavlja jedan backend kontroler.
+Svaki folder predstavlja jedan backend kontroler:
+
+| Folder | Kontroler | Šta radi |
+|--------|-----------|----------|
+| `auth/` | `/api/auth` | prijava (`login`), obnova tokena (`refresh`) i odjava (`logout`) |
+| `catalog/` | `/Catalog` | javni (anonimni) podaci za početnu stranicu: kategorije, proizvodi i promocije |
+| `currencies/` | `/Currencies` | valute i kursevi: lista valuta, konverzija iznosa te (Admin) lista, unos i brisanje kurseva i osvježavanje kurseva iz vanjskog izvora |
+| `orders/` | `/Orders` | narudžbe: lista, detalji, kreiranje, izmjena i promjena statusa (`order-status.helper.ts` je pomoćna klasa za statuse) |
+| `product-categories/` | `/ProductCategories` | kategorije proizvoda: CRUD te `enable` / `disable` |
+| `products/` | `/Products` | proizvodi: CRUD, provjera dostupnosti naziva te upload i brisanje slike |
+| `promotions/` | `/Promotions` | promocije (baneri na početnoj): CRUD |
 
 ---
 
@@ -72,12 +95,14 @@ Primjer: product-categories, products, auth
 ListProductCategoriesRequest
 CreateProductCommand
 UpdateProductCommand
-UpsertProductCategoryCommand
+CreateProductCategoryCommand
+UpdateProductCategoryCommand
 
 // RESPONSE modeli (output sa backenda)
 ListProductCategoriesResponse
-ProductCategoryListItem
-ProductDetailDto
+ListProductCategoriesQueryDto
+GetProductCategoryByIdQueryDto
+CreatedResponse   // zajednički odgovor na create (core/models/created-response.ts)
 
 // SERVISI
 ProductCategoriesApiService
@@ -94,8 +119,8 @@ AuthApiService
 Sadrži **samo TypeScript tipove** – DTOs koji se koriste za komunikaciju s backendom.
 
 ```typescript
-import { BasePagedQuery } from '../../core/models/basePagedQuery';
-import { PageResult } from '../../core/models/pageResult';
+import { BasePagedQuery } from '../../core/models/paging/base-paged-query';
+import { PageResult } from '../../core/models/paging/page-result';
 
 // REQUEST - šta šaljemo backendu
 export class ListProductCategoriesRequest extends BasePagedQuery {
@@ -104,20 +129,28 @@ export class ListProductCategoriesRequest extends BasePagedQuery {
 }
 
 // RESPONSE ITEM - jedan objekat iz liste
-export interface ProductCategoryListItem {
+export interface ListProductCategoriesQueryDto {
   id: number;
   name: string;
   isEnabled: boolean;
 }
 
 // RESPONSE - šta dobijamo nazad
-export type ListProductCategoriesResponse = PageResult<ProductCategoryListItem>;
+export type ListProductCategoriesResponse = PageResult<ListProductCategoriesQueryDto>;
 
-// COMMAND - za CREATE/UPDATE
-export interface UpsertProductCategoryCommand {
-  name?: string | null;
+// COMMAND - za CREATE / UPDATE
+export interface CreateProductCategoryCommand {
+  name: string;
+  isEnabled: boolean;
+}
+
+export interface UpdateProductCategoryCommand {
+  name: string;
+  isEnabled: boolean;
 }
 ```
+
+Odgovor na `create` nema svoj model: svi API servisi koriste zajednički `CreatedResponse` iz `core/models/created-response.ts` (vidi "Povratne vrijednosti" ispod).
 
 **Pravila:**
 - Koristimo tipove koji odgovaraju backend DTOs
@@ -140,10 +173,12 @@ import { environment } from '../../../environments/environment';
 import {
   ListProductCategoriesRequest,
   ListProductCategoriesResponse,
-  ProductCategoryListItem,
-  UpsertProductCategoryCommand
+  GetProductCategoryByIdQueryDto,
+  CreateProductCategoryCommand,
+  UpdateProductCategoryCommand
 } from './product-categories-api.model';
-import { buildHttpParams } from '../../core/models/buildHttpParams';
+import { buildHttpParams } from '../../core/models/build-http-params';
+import { CreatedResponse } from '../../core/models/created-response';
 
 @Injectable({
   providedIn: 'root',
@@ -163,26 +198,26 @@ export class ProductCategoriesApiService {
   /**
    * Dohvat jedne kategorije po ID-u.
    */
-  getById(id: number): Observable<ProductCategoryListItem> {
-    return this.http.get<ProductCategoryListItem>(`${this.baseUrl}/${id}`);
+  getById(id: number): Observable<GetProductCategoryByIdQueryDto> {
+    return this.http.get<GetProductCategoryByIdQueryDto>(`${this.baseUrl}/${id}`);
   }
 
   /**
-   * Kreiranje nove kategorije.
+   * Kreiranje nove kategorije → 201 { id }.
    */
-  create(payload: UpsertProductCategoryCommand): Observable<number> {
-    return this.http.post<number>(this.baseUrl, payload);
+  create(payload: CreateProductCategoryCommand): Observable<CreatedResponse> {
+    return this.http.post<CreatedResponse>(this.baseUrl, payload);
   }
 
   /**
-   * Izmjena postojeće kategorije.
+   * Izmjena postojeće kategorije → 204.
    */
-  update(id: number, payload: UpsertProductCategoryCommand): Observable<void> {
+  update(id: number, payload: UpdateProductCategoryCommand): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/${id}`, payload);
   }
 
   /**
-   * Brisanje kategorije.
+   * Brisanje kategorije → 204.
    */
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
@@ -195,6 +230,7 @@ export class ProductCategoriesApiService {
 - `inject()` umjesto `constructor()` dependency injection
 - `baseUrl` property za endpoint
 - Metode vraćaju `Observable<T>`
+- `create()` vraća `Observable<CreatedResponse>`, a akcije bez rezultata (`update`, `delete`, ...) `Observable<void>` (vidi "Povratne vrijednosti")
 - Bez `.subscribe()` – to radi komponenta/state servis
 - Bez `try/catch` – error handling je na višem nivou
 - Bez transformacija podataka
@@ -203,13 +239,25 @@ export class ProductCategoriesApiService {
 
 ## CRUD konvencije
 
-| Operacija | HTTP metod | Backend endpoint | Metoda servisa |
-|-----------|-----------|------------------|----------------|
-| **Lista** | GET | `/ProductCategories` | `list(request?)` |
-| **Dohvat po ID** | GET | `/ProductCategories/{id}` | `getById(id)` |
-| **Kreiranje** | POST | `/ProductCategories` | `create(payload)` |
-| **Izmjena** | PUT | `/ProductCategories/{id}` | `update(id, payload)` |
-| **Brisanje** | DELETE | `/ProductCategories/{id}` | `delete(id)` |
+| Operacija | HTTP metod | Backend endpoint | Metoda servisa | Odgovor |
+|-----------|-----------|------------------|----------------|---------|
+| **Lista** | GET | `/ProductCategories` | `list(request?)` | 200, `PageResult<...>` |
+| **Dohvat po ID** | GET | `/ProductCategories/{id}` | `getById(id)` | 200, DTO |
+| **Kreiranje** | POST | `/ProductCategories` | `create(payload)` | 201, `CreatedResponse` (`{ id }`) |
+| **Izmjena** | PUT | `/ProductCategories/{id}` | `update(id, payload)` | 204, `void` |
+| **Brisanje** | DELETE | `/ProductCategories/{id}` | `delete(id)` | 204, `void` |
+
+---
+
+## Povratne vrijednosti
+
+Pravilo vrijedi za sve API servise:
+
+* **Svaki `create()`** (u `currencies/` to je `createRate()`) vraća `Observable<CreatedResponse>`, tj. `Observable<{ id: number }>`.
+  Backend odgovara sa `201 Created` i tijelom `{ "id": 5 }`, a komponenta po potrebi koristi `id` (npr. za prelazak na dodavanje slike).
+  Tip je zajednički i nalazi se u `core/models/created-response.ts` – ne pravi se novi tip po servisu i **ne koristi se `Observable<number>`**.
+* **Akcije bez rezultata** (`update`, `delete`, `enable`, `disable`, `changeStatus`, `deleteImage`, `logout`, ...) backend završava sa `204 No Content`, bez tijela. Servis vraća `Observable<void>`.
+* Sve ostalo (`list`, `getById`, `convert`, ...) vraća odgovarajući DTO sa `200 OK`.
 
 ---
 
@@ -223,13 +271,13 @@ list(request?: ListProductsRequest): Observable<ListProductsResponse> {
 }
 
 // ✅ Jednostavan endpoint
-getById(id: number): Observable<ProductDetailDto> {
-  return this.http.get<ProductDetailDto>(`${this.baseUrl}/${id}`);
+getById(id: number): Observable<GetProductByIdQueryDto> {
+  return this.http.get<GetProductByIdQueryDto>(`${this.baseUrl}/${id}`);
 }
 
 // ✅ Explicit tipizacija
-create(payload: CreateProductCommand): Observable<number> {
-  return this.http.post<number>(this.baseUrl, payload);
+create(payload: CreateProductCommand): Observable<CreatedResponse> {
+  return this.http.post<CreatedResponse>(this.baseUrl, payload);
 }
 ```
 
@@ -247,8 +295,8 @@ list(request?: ListProductsRequest): Observable<Product[]> {
 }
 
 // ❌ NE - UI logika u API servisu
-create(payload: CreateProductCommand): Observable<number> {
-  return this.http.post<number>(this.baseUrl, payload).pipe(
+create(payload: CreateProductCommand): Observable<CreatedResponse> {
+  return this.http.post<CreatedResponse>(this.baseUrl, payload).pipe(
     tap(() => this.toastr.success('Product created!')) // ❌ notifikacija
   );
 }
@@ -328,7 +376,6 @@ export class ProductListComponent extends BaseListPagedComponent<
 - ✅ Sve na jednom mjestu - lakše za učenje
 - ✅ Nema nepotrebnih apstrakcija
 - ✅ Prirodan flow podataka
-```
 
 ---
 

@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { TranslateService } from '@ngx-translate/core';
 import { BaseListPagedComponent } from '../../../../core/components/base-classes/base-list-paged-component';
 import { ProductCategoriesApiService } from '../../../../api-services/product-categories/product-categories-api.service';
 import { ToasterService } from '../../../../core/services/toaster.service';
@@ -25,6 +26,7 @@ export class ProductCategoriesComponent
   private dialog = inject(MatDialog);
   private toaster = inject(ToasterService);
   private dialogHelper = inject(DialogHelperService);
+  private translate = inject(TranslateService);
 
   displayedColumns: string[] = ['name', 'isEnabled', 'actions'];
   showOnlyEnabled = true;
@@ -48,7 +50,7 @@ export class ProductCategoriesComponent
         this.stopLoading();
       },
       error: (err) => {
-        this.stopLoading('Failed to load categories');
+        this.stopLoading(this.translate.instant('PRODUCT_CATEGORIES.DIALOGS.ERROR_LOAD_LIST'));
         console.error('Load categories error:', err);
       },
     });
@@ -153,8 +155,10 @@ export class ProductCategoriesComponent
 
     apiAction.subscribe({
       next: () => {
-        const status = category.isEnabled ? 'disabled' : 'enabled';
-        this.toaster.success(`Category ${status} successfully`);
+        const messageKey = category.isEnabled
+          ? 'PRODUCT_CATEGORIES.DIALOGS.SUCCESS_DISABLE'
+          : 'PRODUCT_CATEGORIES.DIALOGS.SUCCESS_ENABLE';
+        this.toaster.success(this.translate.instant(messageKey, { name: category.name }));
         this.loadPagedData();
       },
       error: (err) => {
@@ -171,7 +175,10 @@ export class ProductCategoriesComponent
           ).subscribe();
         } else {
           // Generic error - just toast
-          this.toaster.error(errorMessage || 'Failed to change category status');
+          this.toaster.error(
+            errorMessage ||
+              this.translate.instant('PRODUCT_CATEGORIES.DIALOGS.ERROR_TOGGLE', { name: category.name })
+          );
         }
 
         console.error('Toggle status error:', err);

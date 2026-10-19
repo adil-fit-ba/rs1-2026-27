@@ -2,6 +2,7 @@ import {Component, inject, Inject} from '@angular/core';
 import {GetOrderByIdQueryDto, OrderStatusType} from '../../../../api-services/orders/orders-api.models';
 import { OrderStatusHelper } from '../../../../api-services/orders/order-status.helper';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {TranslateService} from '@ngx-translate/core';
 import {OrdersApiService} from '../../../../api-services/orders/orders-api.service';
 
 export interface OrderDetailsDialogData {
@@ -17,6 +18,7 @@ export interface OrderDetailsDialogData {
 export class OrderDetailsDialogComponent {
   private ordersApi = inject(OrdersApiService);
   private dialogRef = inject(MatDialogRef<OrderDetailsDialogComponent>);
+  private translate = inject(TranslateService);
 
   order?: GetOrderByIdQueryDto;
   isLoading = false;
@@ -38,7 +40,7 @@ export class OrderDetailsDialogComponent {
         this.isLoading = false;
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load order details';
+        this.errorMessage = this.translate.instant('ORDERS.DETAILS.LOAD_ERROR');
         this.isLoading = false;
         console.error('Load order details error:', err);
       }

@@ -11,7 +11,16 @@
       "PASSWORD_LABEL": "Lozinka",
       "PASSWORD_PLACEHOLDER": "Unesite lozinku",
       "BUTTON": "Prijavi se",
-      "LOADING": "Prijavljivanje..."
+      "LOADING": "Prijavljivanje...",
+      "WELCOME_BACK": "Dobrodošli nazad",
+      "SUBTITLE": "Unesite vaše podatke za pristup",
+      "SHOW_PASSWORD": "Prikaži lozinku",
+      "HIDE_PASSWORD": "Sakrij lozinku",
+      "FORGOT_PASSWORD": "Zaboravili ste lozinku?",
+      "OR": "ili",
+      "NO_ACCOUNT": "Nemate nalog?",
+      "REGISTER": "Registrujte se",
+      "BACK_TO_HOME": "Nazad na početnu"
     },
     "LOGOUT": {
       "TITLE": "Odjava",
@@ -204,7 +213,8 @@
       "ERROR_UPDATE": "Greška pri ažuriranju kategorije.",
       "ERROR_DELETE": "Greška pri brisanju kategorije.",
       "ERROR_TOGGLE": "Greška pri promjeni statusa kategorije \"{{name}}\".",
-      "ERROR_LOAD": "Greška pri učitavanju kategorije."
+      "ERROR_LOAD": "Greška pri učitavanju kategorije.",
+      "ERROR_LOAD_LIST": "Greška pri učitavanju kategorija."
     }
   },
   "PRODUCTS": {
@@ -370,7 +380,8 @@
       "DISCOUNT": "Popust",
       "TOTAL": "Ukupno",
       "ORDER_TOTAL": "Ukupna Narudžba",
-      "NOTE": "Napomena"
+      "NOTE": "Napomena",
+      "LOAD_ERROR": "Greška pri učitavanju detalja narudžbe."
     },
     "CHANGE_STATUS": {
       "TITLE": "Promijeni Status Narudžbe",

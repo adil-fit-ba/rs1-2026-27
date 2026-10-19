@@ -1,83 +1,187 @@
-# Market Frontend - Brzi Vodič
+# Market – starter projekat za seminarski rad (RS1 2026/27)
 
-Angular admin panel za upravljanje proizvodima i narudžbama.
+Starter je kompletna aplikacija na kojoj radite seminarski rad:
 
----
+| Folder | Sadržaj |
+|---|---|
+| [`Market.Backend/`](Market.Backend/) | ASP.NET Core Web API, .NET 8, Clean Architecture, CQRS (MediatR), FluentValidation, EF Core (SQL Server), JWT + refresh tokeni |
+| [`Market.Frontend/`](Market.Frontend/) | Angular 21 (NgModules), Angular Material, ngx-translate (bosanski/engleski) |
+| [`screenshots/`](screenshots/) | Screenshotovi admin dijela |
 
-## ⚡ Brzo Pokretanje
+Starter sadrži i gotove primjere (korpa, checkout, narudžbe kupca, promocije, upload slike, konvertor valuta…). Ono što vašoj temi ne treba – obrišite. Kod iz startera se ne boduje; boduje se ono što sami napravite.
 
-### Preduvjeti
-- Node.js 18+
-- Backend API mora biti pokrenut na `https://localhost:7260`
+## Preduslovi
 
-### Instalacija i Pokretanje
+- .NET 8 SDK
+- Node.js `^20.19`, `^22.12` ili `>= 24` (zahtjev Angulara 21; preporuka: 22 ili 24 LTS)
+- SQL Server na `localhost,1433`, korisnik `sa`, lozinka `test` (connection string je u `Market.Backend/Market.API/appsettings.json`)
+- Repozitorij klonirajte u kratak folder (npr. `C:\rs1`) i jednom uključite duge putanje: `git config --global core.longpaths true`
+
+## Pokretanje backenda
+
+Jednom na računaru (HTTPS certifikat za localhost):
 
 ```bash
-# 1. Instaliraj dependencies
-npm install
+dotnet dev-certs https --trust
+```
 
-# 2. Pokreni development server
+Pokretanje iz foldera `starter/Market.Backend`:
+
+```bash
+dotnet run --project Market.API --launch-profile https
+```
+
+U Visual Studiju: startup projekat `Market.API`, profil `https` (prvi u listi).
+
+- API: `https://localhost:7100` (i `http://localhost:5100`, koji preusmjerava na https)
+- Swagger: `https://localhost:7100/swagger`
+- Baza `Market2026` se pri pokretanju sama kreira i migrira. Demo podaci se upisuju samo u okruženju `Development`.
+
+## Pokretanje frontenda
+
+Iz foldera `starter/Market.Frontend`:
+
+```bash
+npm ci
 npm start
 ```
 
-**Aplikacija će se otvoriti na**: `http://localhost:4200`
+Aplikacija: `http://localhost:4200`. Backend mora biti pokrenut.
 
----
+Ako HTTPS certifikat ne radi, pokrenite backend s profilom `http` i u `src/environments/environment.development.ts` stavite `apiUrl: 'http://localhost:5100'`.
 
-## 🔐 Pristupni Podaci
+## Korisnici (demo podaci)
 
-```
-Email: admin@market.local
-Lozinka: Admin123!
-```
+| Email | Lozinka | Uloga |
+|---|---|---|
+| `admin@market.local` | `Admin123!` | administrator (`/admin`) |
+| `manager@market.local` | `Manager123!` | menadžer |
+| `employee@market.local` | `Employee123!` | uposlenik |
+| `nina.bijedic@email.com`, `iris.memic@email.com`, `azra.smajic@email.com` | `Customer123!` | kupci, vlasnici demo narudžbi |
+| `string` | `string` | za Swagger |
+| `test` | `test123` | za testove |
 
-Ostali korisnici:
-- `manager@market.local` / `Manager123!`
-- `employee@market.local` / `Employee123!`
-- `string` / `string` (za Swagger testiranje)
+Administrator nakon prijave ide na `/admin`, svi ostali na `/client`.
 
----
+## Okruženja (environments)
 
-## 📁 Mogućnosti
+**Backend** – `appsettings.json` važi za sva okruženja, a `appsettings.{Environment}.json` ga dopunjava:
 
-✅ **Kategorije Proizvoda** - CRUD operacije  
-✅ **Proizvodi** - Kompletan menadžment sa zalihama i cijenama  
-✅ **Narudžbe** - Pregled, filtriranje, promjena statusa  
-✅ **Višejezičnost** - Engleski i Bosanski  
-✅ **Responsive** - Mobilni, tablet, desktop  
+| Ključ | `appsettings.json` | `appsettings.Development.json` |
+|---|---|---|
+| `ConnectionStrings:Main` | `localhost,1433`, baza `Market2026` | – |
+| `Jwt:Key` | prazno | razvojni ključ `DEV_ONLY_…` |
+| `Cors:AllowedOrigins` | prazno | `http://localhost:4200` |
 
----
+Van `Development` okruženja aplikacija ne starta bez pravog ključa: postavite ga kroz varijablu okruženja `Jwt__Key` (najmanje 32 znaka, ne smije počinjati sa `DEV_ONLY`), a dozvoljene domene kroz `Cors__AllowedOrigins__0`. Connection string je namjerno u `appsettings.json`, da `dotnet ef` i Package Manager Console rade bez podešavanja okruženja.
 
-## 🛠️ Komande
+**Frontend** – uvijek importujte `environments/environment`:
+
+| Fajl | Kada se koristi |
+|---|---|
+| `src/environments/environment.development.ts` | `npm start` / `ng serve` (API `https://localhost:7100`) |
+| `src/environments/environment.ts` | `npm run build` (produkcija; `apiUrl` postavite prije objave) |
+| `src/environments/environment.staging.ts` | `ng build --configuration staging` |
+
+Access token se šalje samo na `environment.apiUrl`, nikad na druge domene.
+
+## Migracije
+
+Iz foldera `starter/Market.Backend`:
 
 ```bash
-npm install          # Instaliraj dependencies
-npm start            # Pokreni dev server (port 4200)
-ng build             # Build za produkciju
+dotnet ef migrations add NazivMigracije -p Market.Infrastructure -s Market.API -o Migrations
 ```
 
----
+Package Manager Console (Default project: `Market.Infrastructure`, startup projekat `Market.API`):
 
+```powershell
+Add-Migration NazivMigracije
+```
 
-## 📸 Screenshotovi
+Baza se ažurira sama pri pokretanju API-ja (ili `Update-Database`).
 
-### Prijava
-![Prijava](Market.Frontend/preview-template-orders.png)
+## Testovi
 
-### Kategorije Proizvoda
-![Kategorije](Market.Frontend/preview-template-product-category-edit.png)
+```bash
+dotnet test
+```
 
-### Upravljanje Proizvodima
-![Proizvodi](Market.Frontend/preview-template-product-edit.png)
+Integracijski testovi koriste in-memory bazu (okruženje `IntegrationTests`).
 
-### Narudžbe Dashboard
-![Narudžbe](Market.Frontend/preview-template-orders.png)
+## Šta starter sadrži
 
-### Detalji Narudžbe
-![Detalji Narudžbe](Market.Frontend/preview-template-order-details.png)
+| Dio | Rute | Ko |
+|---|---|---|
+| Landing (promocije, kategorije, najnoviji proizvodi), pretraga, korpa, checkout, konvertor valuta | `/`, `/search`, `/cart`, `/checkout`, `/converter` | svi (checkout traži prijavu) |
+| Moje narudžbe | `/client`, `/client/orders`, `/client/orders/:id` | prijavljeni kupac |
+| Kategorije, proizvodi (slika, zalihe), promocije, narudžbe (pregled, promjena statusa, uređivanje stavki), kursna lista | `/admin/...` | administrator |
 
-### Promjena Statusa Narudžbe
-![Promjena Statusa](Market.Frontend/preview-template-order-change-status.png)
+### Primjeri formi
 
----
+Svaki obrazac je urađen jednom, na mjestu gdje mu je prirodno (putanje su u `Market.Frontend/src/app/modules/`):
 
+| Obrazac | Gdje |
+|---|---|
+| Forma na stranici (add/edit) sa `BaseFormComponent` | `admin/catalogs/products` |
+| Forma u dijalogu | `admin/catalogs/product-categories/product-category-upsert` |
+| Async validator (jedinstven naziv, poziv API-ja) | `admin/catalogs/products/validators` |
+| Upload slike (provjera tipa i veličine, pregled, brisanje) | `admin/catalogs/products/product-image` |
+| Datepicker + cross-field validator (kraj poslije početka) | `admin/catalogs/promotions/promotion-upsert` |
+| Typed FormArray (master-detail) + upozorenje pri napuštanju nesnimljene forme | `admin/orders/order-edit` |
+| Autocomplete sa serverskom pretragom | `admin/orders/order-edit/product-autocomplete` |
+| Stepper (wizard) | `public/checkout` |
+| Filteri sačuvani u URL-u + straničenje | `public/search-products` |
+| Greške s backenda po polju | `core/forms/server-errors.ts`, korišteno u svim formama |
+| Prevedene poruke validacije | `shared` komponenta `fit-field-error`, `core/forms/validation-messages.ts` |
+
+### Valute
+
+- Bazna valuta je KM (BAM). Kursna lista ima historiju: svaki kurs važi od `validFromUtc`, pa se iznos može preračunati po kursu na bilo koji datum. EUR je fiksno 1,95583.
+- Backend: `ICurrencyConverter.ConvertAsync(iznos, iz, u, naDan)` vraća preračunati iznos, primijenjeni kurs i datum kursa. Endpointi: `GET /Currencies`, `GET /Currencies/convert`, kursna lista za admina (`/Currencies/rates`).
+- Frontend: izbor valute u headeru, `money` pipe za prikaz cijena, stranica `/converter`, admin stranica „Kursna lista”.
+- Cijene u drugoj valuti su informativne: narudžbe u starteru se obračunavaju u KM. Plaćanje u drugoj valuti, kurs koji se pamti uz transakciju, povrat novca i promjena valute su dio vašeg rješenja.
+- Automatsko preuzimanje kurseva ECB-a (Frankfurter) je isključeno. Uključuje se sa `"ExchangeRates": { "Provider": "Frankfurter" }` u `appsettings.json` ili varijablom okruženja `ExchangeRates__Provider=Frankfurter`; ECB ne objavljuje RSD, pa se taj kurs unosi ručno.
+
+### Upload slika
+
+Slike proizvoda se snimaju u `Market.API/wwwroot/uploads/products/` (folder je u `.gitignore`) i dostupne su anonimno na `https://localhost:7100/uploads/...`. Dozvoljeni su JPEG, PNG i WEBP do 2 MB; provjerava se sadržaj fajla, ne samo ekstenzija.
+
+### Redis
+
+Keš je podešen, ali ga nijedan handler ne koristi. Dok je `ConnectionStrings:Redis` prazan, `ICacheService` radi u memoriji i Redis server nije potreban. Za Redis upišite npr. `localhost:6379`. Primjer upotrebe je u XML komentarima `ICacheService` i `ICatalogCacheVersionService` (keširanje `GET /Catalog/home` i poništavanje keša nakon izmjene kataloga).
+
+## Kako obrisati ono što vam ne treba
+
+Obrišite dio na oba kraja, pa napravite novu migraciju.
+
+| Dio | Backend | Frontend |
+|---|---|---|
+| Valute | `Modules/Finance`, `Entities/Finance`, `Configurations/Finance`, `CurrenciesController`, `CurrencyConverter`, `FrankfurterExchangeRateProvider`, registracije u DI, seed | `core/services/currency`, `api-services/currencies`, `public/converter`, `admin/finance`, izbor valute u headeru; `\| money` zamijenite sa `\| currency` |
+| Promocije | `Modules/Catalog/Promotions`, `PromotionEntity`, konfiguracija, `PromotionsController`, seed | `admin/catalogs/promotions`, `api-services/promotions`, `promotions-carousel` |
+| Korpa i checkout | – (koristi `POST /Orders`) | `core/services/cart`, `public/cart-page`, `public/checkout`, `cart-items`, ikona korpe u headeru |
+| Redis | `Abstractions/Caching`, `Infrastructure/Caching`, paket `Microsoft.Extensions.Caching.StackExchangeRedis` | – |
+
+Uz svaki obrisani entitet uklonite i njegov `DbSet` u `IAppDbContext`/`DatabaseContext`, rute, stavke menija i prevode (`bs.json` i `en.json`).
+
+## Izmjene u odnosu na template 2025/26
+
+- **Sigurnost:** guard sada stvarno štiti `/admin` i `/client`; backend provjerava ulogu (`PolicyNames.Admin`, 403); log više ne sadrži lozinke ni tokene; token se šalje samo na naš API; login ne otkriva postoji li nalog (401); refresh token se rotira, a ponovna upotreba starog gasi sve sesije korisnika.
+- **Okruženja:** razvojni ključ i CORS su u `appsettings.Development.json`; frontend koristi `environment.development.ts`.
+- **Portovi:** API je na `https://localhost:7100` (ranije 7260); baza se zove `Market2026`.
+- **Baza:** jedna nova `Init` migracija; unique indeksi poštuju soft delete; tabela `Orders` (ranije `Oders`).
+- **Greške:** `ErrorDto.errors` vraća greške po polju i forme ih prikazuju; create vraća `201 { id }`, akcije bez rezultata `204`.
+- **Frontend:** Angular 21.2 (bez poznatih ranjivosti), produkcijski build prolazi, folder je `Market.Frontend` (ranije `rs1-frontend-2025-26`).
+- **Novo:** sve iz poglavlja „Šta starter sadrži” osim osnovnih kategorija, proizvoda i narudžbi.
+
+## Screenshotovi
+
+Screenshotovi su iz verzije 2025/26; izgled admin dijela je ostao isti.
+
+| Ekran | Slika |
+|---|---|
+| Narudžbe | ![Narudžbe](screenshots/preview-template-orders.png) |
+| Detalji narudžbe | ![Detalji narudžbe](screenshots/preview-template-order-details.png) |
+| Promjena statusa narudžbe | ![Promjena statusa](screenshots/preview-template-order-change-status.png) |
+| Uređivanje kategorije | ![Kategorija](screenshots/preview-template-product-category-edit.png) |
+| Uređivanje proizvoda | ![Proizvod](screenshots/preview-template-product-edit.png) |
