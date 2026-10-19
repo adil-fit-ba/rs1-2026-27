@@ -16,7 +16,7 @@ public class GetProductCategoryByIdQueryHandler(IAppDbContext context) : IReques
 
         if (category == null)
         {
-            throw new MarketNotFoundException($"Product category with Id {request.Id} not found.");
+            throw new MarketNotFoundException($"Kategorija (ID={request.Id}) nije pronađena.");
         }
 
         return category;

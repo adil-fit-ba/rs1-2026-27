@@ -5,21 +5,14 @@ public sealed class UpdateProductCommandHandler(IAppDbContext ctx)
 {
     public async Task<Unit> Handle(UpdateProductCommand request, CancellationToken ct)
     {
+        // Input format (required name, lengths, price, stock) and the unique name
+        // are checked by UpdateProductCommandValidator.
         var entity = await ctx.Products
             .Where(x => x.Id == request.Id)
             .FirstOrDefaultAsync(ct);
 
         if (entity is null)
             throw new MarketNotFoundException($"Proizvod (ID={request.Id}) nije pronađen.");
-
-        // Check for duplicate name (case-insensitive, except for the same ID)
-        var exists = await ctx.Products
-            .AnyAsync(x => x.Id != request.Id && x.Name.ToLower() == request.Name.ToLower(), ct);
-
-        if (exists)
-        {
-            throw new MarketConflictException("Name already exists.");
-        }
 
         var productCategory = await ctx.ProductCategories
           .Where(x => x.Id == request.CategoryId)
@@ -39,7 +32,9 @@ public sealed class UpdateProductCommandHandler(IAppDbContext ctx)
         entity.Name = request.Name.Trim();
         entity.Description = request.Description?.Trim();
         entity.Price = request.Price;
+        entity.StockQuantity = request.StockQuantity;
         entity.CategoryId = request.CategoryId;
+        entity.IsEnabled = request.IsEnabled;
 
         await ctx.SaveChangesAsync(ct);
 

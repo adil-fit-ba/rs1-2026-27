@@ -9,4 +9,7 @@ public sealed class ListProductsQueryDto
     public required int StockQuantity { get; set; }
     public required string CategoryName { get; set; } //<-- treba poboljsati
     public required bool IsEnabled { get; init; }
+
+    /// <summary>Relative image URL (e.g. <c>/uploads/products/{guid}.webp</c>) or null.</summary>
+    public required string? ImageUrl { get; init; }
 }

@@ -25,6 +25,19 @@ public class ProductConfiguration : IEntityTypeConfiguration<ProductEntity>
             .IsRequired();
 
         builder
+            .Property(x => x.ImageUrl)
+            .HasMaxLength(ProductEntity.Constraints.ImageUrlMaxLength);
+
+        // Product names are unique (the validators check it first and return a field error).
+        // Unique only among non-deleted products: a soft-deleted product keeps its row,
+        // and without the filter its name could never be used again.
+        // The default SQL Server collation is case-insensitive, like the check in the validators.
+        builder
+            .HasIndex(x => x.Name)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        builder
             .HasOne(x => x.Category)
             .WithMany(x => x.Products)
             .HasForeignKey(x => x.CategoryId)

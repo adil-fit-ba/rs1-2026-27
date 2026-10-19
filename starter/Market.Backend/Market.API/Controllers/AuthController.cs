@@ -42,7 +42,7 @@ public sealed class AuthController(IMediator mediator) : ControllerBase
     /// </summary>
     [AllowAnonymous]
     [HttpPost("logout")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task Logout([FromBody] LogoutCommand command, CancellationToken ct)
     {
         await mediator.Send(command, ct);

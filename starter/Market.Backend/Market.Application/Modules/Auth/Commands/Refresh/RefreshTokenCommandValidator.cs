@@ -5,10 +5,10 @@ public sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshToke
     public RefreshTokenCommandValidator()
     {
         RuleFor(x => x.RefreshToken)
-            .NotEmpty().WithMessage("Refresh token is required.");
+            .NotEmpty().WithMessage("Refresh token je obavezan.");
 
         RuleFor(x => x.Fingerprint)
-            .MaximumLength(256).WithMessage("Fingerprint can be up to 256 characters long.")
+            .MaximumLength(256).WithMessage("Fingerprint može imati najviše 256 znakova.")
             .When(x => x.Fingerprint is not null);
     }
 }

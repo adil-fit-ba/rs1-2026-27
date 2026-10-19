@@ -46,14 +46,14 @@ public class ChangeOrderStatusCommandHandler(IAppDbContext db, IAppCurrentUser c
 
         if (!validTransitions.ContainsKey(current))
         {
-            throw new MarketBusinessRuleException("order.status.unknown", $"Unknown current status: {current}");
+            throw new MarketBusinessRuleException("order.status.unknown", $"Nepoznat trenutni status: {current}.");
         }
 
         if (!validTransitions[current].Contains(next))
         {
             throw new MarketBusinessRuleException("order.status.invalidTransition",
-                $"Invalid status transition from {current} to {next}. " +
-                $"Allowed transitions: {string.Join(", ", validTransitions[current])}");
+                $"Status se ne može promijeniti iz {current} u {next}. " +
+                $"Dozvoljeni prelazi: {string.Join(", ", validTransitions[current])}.");
         }
     }
 }

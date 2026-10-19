@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Market.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -11,6 +13,27 @@ namespace Market.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Currencies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nchar(3)", fixedLength: true, maxLength: 3, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Symbol = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    DecimalPlaces = table.Column<int>(type: "int", nullable: false),
+                    IsBase = table.Column<bool>(type: "bit", nullable: false),
+                    IsEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Currencies", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "ProductCategories",
                 columns: table => new
@@ -26,6 +49,28 @@ namespace Market.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductCategories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Promotions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    TargetUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    StartsAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndsAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    SortOrder = table.Column<int>(type: "int", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Promotions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -53,6 +98,31 @@ namespace Market.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ExchangeRates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CurrencyId = table.Column<int>(type: "int", nullable: false),
+                    RateToBase = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false),
+                    ValidFromUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Source = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExchangeRates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExchangeRates_Currencies_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -64,6 +134,7 @@ namespace Market.Infrastructure.Migrations
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     IsEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -199,6 +270,45 @@ namespace Market.Infrastructure.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Currencies",
+                columns: new[] { "Id", "Code", "CreatedAtUtc", "DecimalPlaces", "IsBase", "IsDeleted", "IsEnabled", "ModifiedAtUtc", "Name", "Symbol" },
+                values: new object[,]
+                {
+                    { 1, "BAM", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 2, true, false, true, null, "Konvertibilna marka", "KM" },
+                    { 2, "EUR", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 2, false, false, true, null, "Euro", "€" },
+                    { 3, "USD", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 2, false, false, true, null, "Američki dolar", "$" },
+                    { 4, "CHF", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 2, false, false, true, null, "Švicarski franak", "CHF" },
+                    { 5, "GBP", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 2, false, false, true, null, "Britanska funta", "£" },
+                    { 6, "RSD", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 2, false, false, true, null, "Srpski dinar", "RSD" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ExchangeRates",
+                columns: new[] { "Id", "CreatedAtUtc", "CurrencyId", "IsDeleted", "ModifiedAtUtc", "RateToBase", "Source", "ValidFromUtc" },
+                values: new object[] { 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 2, false, null, 1.95583m, "CBBiH (fiksni kurs)", new DateTime(1999, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Currencies_Code",
+                table: "Currencies",
+                column: "Code",
+                unique: true,
+                filter: "[IsDeleted] = 0");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Currencies_IsBase",
+                table: "Currencies",
+                column: "IsBase",
+                unique: true,
+                filter: "[IsBase] = 1 AND [IsDeleted] = 0");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExchangeRates_CurrencyId_ValidFromUtc",
+                table: "ExchangeRates",
+                columns: new[] { "CurrencyId", "ValidFromUtc" },
+                unique: true,
+                filter: "[IsDeleted] = 0");
+
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
@@ -218,6 +328,18 @@ namespace Market.Infrastructure.Migrations
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Name",
+                table: "Products",
+                column: "Name",
+                unique: true,
+                filter: "[IsDeleted] = 0");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Promotions_IsActive_SortOrder",
+                table: "Promotions",
+                columns: new[] { "IsActive", "SortOrder" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_UserId_TokenHash",
@@ -249,13 +371,22 @@ namespace Market.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "ExchangeRates");
+
+            migrationBuilder.DropTable(
                 name: "OrderItems");
+
+            migrationBuilder.DropTable(
+                name: "Promotions");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "UserProductFavorites");
+
+            migrationBuilder.DropTable(
+                name: "Currencies");
 
             migrationBuilder.DropTable(
                 name: "Orders");

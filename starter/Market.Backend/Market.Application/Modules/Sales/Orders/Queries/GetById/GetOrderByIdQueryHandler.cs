@@ -52,7 +52,7 @@ public sealed class GetOrderByIdQueryHandler(IAppDbContext ctx, IAppCurrentUser 
 
         if (dto == null)
         {
-            throw new MarketNotFoundException($"Order with Id {request.Id} not found.");
+            throw new MarketNotFoundException($"Narudžba (ID={request.Id}) nije pronađena.");
         }
 
         return dto;

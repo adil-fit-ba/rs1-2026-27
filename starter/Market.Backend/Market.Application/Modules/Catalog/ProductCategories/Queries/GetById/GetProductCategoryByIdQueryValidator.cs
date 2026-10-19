@@ -4,6 +4,6 @@ public sealed class GetProductCategoryByIdQueryValidator : AbstractValidator<Get
 {
     public GetProductCategoryByIdQueryValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Id must be a positive value.");
+        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Id mora biti pozitivan broj.");
     }
 }

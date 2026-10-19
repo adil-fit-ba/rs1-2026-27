@@ -43,6 +43,12 @@ public class ProductEntity : BaseEntity
     /// </summary>
     public bool IsEnabled { get; set; }
 
+    /// <summary>
+    /// Relative URL of the uploaded product image, e.g. <c>/uploads/products/{guid}.webp</c>. (optional)
+    /// Set only by the image upload endpoint; the client shows it as <c>apiUrl + imageUrl</c>.
+    /// </summary>
+    public string? ImageUrl { get; set; }
+
 
     // Many-to-many: Users who favorited this product
     public ICollection<UserProductFavoriteEntity> FavoritedByUsers { get; private set; } = new List<UserProductFavoriteEntity>();
@@ -66,5 +72,7 @@ public class ProductEntity : BaseEntity
         public const int NameMaxLength = 150;
 
         public const int DescriptionMaxLength = 1000;
+
+        public const int ImageUrlMaxLength = 500;
     }
 }

@@ -22,7 +22,7 @@ public sealed class DisableProductCategoryCommandHandler(IAppDbContext ctx)
         if (hasActiveProducts)
         {
             throw new MarketBusinessRuleException("category.disable.blocked.activeProducts",
-                $"Category {cat.Name} cannot be disabled because it contains active products.");
+                $"Kategorija {cat.Name} se ne može onemogućiti jer sadrži aktivne proizvode.");
         }
 
         cat.IsEnabled = false;

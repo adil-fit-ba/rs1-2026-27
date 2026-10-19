@@ -1,4 +1,5 @@
-﻿using Market.Application.Abstractions;
+﻿using Market.API.Filters;
+using Market.Application.Abstractions;
 using Market.Infrastructure.Common;
 using Market.Shared.Constants;
 using Market.Shared.Dtos;
@@ -28,8 +29,8 @@ public static class DependencyInjection
     {
         EnsureJwtKeyIsNotDevOnlyKey(configuration, env);
 
-        // Controllers + uniform BadRequest (same ErrorDto shape as FluentValidation errors)
-        services.AddControllers()
+        // Controllers + 204 for actions without a return value + uniform BadRequest (same ErrorDto shape as FluentValidation errors)
+        services.AddControllers(options => options.Filters.Add<EmptyResultToNoContentFilter>())
             .ConfigureApiBehaviorOptions(opts =>
             {
                 opts.InvalidModelStateResponseFactory = ctx =>

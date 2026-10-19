@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Market.Domain.Entities.Catalog;
+using Market.Domain.Entities.Finance;
 using Market.Domain.Entities.Sales;
 using Market.Domain.Entities.Identity;
 
@@ -32,6 +33,8 @@ public static class DynamicDataSeeder
         await SeedUsersAsync(context);
         await SeedProductsAsync(context);
         await SeedOrdersAsync(context);
+        await SeedPromotionsAsync(context);
+        await SeedExchangeRatesAsync(context);
     }
 
     private static async Task SeedProductCategoriesAsync(DatabaseContext context)
@@ -617,6 +620,128 @@ public static class DynamicDataSeeder
         await context.SaveChangesAsync();
 
         Console.WriteLine($"✅ Dynamic seed: {orders.Count} orders added with {orders.Sum(o => o.Items.Count)} total items.");
+    }
+
+    /// <summary>
+    /// Kreira demo promocije (baneri na početnoj stranici) ako ih još nema u bazi.
+    /// </summary>
+    private static async Task SeedPromotionsAsync(DatabaseContext context)
+    {
+        if (await context.Promotions.AnyAsync())
+            return;
+
+        var promotions = new List<PromotionEntity>
+        {
+            new PromotionEntity
+            {
+                Title = "Zimska rasprodaja - Do 50% popusta!",
+                ImageUrl = "https://images.unsplash.com/photo-1491002052546-bf38f186af56?w=800&h=300&fit=crop",
+                TargetUrl = "/products?category=zimska-oprema",
+                SortOrder = 1,
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow.AddDays(-30)
+            },
+            new PromotionEntity
+            {
+                Title = "Novi proizvodi - Pogledajte kolekciju",
+                ImageUrl = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=300&fit=crop",
+                TargetUrl = "/products?sort=newest",
+                SortOrder = 2,
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow.AddDays(-25)
+            },
+            new PromotionEntity
+            {
+                Title = "Besplatna dostava za narudžbe preko 50 BAM",
+                ImageUrl = "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=800&h=300&fit=crop",
+                TargetUrl = null,
+                SortOrder = 3,
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow.AddDays(-20)
+            },
+            new PromotionEntity
+            {
+                Title = "Akcija - Brendirana oprema -30%",
+                ImageUrl = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=300&fit=crop",
+                TargetUrl = "/products?brand=premium",
+                SortOrder = 4,
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow.AddDays(-15)
+            },
+            new PromotionEntity
+            {
+                Title = "Loyalty program - Sakupljajte bodove",
+                ImageUrl = "https://images.unsplash.com/photo-1556742393-d75f468bfcb0?w=800&h=300&fit=crop",
+                TargetUrl = "/loyalty",
+                SortOrder = 5,
+                IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow.AddDays(-10)
+            }
+        };
+
+        context.Promotions.AddRange(promotions);
+        await context.SaveChangesAsync();
+
+        Console.WriteLine($"✅ Dynamic seed: {promotions.Count} promotions added.");
+    }
+
+    /// <summary>
+    /// Približni kursevi za USD, CHF, GBP i RSD na četiri datuma u 2026, da konverzija radi odmah nakon pokretanja.
+    /// Valute i fiksni kurs EUR (1,95583) dolaze iz migracije (StaticDataSeeder).
+    /// Nisu stvarni kursevi: u produkciji ih unosi administrator ili se preuzimaju preko ExchangeRates:Provider.
+    /// </summary>
+    private static async Task SeedExchangeRatesAsync(DatabaseContext context)
+    {
+        const string source = "Seed (približno)";
+
+        if (await context.ExchangeRates.AnyAsync(r => r.Source == source))
+            return;
+
+        // KM za 1 jedinicu valute, redom za 01.01, 01.04, 01.07. i 01.10.2026.
+        var approximateRates = new Dictionary<string, decimal[]>
+        {
+            ["USD"] = [1.6650m, 1.6800m, 1.6600m, 1.6750m],
+            ["CHF"] = [2.0900m, 2.1000m, 2.0850m, 2.0950m],
+            ["GBP"] = [2.2400m, 2.2550m, 2.2300m, 2.2450m],
+            ["RSD"] = [0.016690m, 0.016685m, 0.016692m, 0.016688m]
+        };
+
+        DateTime[] validFromDates =
+        [
+            new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc)
+        ];
+
+        var codes = approximateRates.Keys.ToList();
+        var currencyIdsByCode = await context.Currencies
+            .Where(c => codes.Contains(c.Code))
+            .ToDictionaryAsync(c => c.Code, c => c.Id);
+
+        var rates = new List<ExchangeRateEntity>();
+        foreach (var (code, values) in approximateRates)
+        {
+            if (!currencyIdsByCode.TryGetValue(code, out var currencyId))
+                continue;
+
+            for (var i = 0; i < validFromDates.Length; i++)
+            {
+                rates.Add(new ExchangeRateEntity
+                {
+                    CurrencyId = currencyId,
+                    RateToBase = values[i],
+                    ValidFromUtc = validFromDates[i],
+                    Source = source,
+                    CreatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+
+        context.ExchangeRates.AddRange(rates);
+        await context.SaveChangesAsync();
+
+        Console.WriteLine($"✅ Dynamic seed: {rates.Count} approximate exchange rates added.");
     }
 
     /// <summary>

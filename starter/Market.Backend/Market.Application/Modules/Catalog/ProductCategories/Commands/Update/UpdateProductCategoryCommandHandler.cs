@@ -12,16 +12,30 @@ public sealed class UpdateProductCategoryCommandHandler(IAppDbContext ctx)
         if (entity is null)
             throw new MarketNotFoundException($"Kategorija (ID={request.Id}) nije pronađena.");
 
+        var normalized = request.Name.Trim();
+
         // Check for duplicate name (case-insensitive, except for the same ID)
         var exists = await ctx.ProductCategories
-            .AnyAsync(x => x.Id != request.Id && x.Name.ToLower() == request.Name.ToLower(), ct);
+            .AnyAsync(x => x.Id != request.Id && x.Name.ToLower() == normalized.ToLower(), ct);
 
         if (exists)
         {
-            throw new MarketConflictException("Name already exists.");
+            throw new MarketConflictException($"Kategorija sa nazivom {normalized} već postoji.");
         }
 
-        entity.Name = request.Name.Trim();
+        // Same business rule as DisableProductCategoryCommandHandler: a category with active products cannot be disabled.
+        if (entity.IsEnabled && !request.IsEnabled)
+        {
+            var hasActiveProducts = await ctx.Products
+                .AnyAsync(p => p.CategoryId == entity.Id && p.IsEnabled, ct);
+
+            if (hasActiveProducts)
+                throw new MarketBusinessRuleException("category.disable.blocked.activeProducts",
+                    $"Kategorija {entity.Name} se ne može onemogućiti jer sadrži aktivne proizvode.");
+        }
+
+        entity.Name = normalized;
+        entity.IsEnabled = request.IsEnabled;
 
         await ctx.SaveChangesAsync(ct);
 

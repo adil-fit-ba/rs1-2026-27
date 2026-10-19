@@ -5,18 +5,8 @@ public class CreateProductCommandHandler(IAppDbContext ctx)
 {
     public async Task<int> Handle(CreateProductCommand request, CancellationToken ct)
     {
-        // Input format (required name, lengths, price...) is checked by CreateProductCommandValidator.
-        var normalized = request.Name.Trim();
-
-        // Check if a product with the same name already exists.
-        bool exists = await ctx.Products
-            .AnyAsync(x => x.Name == normalized, ct);
-
-        if (exists)
-        {
-            throw new MarketConflictException("Name already exists.");
-        }
-
+        // Input format (required name, lengths, price, stock) and the unique name
+        // are checked by CreateProductCommandValidator.
         var productCategory = await ctx.ProductCategories
             .Where(x => x.Id == request.CategoryId)
             .FirstOrDefaultAsync(ct);
@@ -34,12 +24,12 @@ public class CreateProductCommandHandler(IAppDbContext ctx)
 
         var product = new ProductEntity
         {
-            Name = normalized,
+            Name = request.Name.Trim(),
             Description = request.Description?.Trim(),
             Price = request.Price,
-            StockQuantity = 0, // default StockQuantity
+            StockQuantity = request.StockQuantity,
             CategoryId = request.CategoryId,
-            IsEnabled = true // default IsEnabled
+            IsEnabled = request.IsEnabled
         };
 
         ctx.Products.Add(product);

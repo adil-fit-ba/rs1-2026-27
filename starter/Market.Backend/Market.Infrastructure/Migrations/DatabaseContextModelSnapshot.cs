@@ -70,6 +70,10 @@ namespace Market.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -95,7 +99,61 @@ namespace Market.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
                     b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("Market.Domain.Entities.Catalog.PromotionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EndsAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartsAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TargetUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive", "SortOrder");
+
+                    b.ToTable("Promotions", (string)null);
                 });
 
             modelBuilder.Entity("Market.Domain.Entities.Catalog.UserProductFavoriteEntity", b =>
@@ -133,6 +191,188 @@ namespace Market.Infrastructure.Migrations
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("UserProductFavorites", (string)null);
+                });
+
+            modelBuilder.Entity("Market.Domain.Entities.Finance.CurrencyEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nchar(3)")
+                        .IsFixedLength();
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DecimalPlaces")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsBase")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("IsBase")
+                        .IsUnique()
+                        .HasFilter("[IsBase] = 1 AND [IsDeleted] = 0");
+
+                    b.ToTable("Currencies", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "BAM",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsBase = true,
+                            IsDeleted = false,
+                            IsEnabled = true,
+                            Name = "Konvertibilna marka",
+                            Symbol = "KM"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "EUR",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsBase = false,
+                            IsDeleted = false,
+                            IsEnabled = true,
+                            Name = "Euro",
+                            Symbol = "€"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "USD",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsBase = false,
+                            IsDeleted = false,
+                            IsEnabled = true,
+                            Name = "Američki dolar",
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "CHF",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsBase = false,
+                            IsDeleted = false,
+                            IsEnabled = true,
+                            Name = "Švicarski franak",
+                            Symbol = "CHF"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "GBP",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsBase = false,
+                            IsDeleted = false,
+                            IsEnabled = true,
+                            Name = "Britanska funta",
+                            Symbol = "£"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Code = "RSD",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsBase = false,
+                            IsDeleted = false,
+                            IsEnabled = true,
+                            Name = "Srpski dinar",
+                            Symbol = "RSD"
+                        });
+                });
+
+            modelBuilder.Entity("Market.Domain.Entities.Finance.ExchangeRateEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrencyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("RateToBase")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ValidFromUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId", "ValidFromUtc")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("ExchangeRates", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CurrencyId = 2,
+                            IsDeleted = false,
+                            RateToBase = 1.95583m,
+                            Source = "CBBiH (fiksni kurs)",
+                            ValidFromUtc = new DateTime(1999, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
             modelBuilder.Entity("Market.Domain.Entities.Identity.MarketUserEntity", b =>
@@ -380,6 +620,17 @@ namespace Market.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Market.Domain.Entities.Finance.ExchangeRateEntity", b =>
+                {
+                    b.HasOne("Market.Domain.Entities.Finance.CurrencyEntity", "Currency")
+                        .WithMany("ExchangeRates")
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Currency");
+                });
+
             modelBuilder.Entity("Market.Domain.Entities.Identity.RefreshTokenEntity", b =>
                 {
                     b.HasOne("Market.Domain.Entities.Identity.MarketUserEntity", "User")
@@ -429,6 +680,11 @@ namespace Market.Infrastructure.Migrations
             modelBuilder.Entity("Market.Domain.Entities.Catalog.ProductEntity", b =>
                 {
                     b.Navigation("FavoritedByUsers");
+                });
+
+            modelBuilder.Entity("Market.Domain.Entities.Finance.CurrencyEntity", b =>
+                {
+                    b.Navigation("ExchangeRates");
                 });
 
             modelBuilder.Entity("Market.Domain.Entities.Identity.MarketUserEntity", b =>

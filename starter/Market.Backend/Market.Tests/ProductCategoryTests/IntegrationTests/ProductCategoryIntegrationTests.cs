@@ -3,7 +3,8 @@ using System.Net.Http.Json;
 
 namespace Market.Tests.ProductCategoryTests.IntegrationTests;
 
-public class ProductCategoryIntegrationTests : IClassFixture<CustomWebApplicationFactory<Program>>
+[Collection(IntegrationTestCollection.Name)]
+public class ProductCategoryIntegrationTests
 {
     private readonly CustomWebApplicationFactory<Program> _factory;
 

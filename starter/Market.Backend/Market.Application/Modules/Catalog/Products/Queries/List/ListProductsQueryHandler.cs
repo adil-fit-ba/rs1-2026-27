@@ -1,6 +1,6 @@
 ﻿namespace Market.Application.Modules.Catalog.Products.Queries.List;
 
-public sealed class ListProductsQueryHandler(IAppDbContext ctx)
+public sealed class ListProductsQueryHandler(IAppDbContext ctx, IAppCurrentUser currentUser)
         : IRequestHandler<ListProductsQuery, PageResult<ListProductsQueryDto>>
 {
     public async Task<PageResult<ListProductsQueryDto>> Handle(
@@ -8,11 +8,22 @@ public sealed class ListProductsQueryHandler(IAppDbContext ctx)
     {
         var q = ctx.Products.AsNoTracking();
 
-        var searchTerm = request.Search?.Trim().ToLower() ?? string.Empty;
+        // Visitors and customers see only what can be ordered: enabled products in enabled categories.
+        // The administrator sees everything (the admin product list also shows disabled products).
+        if (!currentUser.IsAdmin)
+        {
+            q = q.Where(x => x.IsEnabled && x.Category!.IsEnabled);
+        }
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
-             q = q.Where(x => x.Name.ToLower().Contains(searchTerm));
+            var searchTerm = request.Search.Trim().ToLower();
+            q = q.Where(x => x.Name.ToLower().Contains(searchTerm));
+        }
+
+        if (request.CategoryId is not null)
+        {
+            q = q.Where(x => x.CategoryId == request.CategoryId);
         }
 
         // ThenBy(Id) makes the order stable (Name is not unique), so paging never skips or repeats rows.
@@ -26,11 +37,10 @@ public sealed class ListProductsQueryHandler(IAppDbContext ctx)
                 Description = x.Description,
                 Price = x.Price,
                 StockQuantity = x.StockQuantity,
-                CategoryName = x.Category!.Name
+                CategoryName = x.Category!.Name,
+                ImageUrl = x.ImageUrl
             });
 
         return await PageResult<ListProductsQueryDto>.FromQueryableAsync(projectedQuery, request.Paging, ct);
     }
-
-
 }
