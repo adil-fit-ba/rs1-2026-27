@@ -7,9 +7,9 @@ Angular 21 aplikacija (NgModules, Angular Material, ngx-translate). Pokretanje, 
 | Komanda | Šta radi |
 |---|---|
 | `npm ci` | instalira tačne verzije iz `package-lock.json` |
-| `npm start` | `ng serve`, development, `http://localhost:4200` |
+| `npm start` | `ng serve`, okruženje development, `http://localhost:4200` |
+| `npm run start:testing` | `ng serve --configuration testing`: optimizovan build kao produkcija, ali prema lokalnom API-ju (backend profil `https-testing`) |
 | `npm run build` | produkcijski build u `dist/market-frontend/browser` |
-| `npx ng build --configuration staging` | staging build |
 | `npm run watch` | development build uz praćenje izmjena |
 
 Starter nema podešen test runner (`npm test` ne postoji).

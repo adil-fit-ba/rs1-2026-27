@@ -107,6 +107,6 @@ public class ProductImageUnitTests
         public string ApplicationName { get; set; } = "Market.Tests";
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
         public string ContentRootPath { get; set; } = webRootPath;
-        public string EnvironmentName { get; set; } = "Testing";
+        public string EnvironmentName { get; set; } = "UnitTests";
     }
 }

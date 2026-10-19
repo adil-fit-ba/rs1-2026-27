@@ -16,17 +16,19 @@ public static class DatabaseInitializer
         await using var scope = services.CreateAsyncScope();
         var ctx = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
-        if (env.IsTest())
+        if (env.IsIntegrationTests())
         {
+            // In-memory database: no migrations, the schema is created from the model
             await ctx.Database.EnsureCreatedAsync();
             await DynamicDataSeeder.SeedAsync(ctx);
             return;
         }
 
-        // SQL Server or similar
-        await ctx.Database.MigrateAsync();//update-database
+        // SQL Server: applies pending migrations (same as "dotnet ef database update")
+        await ctx.Database.MigrateAsync();
 
-        if (env.IsDevelopment())
+        // Demo data (the accounts from README) in Development and Testing, never in Production
+        if (env.IsDevelopment() || env.IsTesting())
         {
             await DynamicDataSeeder.SeedAsync(ctx);
         }

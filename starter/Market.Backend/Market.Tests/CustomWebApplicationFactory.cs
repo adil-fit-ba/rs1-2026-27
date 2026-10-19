@@ -1,5 +1,5 @@
 ﻿using Market.Application.Modules.Auth.Commands.Login;
-using Microsoft.Extensions.Configuration;
+using Market.Shared.Constants;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -24,15 +24,11 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<Progr
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("IntegrationTests");
+        builder.UseEnvironment(EnvironmentNames.IntegrationTests);
 
-        builder.ConfigureAppConfiguration((_, config) =>
-        {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Jwt:Key"] = TestJwtKey
-            });
-        });
+        // UseSetting (not ConfigureAppConfiguration): the value is visible already while Program.cs
+        // registers services, and AddAPI stops the startup when Jwt:Key is missing.
+        builder.UseSetting("Jwt:Key", TestJwtKey);
     }
 
     /// <summary>

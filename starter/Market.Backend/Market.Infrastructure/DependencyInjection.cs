@@ -25,10 +25,10 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // DbContext: InMemory for test environments; SQL Server otherwise
+        // DbContext: InMemory for automated integration tests; SQL Server otherwise
         services.AddDbContext<DatabaseContext>((sp, options) =>
         {
-            if (env.IsTest())
+            if (env.IsIntegrationTests())
             {
                 options.UseInMemoryDatabase("IntegrationTestsDb");
 

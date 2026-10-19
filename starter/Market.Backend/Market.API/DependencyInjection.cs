@@ -7,7 +7,7 @@ using Market.Shared.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
@@ -17,17 +17,25 @@ namespace Market.API;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Prefix of the development-only JWT key from appsettings.Development.json.
-    /// Such a key is public (it is in the repository), so it must never be used outside Development/tests.
+    /// Prefix of the JWT key from appsettings.Development.json. The key is public (it is in the repository),
+    /// so it is allowed only in Development and IntegrationTests.
     /// </summary>
     private const string DevOnlyJwtKeyPrefix = "DEV_ONLY";
+
+    /// <summary>
+    /// Prefix of the JWT key from appsettings.Testing.json. The key is public (it is in the repository),
+    /// so it is allowed only in Testing.
+    /// </summary>
+    private const string TestingOnlyJwtKeyPrefix = "TESTING_ONLY_";
+
+    private const string SwaggerBearerSchemeId = "Bearer";
 
     public static IServiceCollection AddAPI(
         this IServiceCollection services,
         IConfiguration configuration,
         IHostEnvironment env)
     {
-        EnsureJwtKeyIsNotDevOnlyKey(configuration, env);
+        EnsureJwtKeyIsAllowed(configuration, env);
 
         // Controllers + 204 for actions without a return value + uniform BadRequest (same ErrorDto shape as FluentValidation errors)
         services.AddControllers(options => options.Filters.Add<EmptyResultToNoContentFilter>())
@@ -112,18 +120,21 @@ public static class DependencyInjection
             if (File.Exists(xml))
                 c.IncludeXmlComments(xml, includeControllerXmlComments: true);
 
-            var bearer = new OpenApiSecurityScheme
+            c.AddSecurityDefinition(SwaggerBearerSchemeId, new OpenApiSecurityScheme
             {
                 Name = "Authorization",
                 Description = "Unesi JWT token. Format: **Bearer {token}**",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
                 Scheme = "bearer",
-                BearerFormat = "JWT",
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            };
-            c.AddSecurityDefinition("Bearer", bearer);
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement { { bearer, Array.Empty<string>() } });
+                BearerFormat = "JWT"
+            });
+
+            // Every endpoint shows the lock icon; Swagger UI sends the token from "Authorize" with each request
+            c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference(SwaggerBearerSchemeId, document)] = []
+            });
         });
 
         services.AddExceptionHandler<MarketExceptionHandler>();
@@ -164,22 +175,38 @@ public static class DependencyInjection
     }
 
     /// <summary>
-    /// The DEV_ONLY key from appsettings.Development.json is public. Outside Development and test
-    /// environments a real secret must be configured (environment variable Jwt__Key, user secrets, key vault...).
+    /// Stops the startup (before the database is touched) when Jwt:Key is missing, or when it is one of the
+    /// public keys from the repository and the environment is not the one the key is meant for:
+    /// <list type="bullet">
+    /// <item>DEV_ONLY… (appsettings.Development.json) only in Development and IntegrationTests,</item>
+    /// <item>TESTING_ONLY_… (appsettings.Testing.json) only in Testing.</item>
+    /// </list>
+    /// Everywhere else (Production, Staging...) a real secret must be configured
+    /// (environment variable Jwt__Key, user secrets, key vault...).
     /// </summary>
-    private static void EnsureJwtKeyIsNotDevOnlyKey(IConfiguration configuration, IHostEnvironment env)
+    private static void EnsureJwtKeyIsAllowed(IConfiguration configuration, IHostEnvironment env)
     {
-        if (env.IsDevelopment() || env.IsTest())
-            return;
+        var key = configuration[$"{JwtOptions.SectionName}:{nameof(JwtOptions.Key)}"];
 
-        var key = configuration[$"{JwtOptions.SectionName}:{nameof(JwtOptions.Key)}"] ?? string.Empty;
-        if (key.StartsWith(DevOnlyJwtKeyPrefix, StringComparison.Ordinal))
+        if (string.IsNullOrWhiteSpace(key))
         {
             throw new InvalidOperationException(
-                $"Jwt:Key je razvojni ključ ({DevOnlyJwtKeyPrefix}...) i ne smije se koristiti u okruženju '{env.EnvironmentName}'. " +
-                $"Postavite pravi tajni ključ (npr. varijabla okruženja Jwt__Key). / " +
-                $"Jwt:Key is a development-only key and must not be used in the '{env.EnvironmentName}' environment. " +
-                $"Configure a real secret (e.g. environment variable Jwt__Key).");
+                $"Jwt:Key nije postavljen u okruženju '{env.EnvironmentName}'. " +
+                $"Postavite tajni ključ od najmanje 32 znaka (npr. varijabla okruženja Jwt__Key). / " +
+                $"Jwt:Key is not set in the '{env.EnvironmentName}' environment. " +
+                $"Configure a secret key of at least 32 characters (e.g. environment variable Jwt__Key).");
         }
+
+        if (key.StartsWith(DevOnlyJwtKeyPrefix, StringComparison.Ordinal) && !(env.IsDevelopment() || env.IsIntegrationTests()))
+            throw PublicJwtKeyNotAllowed(DevOnlyJwtKeyPrefix, env);
+
+        if (key.StartsWith(TestingOnlyJwtKeyPrefix, StringComparison.Ordinal) && !env.IsTesting())
+            throw PublicJwtKeyNotAllowed(TestingOnlyJwtKeyPrefix, env);
     }
+
+    private static InvalidOperationException PublicJwtKeyNotAllowed(string prefix, IHostEnvironment env) => new(
+        $"Jwt:Key je javni ključ iz repozitorija ({prefix}...) i ne smije se koristiti u okruženju '{env.EnvironmentName}'. " +
+        $"Postavite pravi tajni ključ (npr. varijabla okruženja Jwt__Key). / " +
+        $"Jwt:Key is a public key from the repository ({prefix}...) and must not be used in the '{env.EnvironmentName}' environment. " +
+        $"Configure a real secret (e.g. environment variable Jwt__Key).");
 }

@@ -1,6 +1,6 @@
 # Market.Backend
 
-ASP.NET Core Web API (.NET 8). Pokretanje, korisnici i okruženja su opisani u [`../README.md`](../README.md).
+ASP.NET Core Web API (.NET 10). Pokretanje, korisnici i okruženja su opisani u [`../README.md`](../README.md).
 
 ![Slojevi](layers.png)
 

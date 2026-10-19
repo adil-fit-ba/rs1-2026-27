@@ -1,10 +1,12 @@
 // PRODUKCIJA – ovaj fajl koristi `ng build` (default konfiguracija "production").
 //
 // Za `ng serve` (konfiguracija "development") Angular ga u buildu zamjenjuje fajlom
-// environment.development.ts, a za `ng build --configuration staging` fajlom
-// environment.staging.ts (vidi "fileReplacements" u angular.json).
+// environment.development.ts, a za `npm run start:testing` (konfiguracija "testing") fajlom
+// environment.testing.ts (vidi "fileReplacements" u angular.json).
 //
-// U kodu UVIJEK importuj samo ovaj fajl, nikad .development/.staging direktno:
+// Produkcija se ne pokreće lokalno: prije objave postavite apiUrl ispod.
+//
+// U kodu UVIJEK importuj samo ovaj fajl, nikad .development/.testing direktno:
 //   import { environment } from '../../environments/environment';
 //
 // Sva tri fajla moraju imati ista polja.

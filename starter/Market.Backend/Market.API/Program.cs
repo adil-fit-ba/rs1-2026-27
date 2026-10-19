@@ -58,7 +58,7 @@ public partial class Program
                 .AddApplication();
 
             // CORS: allowed frontend origins come from configuration ("Cors:AllowedOrigins"),
-            // e.g. http://localhost:4200 in appsettings.Development.json; empty in appsettings.json
+            // e.g. http://localhost:4200 in appsettings.Development.json and appsettings.Testing.json; empty in appsettings.json
             // (production adds its own origins via appsettings.Production.json or environment variables).
             var allowedOrigins = builder.Configuration
                 .GetSection("Cors:AllowedOrigins")
@@ -82,6 +82,7 @@ public partial class Program
             // ---------------------------------------------------------
             // 4. Middleware pipeline
             // ---------------------------------------------------------
+            // Swagger only in Development; Testing and Production behave like a real deployment without it.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

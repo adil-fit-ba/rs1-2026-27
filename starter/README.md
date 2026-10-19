@@ -4,7 +4,7 @@ Starter je kompletna aplikacija na kojoj radite seminarski rad:
 
 | Folder | Sadržaj |
 |---|---|
-| [`Market.Backend/`](Market.Backend/) | ASP.NET Core Web API, .NET 8, Clean Architecture, CQRS (MediatR), FluentValidation, EF Core (SQL Server), JWT + refresh tokeni |
+| [`Market.Backend/`](Market.Backend/) | ASP.NET Core Web API, .NET 10, Clean Architecture, CQRS (MediatR), FluentValidation, EF Core (SQL Server), JWT + refresh tokeni |
 | [`Market.Frontend/`](Market.Frontend/) | Angular 21 (NgModules), Angular Material, ngx-translate (bosanski/engleski) |
 | [`screenshots/`](screenshots/) | Screenshotovi admin dijela |
 
@@ -12,7 +12,8 @@ Starter sadrži i gotove primjere (korpa, checkout, narudžbe kupca, promocije, 
 
 ## Preduslovi
 
-- .NET 8 SDK
+- .NET 10 SDK (10.0.100 ili noviji; verzija je zadana u `Market.Backend/global.json`)
+- Visual Studio 2026 (v18) ili noviji, Rider 2025.3+ ili VS Code sa C# Dev Kit. Visual Studio 2022 ne može buildati .NET 10.
 - Node.js `^20.19`, `^22.12` ili `>= 24` (zahtjev Angulara 21; preporuka: 22 ili 24 LTS)
 - SQL Server na `localhost,1433`, korisnik `sa`, lozinka `test` (connection string je u `Market.Backend/Market.API/appsettings.json`)
 - Repozitorij klonirajte u kratak folder (npr. `C:\rs1`) i jednom uključite duge putanje: `git config --global core.longpaths true`
@@ -35,7 +36,8 @@ U Visual Studiju: startup projekat `Market.API`, profil `https` (prvi u listi).
 
 - API: `https://localhost:7100` (i `http://localhost:5100`, koji preusmjerava na https)
 - Swagger: `https://localhost:7100/swagger`
-- Baza `Market2026` se pri pokretanju sama kreira i migrira. Demo podaci se upisuju samo u okruženju `Development`.
+- Baza `Market2026` se pri pokretanju sama kreira i migrira, a demo podaci se upisuju u okruženjima `Development` i `Testing`.
+- Profil `https-testing` pokreće okruženje `Testing` (vidi „Okruženja”).
 
 ## Pokretanje frontenda
 
@@ -65,31 +67,38 @@ Administrator nakon prijave ide na `/admin`, svi ostali na `/client`.
 
 ## Okruženja (environments)
 
-**Backend** – `appsettings.json` važi za sva okruženja, a `appsettings.{Environment}.json` ga dopunjava:
+| | Development | Testing | Production |
+|---|---|---|---|
+| Namjena | svakodnevni razvoj | lokalno, ponaša se kao produkcija | server |
+| Backend profil | `https` / `http` | `https-testing` | – |
+| Frontend | `npm start` | `npm run start:testing` | `npm run build` |
+| Baza | `Market2026` | `Market2026_Testing` | iz konfiguracije servera |
+| Demo podaci | da | da | ne |
+| Swagger | da | ne | ne |
+| Detalji greške (stack trace) u odgovoru | da | ne | ne |
+| JWT ključ | `DEV_ONLY_…` | `TESTING_ONLY_…` | tajni ključ u `Jwt__Key` |
+| CORS | `http://localhost:4200` | `http://localhost:4200` | iz konfiguracije servera |
 
-| Ključ | `appsettings.json` | `appsettings.Development.json` |
-|---|---|---|
-| `ConnectionStrings:Main` | `localhost,1433`, baza `Market2026` | – |
-| `Jwt:Key` | prazno | razvojni ključ `DEV_ONLY_…` |
-| `Cors:AllowedOrigins` | prazno | `http://localhost:4200` |
+**Backend** – `appsettings.json` važi za sva okruženja, a `appsettings.Development.json` / `appsettings.Testing.json` ga dopunjavaju. Connection string za Development je namjerno u `appsettings.json`, da `dotnet ef` i Package Manager Console rade bez podešavanja okruženja.
 
-Van `Development` okruženja aplikacija ne starta bez pravog ključa: postavite ga kroz varijablu okruženja `Jwt__Key` (najmanje 32 znaka, ne smije počinjati sa `DEV_ONLY`), a dozvoljene domene kroz `Cors__AllowedOrigins__0`. Connection string je namjerno u `appsettings.json`, da `dotnet ef` i Package Manager Console rade bez podešavanja okruženja.
+Produkcija se lokalno ne pokreće: bez pravog ključa (varijabla okruženja `Jwt__Key`, najmanje 32 znaka) i dozvoljenih domena (`Cors__AllowedOrigins__0`) API se ne starta. Ključevi `DEV_ONLY_…` i `TESTING_ONLY_…` su javni (u repozitoriju su) i dozvoljeni su samo u svom okruženju. Automatski testovi koriste posebno okruženje `IntegrationTests` (in-memory baza).
 
 **Frontend** – uvijek importujte `environments/environment`:
 
 | Fajl | Kada se koristi |
 |---|---|
 | `src/environments/environment.development.ts` | `npm start` / `ng serve` (API `https://localhost:7100`) |
+| `src/environments/environment.testing.ts` | `npm run start:testing` (optimizovan build kao produkcija, API `https://localhost:7100`) |
 | `src/environments/environment.ts` | `npm run build` (produkcija; `apiUrl` postavite prije objave) |
-| `src/environments/environment.staging.ts` | `ng build --configuration staging` |
 
 Access token se šalje samo na `environment.apiUrl`, nikad na druge domene.
 
 ## Migracije
 
-Iz foldera `starter/Market.Backend`:
+Iz foldera `starter/Market.Backend` (prvi put `dotnet tool restore` instalira odgovarajuću verziju `dotnet-ef` iz `dotnet-tools.json`):
 
 ```bash
+dotnet tool restore
 dotnet ef migrations add NazivMigracije -p Market.Infrastructure -s Market.API -o Migrations
 ```
 
@@ -167,7 +176,8 @@ Uz svaki obrisani entitet uklonite i njegov `DbSet` u `IAppDbContext`/`DatabaseC
 ## Izmjene u odnosu na template 2025/26
 
 - **Sigurnost:** guard sada stvarno štiti `/admin` i `/client`; backend provjerava ulogu (`PolicyNames.Admin`, 403); log više ne sadrži lozinke ni tokene; token se šalje samo na naš API; login ne otkriva postoji li nalog (401); refresh token se rotira, a ponovna upotreba starog gasi sve sesije korisnika.
-- **Okruženja:** razvojni ključ i CORS su u `appsettings.Development.json`; frontend koristi `environment.development.ts`.
+- **.NET 10:** backend je prebačen sa .NET 8 na .NET 10 (EF Core 10, Swashbuckle 10); `dotnet-ef` je lokalni alat (`dotnet tool restore`).
+- **Okruženja:** Development, Testing (lokalno, kao produkcija) i Production; razvojni ključ i CORS su u `appsettings.Development.json`; frontend koristi `environment.development.ts` / `environment.testing.ts`.
 - **Portovi:** API je na `https://localhost:7100` (ranije 7260); baza se zove `Market2026`.
 - **Baza:** jedna nova `Init` migracija; unique indeksi poštuju soft delete; tabela `Orders` (ranije `Oders`).
 - **Greške:** `ErrorDto.errors` vraća greške po polju i forme ih prikazuju; create vraća `201 { id }`, akcije bez rezultata `204`.
