@@ -68,11 +68,6 @@ export class OrderDetailsDialogComponent {
     return `${this.order.user.userFirstname} ${this.order.user.userLastname}`;
   }
 
-  getCustomerAddress(): string {
-    if (!this.order) return '';
-    return `${this.order.user.userAddress}, ${this.order.user.userCity}`;
-  }
-
   // === Actions ===
 
   onClose(): void {

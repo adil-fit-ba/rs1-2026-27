@@ -26,6 +26,70 @@
       "TITLE": "Odjava",
       "MESSAGE": "Odjavljivanje sa sistema...",
       "REDIRECT_IN": "Preusmjeravanje za {{seconds}}s"
+    },
+    "REGISTER": {
+      "TAGLINE": "Napravite nalog za kupovinu",
+      "TITLE": "Registracija",
+      "SUBTITLE": "Unesite podatke za novi nalog",
+      "BUTTON": "Registruj se",
+      "LOADING": "Registracija...",
+      "OR": "ili",
+      "HAVE_ACCOUNT": "Već imate nalog?",
+      "LOGIN": "Prijavite se",
+      "BACK_TO_HOME": "Nazad na početnu"
+    },
+    "FORGOT_PASSWORD": {
+      "TAGLINE": "Vratite pristup svom nalogu",
+      "TITLE": "Zaboravljena lozinka",
+      "SUBTITLE": "Unesite email naloga i poslaćemo vam link za promjenu lozinke.",
+      "BUTTON": "Pošalji link",
+      "LOADING": "Slanje...",
+      "SENT": "Ako nalog s tim emailom postoji, poslali smo link za promjenu lozinke.",
+      "DEV_HINT": "U razvoju se email ispisuje u log backenda.",
+      "BACK_TO_LOGIN": "Nazad na prijavu",
+      "REMEMBERED": "Sjetili ste se lozinke?",
+      "LOGIN": "Prijavite se",
+      "BACK_TO_HOME": "Nazad na početnu"
+    },
+    "RESET_PASSWORD": {
+      "TAGLINE": "Postavite novu lozinku",
+      "TITLE": "Nova lozinka",
+      "SUBTITLE": "Nalog: {{email}}",
+      "BUTTON": "Promijeni lozinku",
+      "LOADING": "Mijenjanje lozinke...",
+      "SUCCESS": "Lozinka je promijenjena. Prijavite se novom lozinkom.",
+      "INVALID_LINK": "Link za promjenu lozinke je nevažeći ili je istekao.",
+      "REQUEST_NEW": "Zatražite novi link",
+      "BACK_TO_LOGIN": "Nazad na prijavu"
+    }
+  },
+  "ACCOUNT": {
+    "FIELDS": {
+      "FIRSTNAME": "Ime",
+      "LASTNAME": "Prezime",
+      "EMAIL": "Email",
+      "ADDRESS": "Adresa",
+      "CITY": "Grad",
+      "PASSWORD": "Lozinka",
+      "CONFIRM_PASSWORD": "Ponovite lozinku",
+      "CURRENT_PASSWORD": "Trenutna lozinka",
+      "NEW_PASSWORD": "Nova lozinka",
+      "PASSWORD_HINT": "Najmanje {{min}} znakova, bar jedno slovo i jedna cifra"
+    },
+    "PROFILE": {
+      "TITLE": "Moj profil",
+      "LOADING": "Učitavanje profila...",
+      "DATA_TITLE": "Lični podaci",
+      "DATA_SUBTITLE": "Ime i adresa za dostavu narudžbi",
+      "EMAIL_HINT": "Email se ovdje ne mijenja.",
+      "ADDRESS_HINT": "Ulica i broj, npr. Maršala Tita 1",
+      "SAVED": "Profil je sačuvan."
+    },
+    "CHANGE_PASSWORD": {
+      "TITLE": "Promjena lozinke",
+      "SUBTITLE": "Nakon promjene bićete odjavljeni na ostalim uređajima.",
+      "BUTTON": "Promijeni lozinku",
+      "SUCCESS": "Lozinka je promijenjena. Ostali uređaji su odjavljeni."
     }
   },
   "PUBLIC": {
@@ -36,6 +100,7 @@
       "CONVERTER": "Konvertor valuta",
       "CART": "Korpa",
       "MY_ORDERS": "Moje narudžbe",
+      "MY_PROFILE": "Moj profil",
       "ADMIN_PANEL": "Admin panel",
       "LOGOUT": "Odjava"
     }
@@ -106,7 +171,11 @@
     "CONFIRM_REQUIRED": "Potvrdite narudžbu da biste nastavili.",
     "SUBMIT": "Naruči",
     "SUBMITTING": "Slanje narudžbe...",
-    "SUCCESS": "Narudžba je uspješno kreirana."
+    "SUCCESS": "Narudžba je uspješno kreirana.",
+    "DELIVERY_ADDRESS": "Adresa za dostavu",
+    "ADDRESS_MISSING": "Adresa ili grad nisu uneseni.",
+    "ADD_ADDRESS": "Unesite ih u profilu",
+    "ADDRESS_NOTE": "Narudžba se dostavlja na adresu iz vašeg profila (Moj profil)."
   },
   "CURRENCY": {
     "SELECT": "Valuta za prikaz cijena",
@@ -160,7 +229,7 @@
       "ORDERS_SECTION": "NARUDŽBE",
       "ORDERS": "Pregled Narudžbi",
       "SYSTEM": "SISTEM",
-      "SETTINGS": "Postavke",
+      "MY_PROFILE": "Moj profil",
       "LOGOUT": "Odjava",
       "PROMOTIONS": "Promocije",
       "EXCHANGE_RATES": "Kursna lista"
@@ -373,6 +442,7 @@
       "CUSTOMER_INFO": "Informacije o Kupcu",
       "CUSTOMER_NAME": "Ime",
       "ADDRESS": "Adresa",
+      "CITY": "Grad",
       "ORDER_ITEMS": "Stavke Narudžbe",
       "PRODUCT": "Proizvod",
       "QUANTITY": "Količina",
@@ -580,6 +650,7 @@
     "DATE": "Unesite validan datum",
     "TIME": "Unesite validno vrijeme",
     "PHONE": "Unesite validan broj telefona",
+    "PASSWORD": "Lozinka mora imati najmanje {{min}} znakova, bar jedno slovo i jednu cifru",
     "PASSWORD_MATCH": "Lozinke se ne podudaraju",
     "UNIQUE": "Ova vrijednost već postoji",
     "CUSTOM": "Greška pri validaciji",

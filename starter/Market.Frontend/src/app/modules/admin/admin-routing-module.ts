@@ -7,7 +7,7 @@ import { ProductsAddComponent } from './catalogs/products/products-add/products-
 import { ProductsEditComponent } from './catalogs/products/products-edit/products-edit.component';
 import { ProductCategoriesComponent } from './catalogs/product-categories/product-categories.component';
 import {AdminOrdersComponent} from './orders/admin-orders.component';
-import {AdminSettingsComponent} from './admin-settings/admin-settings.component';
+import {MyProfileComponent} from '../account/my-profile/my-profile.component';
 import {PromotionsComponent} from './catalogs/promotions/promotions.component';
 import {PromotionUpsertComponent} from './catalogs/promotions/promotion-upsert/promotion-upsert.component';
 import {OrderEditComponent} from './orders/order-edit/order-edit.component';
@@ -71,11 +71,11 @@ const routes: Routes = [
         component: ExchangeRatesComponent,
       },
 
+      // MOJ PROFIL (ista stranica kao /client/profile, deklarisana u AccountModule)
       {
         path: 'settings',
-        component: AdminSettingsComponent,
+        component: MyProfileComponent,
       },
-
 
       // default admin route → /admin/products
       {

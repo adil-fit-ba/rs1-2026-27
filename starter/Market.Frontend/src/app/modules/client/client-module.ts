@@ -6,6 +6,7 @@ import {ClientLayoutComponent} from './client-layout/client-layout.component';
 import {ClientHomeComponent} from './client-home/client-home.component';
 import {ClientOrdersComponent} from './client-orders/client-orders.component';
 import {ClientOrderDetailsComponent} from './client-order-details/client-order-details.component';
+import {AccountModule} from '../account/account-module';
 
 
 @NgModule({
@@ -17,7 +18,9 @@ import {ClientOrderDetailsComponent} from './client-order-details/client-order-d
   ],
   imports: [
     SharedModule,
-    ClientRoutingModule
+    ClientRoutingModule,
+    // "Moj profil" (/client/profile) – ista stranica kao /admin/settings
+    AccountModule
   ]
 })
 export class ClientModule { }

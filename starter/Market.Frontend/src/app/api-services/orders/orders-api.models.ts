@@ -53,7 +53,9 @@ export class ListOrdersWithItemsRequest extends BasePagedQuery {
 export interface ListOrdersQueryDtoUser {
   userFirstname: string | null;
   userLastname: string | null;
+  /** adresa iz profila kupca (registracija / "Moj profil"); null = kupac je nije unio */
   userAddress: string | null;
+  /** grad iz profila kupca; null = kupac ga nije unio */
   userCity: string | null;
 }
 
@@ -101,7 +103,9 @@ export interface ListOrdersWithItemsQueryDtoItem {
 export interface ListOrdersWithItemsQueryDtoUser {
   userFirstname: string | null;
   userLastname: string | null;
+  /** adresa iz profila kupca (registracija / "Moj profil"); null = kupac je nije unio */
   userAddress: string | null;
+  /** grad iz profila kupca; null = kupac ga nije unio */
   userCity: string | null;
 }
 
@@ -127,7 +131,9 @@ export interface ListOrdersWithItemsQueryDto {
 export interface GetByIdOrderQueryDtoUser {
   userFirstname: string | null;
   userLastname: string | null;
+  /** adresa iz profila kupca (registracija / "Moj profil"); null = kupac je nije unio */
   userAddress: string | null;
+  /** grad iz profila kupca; null = kupac ga nije unio */
   userCity: string | null;
 }
 

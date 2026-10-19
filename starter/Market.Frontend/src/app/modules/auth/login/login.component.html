@@ -69,7 +69,7 @@
 
           <!-- Forgot Password -->
           <div class="form-row">
-            <a routerLink="/auth/forgot-password" class="forgot-link">{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a>
+            <a routerLink="/auth/forgot-password">{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a>
           </div>
 
           <!-- Submit Button -->
@@ -101,10 +101,10 @@
             <span>{{ 'AUTH.LOGIN.OR' | translate }}</span>
           </div>
 
-          <!-- Register Link -->
-          <div class="register-prompt">
+          <!-- Register Link (preserve: ?returnUrl ide i na registraciju) -->
+          <div class="auth-prompt">
             <span>{{ 'AUTH.LOGIN.NO_ACCOUNT' | translate }}</span>
-            <a routerLink="/auth/register" class="register-link">{{ 'AUTH.LOGIN.REGISTER' | translate }}</a>
+            <a routerLink="/auth/register" queryParamsHandling="preserve">{{ 'AUTH.LOGIN.REGISTER' | translate }}</a>
           </div>
         </form>
       </mat-card-content>

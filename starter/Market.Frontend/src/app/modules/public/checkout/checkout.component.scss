@@ -64,8 +64,14 @@
   }
 }
 
-.km-note {
+.km-note,
+.address-note {
   @include shop-page.km-note;
+}
+
+.address-missing {
+  margin-right: 8px;
+  color: #c62828;
 }
 
 .price-note {

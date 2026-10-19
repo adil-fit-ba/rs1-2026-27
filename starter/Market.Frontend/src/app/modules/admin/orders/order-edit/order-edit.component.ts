@@ -62,7 +62,8 @@ function uniqueProductsValidator(control: AbstractControl): ValidationErrors | n
  *
  * PRIMJERI na ovoj stranici:
  * - tipizirani FormArray stavki (dodavanje/uklanjanje redova, validator na nizu)
- * - autocomplete sa pretragom na serveru (ProductAutocompleteComponent)
+ * - autocomplete sa pretragom na serveru (ProductAutocompleteComponent) – i u postojećim stavkama:
+ *   stavci se može promijeniti proizvod (backend joj tada daje trenutnu cijenu novog proizvoda)
  * - zaštita nesačuvanih izmjena: CanDeactivate guard (unsavedChangesGuard u admin-routing-module.ts)
  *   + 'beforeunload' za refresh/zatvaranje taba
  *
@@ -162,10 +163,17 @@ export class OrderEditComponent extends BaseComponent implements OnInit, HasUnsa
     return this.items.controls.reduce((sum, item) => sum + (this.lineTotal(item) ?? 0), 0);
   }
 
-  /** Iznos stavke sa servera (zadnje snimanje) – postoji samo za već snimljene stavke. */
+  /**
+   * Iznos stavke sa servera (zadnje snimanje) – samo za snimljenu stavku kojoj proizvod nije
+   * promijenjen. Ako je izabran drugi proizvod, snimljeni iznos se odnosi na stari proizvod.
+   */
   serverItem(item: FormGroup<OrderItemForm>): GetByIdOrderQueryDtoItem | undefined {
     const id = item.controls.id.value;
-    return id > 0 ? this.order?.items.find((i) => i.id === id) : undefined;
+    const saved = id > 0 ? this.order?.items.find((i) => i.id === id) : undefined;
+    const product = item.controls.product.value;
+    return saved && isProductOption(product) && product.id === saved.product.productId
+      ? saved
+      : undefined;
   }
 
   save(): void {
@@ -242,6 +250,9 @@ export class OrderEditComponent extends BaseComponent implements OnInit, HasUnsa
   }
 
   private createItem(item?: GetByIdOrderQueryDtoItem): FormGroup<OrderItemForm> {
+    // postojeća stavka: proizvod sa cijenom iz narudžbe. Kad korisnik izabere drugi proizvod,
+    // vrijednost kontrole postaje taj ProductOption, pa i procjena (unitPrice, lineTotal) prati
+    // njegovu trenutnu cijenu – istu koju će backend upisati u stavku.
     const product: ProductOption | null = item
       ? {
           id: item.product.productId,

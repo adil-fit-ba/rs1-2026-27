@@ -26,6 +26,70 @@
       "TITLE": "Logout",
       "MESSAGE": "Logging you out of the system...",
       "REDIRECT_IN": "Redirecting in {{seconds}}s"
+    },
+    "REGISTER": {
+      "TAGLINE": "Create an account to start shopping",
+      "TITLE": "Create an account",
+      "SUBTITLE": "Enter your details to create a new account",
+      "BUTTON": "Register",
+      "LOADING": "Registering...",
+      "OR": "or",
+      "HAVE_ACCOUNT": "Already have an account?",
+      "LOGIN": "Log in",
+      "BACK_TO_HOME": "Back to home"
+    },
+    "FORGOT_PASSWORD": {
+      "TAGLINE": "Get back into your account",
+      "TITLE": "Forgot password",
+      "SUBTITLE": "Enter your account email and we will send you a link to reset your password.",
+      "BUTTON": "Send link",
+      "LOADING": "Sending...",
+      "SENT": "If an account with that email exists, we have sent a password reset link.",
+      "DEV_HINT": "In development the email is written to the backend log.",
+      "BACK_TO_LOGIN": "Back to login",
+      "REMEMBERED": "Remembered your password?",
+      "LOGIN": "Log in",
+      "BACK_TO_HOME": "Back to home"
+    },
+    "RESET_PASSWORD": {
+      "TAGLINE": "Set a new password",
+      "TITLE": "New password",
+      "SUBTITLE": "Account: {{email}}",
+      "BUTTON": "Change password",
+      "LOADING": "Changing password...",
+      "SUCCESS": "Your password has been changed. Log in with your new password.",
+      "INVALID_LINK": "The password reset link is invalid or has expired.",
+      "REQUEST_NEW": "Request a new link",
+      "BACK_TO_LOGIN": "Back to login"
+    }
+  },
+  "ACCOUNT": {
+    "FIELDS": {
+      "FIRSTNAME": "First name",
+      "LASTNAME": "Last name",
+      "EMAIL": "Email",
+      "ADDRESS": "Address",
+      "CITY": "City",
+      "PASSWORD": "Password",
+      "CONFIRM_PASSWORD": "Confirm password",
+      "CURRENT_PASSWORD": "Current password",
+      "NEW_PASSWORD": "New password",
+      "PASSWORD_HINT": "At least {{min}} characters, including a letter and a digit"
+    },
+    "PROFILE": {
+      "TITLE": "My profile",
+      "LOADING": "Loading profile...",
+      "DATA_TITLE": "Personal details",
+      "DATA_SUBTITLE": "Name and delivery address for your orders",
+      "EMAIL_HINT": "The email cannot be changed here.",
+      "ADDRESS_HINT": "Street and number, e.g. Maršala Tita 1",
+      "SAVED": "Your profile has been saved."
+    },
+    "CHANGE_PASSWORD": {
+      "TITLE": "Change password",
+      "SUBTITLE": "After the change you will be signed out on your other devices.",
+      "BUTTON": "Change password",
+      "SUCCESS": "Your password has been changed. Your other devices have been signed out."
     }
   },
   "PUBLIC": {
@@ -36,6 +100,7 @@
       "CONVERTER": "Currency converter",
       "CART": "Cart",
       "MY_ORDERS": "My orders",
+      "MY_PROFILE": "My profile",
       "ADMIN_PANEL": "Admin panel",
       "LOGOUT": "Log out"
     }
@@ -106,7 +171,11 @@
     "CONFIRM_REQUIRED": "Confirm the order to continue.",
     "SUBMIT": "Place order",
     "SUBMITTING": "Placing order...",
-    "SUCCESS": "Your order was created successfully."
+    "SUCCESS": "Your order was created successfully.",
+    "DELIVERY_ADDRESS": "Delivery address",
+    "ADDRESS_MISSING": "Address or city is missing.",
+    "ADD_ADDRESS": "Add them in your profile",
+    "ADDRESS_NOTE": "The order is delivered to the address in your profile (My profile)."
   },
   "CURRENCY": {
     "SELECT": "Currency for prices",
@@ -160,7 +229,7 @@
       "ORDERS_SECTION": "ORDERS",
       "ORDERS": "Orders Overview",
       "SYSTEM": "SYSTEM",
-      "SETTINGS": "Settings",
+      "MY_PROFILE": "My profile",
       "LOGOUT": "Logout",
       "PROMOTIONS": "Promotions",
       "EXCHANGE_RATES": "Exchange rates"
@@ -373,6 +442,7 @@
       "CUSTOMER_INFO": "Customer Information",
       "CUSTOMER_NAME": "Name",
       "ADDRESS": "Address",
+      "CITY": "City",
       "ORDER_ITEMS": "Order Items",
       "PRODUCT": "Product",
       "QUANTITY": "Quantity",
@@ -580,6 +650,7 @@
     "DATE": "Please enter a valid date",
     "TIME": "Please enter a valid time",
     "PHONE": "Please enter a valid phone number",
+    "PASSWORD": "Password must be at least {{min}} characters long and contain a letter and a digit",
     "PASSWORD_MATCH": "Passwords do not match",
     "UNIQUE": "This value already exists",
     "CUSTOM": "Validation error",

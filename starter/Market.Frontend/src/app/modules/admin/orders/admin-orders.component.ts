@@ -214,8 +214,9 @@ export class AdminOrdersComponent
     return `${order.user.userFirstname} ${order.user.userLastname}`;
   }
 
+  /** "Adresa, Grad"; dio koji kupac nije unio (null) se izostavlja, a bez oba → "–". */
   getCustomerAddress(order: ListOrdersQueryDto): string {
-    return `${order.user.userAddress}, ${order.user.userCity}`;
+    return [order.user.userAddress, order.user.userCity].filter((part) => !!part).join(', ') || '–';
   }
 
   /**

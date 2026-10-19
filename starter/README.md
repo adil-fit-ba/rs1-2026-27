@@ -62,7 +62,7 @@ Ako HTTPS certifikat ne radi, pokrenite backend s profilom `http` i u `src/envir
 | `string` | `string` | za Swagger |
 | `test` | `test123` | za testove |
 
-Administrator nakon prijave ide na `/admin`, svi ostali na `/client`.
+Administrator nakon prijave ide na `/admin`, svi ostali na `/client`. Novi kupac se može registrovati na `/auth/register` (odmah je prijavljen). Lozinka mora imati najmanje 8 znakova, bar jedno slovo i jednu cifru.
 
 ## Okruženja (environments)
 
@@ -77,10 +77,12 @@ Administrator nakon prijave ide na `/admin`, svi ostali na `/client`.
 | Detalji greške (stack trace) u odgovoru | da | ne | ne |
 | JWT ključ | `DEV_ONLY_…` | `TESTING_ONLY_…` | tajni ključ u `Jwt__Key` |
 | CORS | `http://localhost:4200` | `http://localhost:4200` | iz konfiguracije servera |
+| Email | ispis u log (`[DEV EMAIL]`) | ispis u log | SMTP (`Email__Smtp__Host`…) |
+| `Frontend:BaseUrl` (link u emailu) | `http://localhost:4200` | `http://localhost:4200` | `Frontend__BaseUrl` |
 
 **Backend** – `appsettings.json` važi za sva okruženja, a `appsettings.Development.json` / `appsettings.Testing.json` ga dopunjavaju. Connection string za Development je namjerno u `appsettings.json`, da `dotnet ef` i Package Manager Console rade bez podešavanja okruženja.
 
-Produkcija se lokalno ne pokreće: bez pravog ključa (varijabla okruženja `Jwt__Key`, najmanje 32 znaka) i dozvoljenih domena (`Cors__AllowedOrigins__0`) API se ne starta. Ključevi `DEV_ONLY_…` i `TESTING_ONLY_…` su javni (u repozitoriju su) i dozvoljeni su samo u svom okruženju. Automatski testovi koriste posebno okruženje `IntegrationTests` (in-memory baza).
+Produkcija se lokalno ne pokreće: bez pravog ključa (varijabla okruženja `Jwt__Key`, najmanje 32 znaka), dozvoljenih domena (`Cors__AllowedOrigins__0`), SMTP servera (`Email__Smtp__Host`) i adrese frontenda (`Frontend__BaseUrl`) API se ne starta. Ključevi `DEV_ONLY_…` i `TESTING_ONLY_…` su javni (u repozitoriju su) i dozvoljeni su samo u svom okruženju. Automatski testovi koriste posebno okruženje `IntegrationTests` (in-memory baza).
 
 **Frontend** – uvijek importujte `environments/environment`:
 
@@ -122,8 +124,9 @@ Integracijski testovi koriste in-memory bazu (okruženje `IntegrationTests`).
 | Dio | Rute | Ko |
 |---|---|---|
 | Landing (promocije, kategorije, najnoviji proizvodi), pretraga, korpa, checkout, konvertor valuta | `/`, `/search`, `/cart`, `/checkout`, `/converter` | svi (checkout traži prijavu) |
-| Moje narudžbe | `/client`, `/client/orders`, `/client/orders/:id` | prijavljeni kupac |
-| Kategorije, proizvodi (slika, zalihe), promocije, narudžbe (pregled, promjena statusa, uređivanje stavki), kursna lista | `/admin/...` | administrator |
+| Registracija, zaboravljena lozinka, nova lozinka | `/auth/register`, `/auth/forgot-password`, `/auth/reset-password` | svi |
+| Moje narudžbe, moj profil | `/client`, `/client/orders`, `/client/orders/:id`, `/client/profile` | prijavljeni kupac |
+| Kategorije, proizvodi (slika, zalihe), promocije, narudžbe (pregled, promjena statusa, uređivanje stavki), kursna lista, moj profil (`/admin/settings`) | `/admin/...` | administrator |
 
 ### Primjeri formi
 
@@ -139,6 +142,8 @@ Svaki obrazac je urađen jednom, na mjestu gdje mu je prirodno (putanje su u `Ma
 | Typed FormArray (master-detail) + upozorenje pri napuštanju nesnimljene forme | `admin/orders/order-edit` |
 | Autocomplete sa serverskom pretragom | `admin/orders/order-edit/product-autocomplete` |
 | Stepper (wizard) | `public/checkout` |
+| Cross-field validator za potvrdu lozinke | `auth/register`, `auth/reset-password`, `account/my-profile` |
+| Dvije nezavisne forme na jednoj stranici | `account/my-profile` |
 | Filteri sačuvani u URL-u + straničenje | `public/search-products` |
 | Greške s backenda po polju | `core/forms/server-errors.ts`, korišteno u svim formama |
 | Prevedene poruke validacije | `shared` komponenta `fit-field-error`, `core/forms/validation-messages.ts` |
@@ -150,6 +155,14 @@ Svaki obrazac je urađen jednom, na mjestu gdje mu je prirodno (putanje su u `Ma
 - Frontend: izbor valute u headeru, `money` pipe za prikaz cijena, stranica `/converter`, admin stranica „Kursna lista”.
 - Cijene u drugoj valuti su informativne: narudžbe u starteru se obračunavaju u KM. Plaćanje u drugoj valuti, kurs koji se pamti uz transakciju, povrat novca i promjena valute su dio vašeg rješenja.
 - Automatsko preuzimanje kurseva ECB-a (Frankfurter) je isključeno. Uključuje se sa `"ExchangeRates": { "Provider": "Frankfurter" }` u `appsettings.json` ili varijablom okruženja `ExchangeRates__Provider=Frankfurter`; ECB ne objavljuje RSD, pa se taj kurs unosi ručno.
+
+### Nalog: registracija, zaboravljena lozinka, profil
+
+- Registracija: `/auth/register` → `POST /api/auth/register`.
+- Zaboravljena lozinka: `/auth/forgot-password` šalje jednokratni link koji važi 30 minuta (`/auth/reset-password?email=…&token=…`). Odgovor je uvijek isti, da se ne otkrije postoji li nalog. U bazi se čuva samo hash tokena.
+- U Development i Testing okruženju email se ne šalje nego ispisuje u konzolu backenda i u `Logs/app-*.log` (red počinje sa `[DEV EMAIL]`), pa link kopirate odatle. Za pravi pregled emailova pokrenite Mailpit ili Papercut i postavite `Email:Smtp:Host=localhost`, `Port=1025`, `EnableSsl=false`.
+- Moj profil (`/client/profile`, za admina `/admin/settings`): ime, prezime, adresa i grad (`GET/PUT /api/auth/me`) i promjena lozinke (`POST /api/auth/change-password`). Promjena ili reset lozinke odjavljuje sve ostale uređaje.
+- Adresa i grad iz profila se prikazuju uz narudžbu.
 
 ### Upload slika
 
@@ -181,4 +194,4 @@ Uz svaki obrisani entitet uklonite i njegov `DbSet` u `IAppDbContext`/`DatabaseC
 - **Baza:** jedna nova `Init` migracija; unique indeksi poštuju soft delete; tabela `Orders` (ranije `Oders`).
 - **Greške:** `ErrorDto.errors` vraća greške po polju i forme ih prikazuju; create vraća `201 { id }`, akcije bez rezultata `204`.
 - **Frontend:** Angular 21.2 (bez poznatih ranjivosti), produkcijski build prolazi, folder je `Market.Frontend` (ranije `rs1-frontend-2025-26`).
-- **Novo:** sve iz poglavlja „Šta starter sadrži” osim osnovnih kategorija, proizvoda i narudžbi.
+- **Novo:** sve iz poglavlja „Šta starter sadrži” osim osnovnih kategorija, proizvoda i narudžbi, uključujući registraciju, zaboravljenu lozinku i profil (ranije prazne stranice).

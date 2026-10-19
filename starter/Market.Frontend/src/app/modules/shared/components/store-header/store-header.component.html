@@ -45,6 +45,10 @@
           <mat-icon>receipt_long</mat-icon>
           <span>{{ 'PUBLIC.NAV.MY_ORDERS' | translate }}</span>
         </a>
+        <a mat-menu-item routerLink="/client/profile">
+          <mat-icon>manage_accounts</mat-icon>
+          <span>{{ 'PUBLIC.NAV.MY_PROFILE' | translate }}</span>
+        </a>
         @if (currentUser.isAdmin()) {
           <a mat-menu-item routerLink="/admin">
             <mat-icon>admin_panel_settings</mat-icon>

@@ -57,6 +57,8 @@ const SUGGESTIONS = 10;
  * - displayWith: u polju se vidi naziv proizvoda, a vrijednost kontrole je cijeli ProductOption
  * - dok korisnik kuca, vrijednost je tekst → productSelectedValidator javlja grešku dok se
  *   proizvod ne izabere iz liste
+ * - postojeća stavka (već izabran proizvod) nema prijedloga dok korisnik ne počne kucati;
+ *   upisom drugog naziva i izborom iz liste stavci se mijenja proizvod
  */
 @Component({
   selector: 'app-product-autocomplete',

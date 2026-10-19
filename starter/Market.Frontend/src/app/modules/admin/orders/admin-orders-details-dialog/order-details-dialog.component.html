@@ -71,9 +71,14 @@
             <span class="info-label">{{ 'ORDERS.DETAILS.CUSTOMER_NAME' | translate }}</span>
             <span class="info-value">{{ getCustomerName() }}</span>
           </div>
+          <!-- adresa i grad iz profila kupca; null = kupac ih nije unio -->
           <div class="info-item">
             <span class="info-label">{{ 'ORDERS.DETAILS.ADDRESS' | translate }}</span>
-            <span class="info-value">{{ getCustomerAddress() }}</span>
+            <span class="info-value">{{ order.user.userAddress || '–' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">{{ 'ORDERS.DETAILS.CITY' | translate }}</span>
+            <span class="info-value">{{ order.user.userCity || '–' }}</span>
           </div>
         </div>
       </mat-card-content>

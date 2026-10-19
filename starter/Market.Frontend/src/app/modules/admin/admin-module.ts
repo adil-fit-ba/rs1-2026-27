@@ -10,8 +10,8 @@ import {
   ProductCategoryUpsertComponent
 } from './catalogs/product-categories/product-category-upsert/product-category-upsert.component';
 import {AdminOrdersComponent} from './orders/admin-orders.component';
-import {AdminSettingsComponent} from './admin-settings/admin-settings.component';
 import {SharedModule} from '../shared/shared-module';
+import {AccountModule} from '../account/account-module';
 import { OrderDetailsDialogComponent } from './orders/admin-orders-details-dialog/order-details-dialog.component';
 import { ChangeStatusDialogComponent } from './orders/change-status-dialog/change-status-dialog.component';
 import { ProductImageComponent } from './catalogs/products/product-image/product-image.component';
@@ -31,7 +31,6 @@ import { ExchangeRatesComponent } from './finance/exchange-rates/exchange-rates.
     ProductCategoriesComponent,
     ProductCategoryUpsertComponent,
     AdminOrdersComponent,
-    AdminSettingsComponent,
     OrderDetailsDialogComponent,
     ChangeStatusDialogComponent,
     ProductImageComponent,
@@ -44,6 +43,8 @@ import { ExchangeRatesComponent } from './finance/exchange-rates/exchange-rates.
   imports: [
     AdminRoutingModule,
     SharedModule,
+    // "Moj profil" (/admin/settings) – ista stranica kao /client/profile
+    AccountModule,
   ]
 })
 export class AdminModule { }

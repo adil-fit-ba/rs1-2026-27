@@ -38,6 +38,11 @@
           <dt>{{ 'ORDERS.DETAILS.PAID_AT' | translate }}</dt>
           <dd>{{ order.paidAtUtc | date: 'dd.MM.yyyy HH:mm' }}</dd>
         }
+        <!-- adresa i grad iz profila kupca; null = nisu uneseni -->
+        <dt>{{ 'ORDERS.DETAILS.ADDRESS' | translate }}</dt>
+        <dd>{{ order.user.userAddress || '–' }}</dd>
+        <dt>{{ 'ORDERS.DETAILS.CITY' | translate }}</dt>
+        <dd>{{ order.user.userCity || '–' }}</dd>
         @if (order.note) {
           <dt>{{ 'ORDERS.DETAILS.NOTE' | translate }}</dt>
           <dd class="note">{{ order.note }}</dd>

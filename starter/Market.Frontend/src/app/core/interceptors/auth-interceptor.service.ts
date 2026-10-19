@@ -19,8 +19,17 @@ import { ToasterService } from '../services/toaster.service';
  *   a ne "istekao access token" – ne smije pokrenuti refresh.
  * - logout: backend ga dozvoljava anonimno (sesiju prepoznaje po refresh tokenu
  *   u tijelu zahtjeva), a AuthFacadeService.logout() ionako prvo obriše tokene.
+ * - register, forgot-password, reset-password: anonimni, kao login (token im ne treba).
+ * /api/auth/me i /api/auth/change-password NISU ovdje – traže prijavu, pa idu sa tokenom.
  */
-const SKIPPED_AUTH_PATHS = ['/api/auth/login', '/api/auth/refresh', '/api/auth/logout'];
+const SKIPPED_AUTH_PATHS = [
+  '/api/auth/login',
+  '/api/auth/refresh',
+  '/api/auth/logout',
+  '/api/auth/register',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password'
+];
 
 /**
  * Refresh koji je trenutno u toku – dijele ga svi zahtjevi koji dobiju 401 u isto vrijeme

@@ -6,11 +6,15 @@ import { jwtDecode } from 'jwt-decode';
 
 import { AuthApiService } from '../../../api-services/auth/auth-api.service';
 import {
+  ChangePasswordCommand,
+  ChangePasswordCommandDto,
   LoginCommand,
   LoginCommandDto,
   LogoutCommand,
   RefreshTokenCommand,
   RefreshTokenCommandDto,
+  RegisterCommand,
+  RegisterCommandDto,
 } from '../../../api-services/auth/auth-api.model';
 
 import { AuthStorageService } from './auth-storage.service';
@@ -27,7 +31,10 @@ import { JwtPayloadDto } from './jwt-payload.dto';
  * Koristi se u:
  * - interceptoru (getAccessToken, refresh)
  * - guardovima (isAuthenticated, isAdmin)
- * - komponentama (login, logout, navbar)
+ * - komponentama (login, registracija, promjena lozinke, logout, navbar)
+ *
+ * Ovdje su samo pozivi koji mijenjaju tokene. Ostali auth pozivi (zaboravljena lozinka,
+ * profil /api/auth/me) idu iz komponente direktno preko AuthApiService.
  */
 @Injectable({ providedIn: 'root' })
 export class AuthFacadeService {
@@ -69,6 +76,34 @@ export class AuthFacadeService {
       tap((response: LoginCommandDto) => {
         this.storage.saveLogin(response);           // access + refresh + expiries
         this.decodeAndSetUser(response.accessToken); // popuni _currentUser
+      }),
+      map(() => void 0)
+    );
+  }
+
+  /**
+   * Registracija novog kupca. Backend vraća tokene (kao login), pa je korisnik odmah prijavljen.
+   */
+  register(payload: RegisterCommand): Observable<void> {
+    return this.api.register(payload).pipe(
+      tap((response: RegisterCommandDto) => {
+        this.storage.saveLogin(response);
+        this.decodeAndSetUser(response.accessToken);
+      }),
+      map(() => void 0)
+    );
+  }
+
+  /**
+   * Promjena lozinke prijavljenog korisnika.
+   * Server opoziva SVE sesije (ostali uređaji su odjavljeni) i vraća nove tokene za ovu –
+   * snimamo ih isto kao kod refresh-a, pa korisnik ovdje ostaje prijavljen.
+   */
+  changePassword(payload: ChangePasswordCommand): Observable<void> {
+    return this.api.changePassword(payload).pipe(
+      tap((response: ChangePasswordCommandDto) => {
+        this.storage.saveRefresh(response);
+        this.decodeAndSetUser(response.accessToken);
       }),
       map(() => void 0)
     );

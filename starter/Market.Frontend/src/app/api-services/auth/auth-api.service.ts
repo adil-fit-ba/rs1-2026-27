@@ -7,9 +7,21 @@ import {
   LoginCommandDto,
   RefreshTokenCommand,
   RefreshTokenCommandDto,
-  LogoutCommand
+  LogoutCommand,
+  RegisterCommand,
+  RegisterCommandDto,
+  ForgotPasswordCommand,
+  ResetPasswordCommand,
+  GetMeQueryDto,
+  UpdateMeCommand,
+  ChangePasswordCommand,
+  ChangePasswordCommandDto
 } from './auth-api.model';
 
+/**
+ * Pozivi koji vraćaju tokene (login, refresh, register, change-password) iz komponenti idu
+ * preko AuthFacadeService – on tokene snimi i osvježi prijavljenog korisnika.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -39,5 +51,47 @@ export class AuthApiService {
    */
   logout(payload: LogoutCommand): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/logout`, payload);
+  }
+
+  /**
+   * POST /api/auth/register → 201 + tokeni (novi kupac je odmah prijavljen).
+   */
+  register(payload: RegisterCommand): Observable<RegisterCommandDto> {
+    return this.http.post<RegisterCommandDto>(`${this.baseUrl}/register`, payload);
+  }
+
+  /**
+   * POST /api/auth/forgot-password → uvijek 204 (šalje link za promjenu lozinke ako nalog postoji).
+   */
+  forgotPassword(payload: ForgotPasswordCommand): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/forgot-password`, payload);
+  }
+
+  /**
+   * POST /api/auth/reset-password → 204 (nova lozinka; sve sesije korisnika se odjavljuju).
+   */
+  resetPassword(payload: ResetPasswordCommand): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/reset-password`, payload);
+  }
+
+  /**
+   * GET /api/auth/me – profil prijavljenog korisnika.
+   */
+  getMe(): Observable<GetMeQueryDto> {
+    return this.http.get<GetMeQueryDto>(`${this.baseUrl}/me`);
+  }
+
+  /**
+   * PUT /api/auth/me → 204 (ime, prezime, adresa, grad).
+   */
+  updateMe(payload: UpdateMeCommand): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/me`, payload);
+  }
+
+  /**
+   * POST /api/auth/change-password → 200 + novi tokeni (ostale sesije su odjavljene).
+   */
+  changePassword(payload: ChangePasswordCommand): Observable<ChangePasswordCommandDto> {
+    return this.http.post<ChangePasswordCommandDto>(`${this.baseUrl}/change-password`, payload);
   }
 }

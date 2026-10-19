@@ -1,6 +1,9 @@
 import { AbstractControl, FormGroupDirective, NgForm, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 
+/** Najmanja dužina lozinke – isto pravilo kao na backendu (registracija, nova lozinka). */
+export const PASSWORD_MIN_LENGTH = 8;
+
 /**
  * Validatori koje Angular nema (dopuna za Validators.required, Validators.min, ...).
  *
@@ -82,12 +85,49 @@ export class AppValidators {
       return end.getTime() > start.getTime() ? null : { dateRange: true };
     };
   }
+
+  /**
+   * Lozinka po pravilu backenda: najmanje PASSWORD_MIN_LENGTH znakova, bar jedno slovo i bar
+   * jedna cifra (\p{L} = bilo koje slovo, i č, ć, š...). Server provjerava isto pravilo –
+   * ovdje je samo da korisnik grešku vidi odmah. Greška: { password: { minLength } }
+   */
+  static password(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    // bez trim-a: razmaci su dio lozinke
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const text = String(value);
+    const valid = text.length >= PASSWORD_MIN_LENGTH && /\p{L}/u.test(text) && /\d/.test(text);
+    return valid ? null : { password: { minLength: PASSWORD_MIN_LENGTH } };
+  }
+
+  /**
+   * CROSS-FIELD validator (na grupi, kao dateRange): polje "ponovite lozinku" (confirmKey) mora
+   * biti isto kao lozinka (passwordKey). Dok potvrda nije upisana → ispravno (to hvata required).
+   * Greška je na grupi: { passwordMismatch: true }; ispod polja potvrde je prikazuje
+   * CrossFieldErrorStateMatcher('passwordMismatch').
+   *
+   * Primjer:
+   *   new FormGroup({ newPassword: ..., confirmPassword: ... },
+   *     { validators: AppValidators.passwordsMatch('newPassword', 'confirmPassword') });
+   */
+  static passwordsMatch(passwordKey: string, confirmKey: string): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const password = group.get(passwordKey)?.value;
+      const confirm = group.get(confirmKey)?.value;
+      if (!confirm) {
+        return null;
+      }
+      return password === confirm ? null : { passwordMismatch: true };
+    };
+  }
 }
 
 /**
  * Material polje (mat-form-field) prikazuje mat-error samo kad je SAMA kontrola neispravna.
  * Greška cross-field validatora je na roditeljskoj grupi, pa ovaj matcher kaže polju da je
- * u grešci i kad grupa ima zadatu grešku (npr. 'dateRange').
+ * u grešci i kad grupa ima zadatu grešku (npr. 'dateRange' ili 'passwordMismatch').
  *
  * Primjer (template):
  *   <input matInput [matDatepicker]="endPicker" formControlName="endsAtUtc"
