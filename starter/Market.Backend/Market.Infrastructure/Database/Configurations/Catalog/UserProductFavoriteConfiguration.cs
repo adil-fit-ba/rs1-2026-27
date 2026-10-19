@@ -7,20 +7,23 @@ public class UserProductFavoriteConfiguration : IEntityTypeConfiguration<UserPro
         builder
             .ToTable("UserProductFavorites");
 
-        // RS1 upute: KOMPOZITNI UNIQUE INDEX - sprečava duplikate (UserId, ProductId)
-        // Ovo je alternativa za kompozitni primarni ključ a koja radi sa BaseEntity koji ima Id kao PK
+        // Kompozitni UNIQUE index - sprečava duplikate (UserId, ProductId).
+        // Ovo je alternativa za kompozitni primarni ključ koja radi sa BaseEntity (Id kao PK).
+        // Filter [IsDeleted] = 0: soft-obrisani favorit ostaje u tabeli, pa bi bez filtera
+        // ponovno dodavanje istog proizvoda u favorite palo na unique indexu.
         builder.HasIndex(x => new { x.UserId, x.ProductId })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         // Relationships
         builder.HasOne(x => x.User)
             .WithMany(x => x.FavoriteProducts)
             .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // RS1 upiute: Ako se user obriše, obrišu se i favoriti
+            .OnDelete(DeleteBehavior.Cascade); // Važi samo za hard delete (DELETE u bazi); soft delete korisnika ne briše favorite
 
         builder.HasOne(x => x.Product)
             .WithMany(x => x.FavoritedByUsers)
             .HasForeignKey(x => x.ProductId)
-            .OnDelete(DeleteBehavior.Cascade); // RS1 upiute: Ako se product obriše, obrišu se i favoriti
+            .OnDelete(DeleteBehavior.Cascade); // Važi samo za hard delete (DELETE u bazi); soft delete proizvoda ne briše favorite
     }
 }

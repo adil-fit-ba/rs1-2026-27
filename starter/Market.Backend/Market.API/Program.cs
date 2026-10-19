@@ -6,6 +6,8 @@ using Serilog;
 
 public partial class Program
 {
+    private const string CorsPolicyName = "Frontend";
+
     private static async Task Main(string[] args)
     {
         //
@@ -49,14 +51,20 @@ public partial class Program
                 .AddInfrastructure(builder.Configuration, builder.Environment)
                 .AddApplication();
 
-            // CORS policy to allow Angular dev server access
+            // CORS: allowed frontend origins come from configuration ("Cors:AllowedOrigins"),
+            // e.g. http://localhost:4200 in appsettings.Development.json; empty in appsettings.json
+            // (production adds its own origins via appsettings.Production.json or environment variables).
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>() ?? [];
+
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAngularDev",
+                options.AddPolicy(CorsPolicyName,
                     policy =>
                     {
                         policy
-                            .WithOrigins("http://localhost:4200") // kao string array može i više URL-ova
+                            .WithOrigins(allowedOrigins)
                             .AllowAnyHeader()
                             .AllowAnyMethod()
                             .AllowCredentials();
@@ -74,13 +82,16 @@ public partial class Program
                 app.UseSwaggerUI();
             }
 
-            // Global exception handler (IExceptionHandler)
-            app.UseExceptionHandler();
+            // Request logging is the outermost middleware, so it also measures the exception handler
+            // and logs the final status code (e.g. 404/409/500 set by MarketExceptionHandler).
             app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
+            // Global exception handler (IExceptionHandler)
+            app.UseExceptionHandler();
+
             app.UseHttpsRedirection();
-            // UseCors ide prije UseAuthorization i UseAuthentification
-            app.UseCors("AllowAngularDev");
+            // UseCors ide prije UseAuthentication i UseAuthorization
+            app.UseCors(CorsPolicyName);
 
             app.UseAuthentication();
             app.UseAuthorization();

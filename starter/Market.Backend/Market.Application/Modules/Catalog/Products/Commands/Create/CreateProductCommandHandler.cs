@@ -5,10 +5,8 @@ public class CreateProductCommandHandler(IAppDbContext ctx)
 {
     public async Task<int> Handle(CreateProductCommand request, CancellationToken ct)
     {
-        var normalized = request.Name?.Trim();
-
-        if (string.IsNullOrWhiteSpace(normalized))
-            throw new ValidationException("Name is required.");
+        // Input format (required name, lengths, price...) is checked by CreateProductCommandValidator.
+        var normalized = request.Name.Trim();
 
         // Check if a product with the same name already exists.
         bool exists = await ctx.Products
@@ -25,27 +23,28 @@ public class CreateProductCommandHandler(IAppDbContext ctx)
 
         if (productCategory is null)
         {
-            throw new ValidationException("Invalid CategoryId.");
+            throw new MarketNotFoundException($"Kategorija (ID={request.CategoryId}) nije pronađena.");
         }
 
-        if (productCategory.IsEnabled == false)
+        if (!productCategory.IsEnabled)
         {
-            throw new ValidationException($"Category {productCategory.Name} is disabled.");
+            throw new MarketBusinessRuleException("product.category.disabled",
+                $"Kategorija {productCategory.Name} je onemogućena i ne može se dodijeliti proizvodu.");
         }
 
-        var category = new ProductEntity
+        var product = new ProductEntity
         {
-            Name = request.Name!.Trim(),
+            Name = normalized,
             Description = request.Description?.Trim(),
             Price = request.Price,
             StockQuantity = 0, // default StockQuantity
             CategoryId = request.CategoryId,
-            IsEnabled = true // deault IsEnabled
+            IsEnabled = true // default IsEnabled
         };
 
-        ctx.Products.Add(category);
+        ctx.Products.Add(product);
         await ctx.SaveChangesAsync(ct);
 
-        return category.Id;
+        return product.Id;
     }
 }

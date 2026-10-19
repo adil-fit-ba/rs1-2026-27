@@ -16,7 +16,9 @@ public sealed class ListProductCategoriesQueryHandler(IAppDbContext ctx)
         if (request.OnlyEnabled is not null)
             q = q.Where(x => x.IsEnabled == request.OnlyEnabled);
 
+        // ThenBy(Id) makes the order stable (Name is not unique), so paging never skips or repeats rows.
         var projectedQuery = q.OrderBy(x => x.Name)
+            .ThenBy(x => x.Id)
             .Select(x => new ListProductCategoriesQueryDto
             {
                 Id = x.Id,

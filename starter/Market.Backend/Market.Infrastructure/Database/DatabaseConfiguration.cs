@@ -1,5 +1,6 @@
 ﻿using Market.Domain.Common;
 using Market.Infrastructure.Database.Seeders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Linq.Expressions;
 
 namespace Market.Infrastructure.Database;
@@ -38,7 +39,20 @@ public partial class DatabaseContext
     {
         configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
         configurationBuilder.Properties<decimal?>().HavePrecision(18, 2);
+
+        // SQL Server "datetime2" does not store DateTimeKind, so values come back as Unspecified
+        // and are serialized to JSON without "Z". All DateTime values in this app are UTC,
+        // so they are marked as UTC when read (the column type does not change).
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcDateTimeConverter>();
     }
+
+    /// <summary>
+    /// Writes local times as UTC and marks every value read from the database as <see cref="DateTimeKind.Utc"/>.
+    /// </summary>
+    private sealed class UtcDateTimeConverter() : ValueConverter<DateTime, DateTime>(
+        v => v.Kind == DateTimeKind.Local ? v.ToUniversalTime() : v,
+        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

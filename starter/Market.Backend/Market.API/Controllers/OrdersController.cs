@@ -4,6 +4,7 @@ using Market.Application.Modules.Sales.Orders.Commands.Update;
 using Market.Application.Modules.Sales.Orders.Queries.GetById;
 using Market.Application.Modules.Sales.Orders.Queries.List;
 using Market.Application.Modules.Sales.Orders.Queries.ListWithItems;
+using Market.Shared.Constants;
 
 namespace Market.API.Controllers;
 
@@ -49,6 +50,7 @@ public class OrdersController(ISender sender) : ControllerBase
     }
 
     [HttpPut("{id:int}/change-status")]
+    [Authorize(Policy = PolicyNames.Admin)]
     public async Task ChangeStatus(int id, [FromBody] ChangeOrderStatusCommand command, CancellationToken ct)
     {
         command.Id = id;

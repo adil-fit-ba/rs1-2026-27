@@ -8,7 +8,7 @@ public sealed class RefreshTokenCommand : IRequest<RefreshTokenCommandDto>
     /// <summary>
     /// Refresh token that the client sends for rotation.
     /// </summary>
-    public string RefreshToken { get; init; }
+    public string RefreshToken { get; init; } = string.Empty;
 
     /// <summary>
     /// (Optional) Client "fingerprint" / device identifier for device-bound tokens.

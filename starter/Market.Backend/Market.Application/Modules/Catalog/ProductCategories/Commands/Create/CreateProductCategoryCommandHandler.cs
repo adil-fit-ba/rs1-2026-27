@@ -5,10 +5,8 @@ public class CreateProductCategoryCommandHandler(IAppDbContext context)
 {
     public async Task<int> Handle(CreateProductCategoryCommand request, CancellationToken cancellationToken)
     {
-        var normalized = request.Name?.Trim();
-
-        if (string.IsNullOrWhiteSpace(normalized))
-            throw new ValidationException("Name is required.");
+        // Input format (required name, max length) is checked by CreateProductCategoryCommandValidator.
+        var normalized = request.Name.Trim();
 
         // Check if a category with the same name already exists.
         bool exists = await context.ProductCategories
@@ -21,8 +19,8 @@ public class CreateProductCategoryCommandHandler(IAppDbContext context)
 
         var category = new ProductCategoryEntity
         {
-            Name = request.Name!.Trim(),
-            IsEnabled = true // deault IsEnabled
+            Name = normalized,
+            IsEnabled = true // default IsEnabled
         };
 
         context.ProductCategories.Add(category);

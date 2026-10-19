@@ -9,7 +9,7 @@ namespace Market.Domain.Entities.Sales;
 public class OrderEntity : BaseEntity
 {
     /// <summary>
-    /// Reference number (human-readable, e.g., ORD-0001).
+    /// Reference number (human-readable, e.g., ORD-20261019-1A2B3C4D).
     /// </summary>
     public required string ReferenceNumber { get; set; }
 
@@ -62,7 +62,7 @@ public class OrderEntity : BaseEntity
     /// </summary>
     public static class Constraints
     {
-        public const int ReferenceMaxLength = 10;
+        public const int ReferenceMaxLength = 30;
     }
 }
 

@@ -19,7 +19,14 @@ public sealed class ListOrdersQueryHandler(IAppDbContext ctx, IAppCurrentUser cu
             q = q.Where(x => x.ReferenceNumber.ToLower().Contains(searchTerm));
         }
 
+        if (request.Status is not null)
+        {
+            q = q.Where(x => x.Status == request.Status);
+        }
+
+        // ThenBy(Id) makes the order stable (OrderedAtUtc is not unique), so paging never skips or repeats rows.
         var projectedQuery = q.OrderBy(x => x.OrderedAtUtc)
+            .ThenBy(x => x.Id)
             .Select(x => new ListOrdersQueryDto
             {
                 Id = x.Id,

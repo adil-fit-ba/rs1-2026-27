@@ -1,4 +1,4 @@
-﻿using Market.Application.Modules.Catalog.ProductCategories.Queries.GetById;
+﻿namespace Market.Application.Modules.Catalog.ProductCategories.Queries.GetById;
 
 public sealed class GetProductCategoryByIdQueryValidator : AbstractValidator<GetProductCategoryByIdQuery>
 {

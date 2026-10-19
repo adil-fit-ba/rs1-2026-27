@@ -5,6 +5,7 @@ using Market.Application.Modules.Catalog.ProductCategories.Commands.Create;
 using Market.Application.Modules.Catalog.ProductCategories.Commands.Update;
 using Market.Application.Modules.Catalog.ProductCategories.Queries.GetById;
 using Market.Application.Modules.Catalog.ProductCategories.Queries.List;
+using Market.Shared.Constants;
 
 namespace Market.API.Controllers;
 
@@ -13,6 +14,7 @@ namespace Market.API.Controllers;
 public class ProductCategoriesController(ISender sender) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Policy = PolicyNames.Admin)]
     public async Task<ActionResult<int>> CreateProductCategory(CreateProductCategoryCommand command, CancellationToken ct)
     {
         int id = await sender.Send(command, ct);
@@ -21,6 +23,7 @@ public class ProductCategoriesController(ISender sender) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = PolicyNames.Admin)]
     public async Task Update(int id, UpdateProductCategoryCommand command, CancellationToken ct)
     {
         // ID from the route takes precedence
@@ -30,6 +33,7 @@ public class ProductCategoriesController(ISender sender) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = PolicyNames.Admin)]
     public async Task Delete(int id, CancellationToken ct)
     {
         await sender.Send(new DeleteProductCategoryCommand { Id = id }, ct);
@@ -43,6 +47,7 @@ public class ProductCategoriesController(ISender sender) : ControllerBase
         return category; // if NotFoundException -> 404 via middleware
     }
 
+    // Public catalog: anonymous visitors can list categories (e.g. category filter on the public page).
     [HttpGet]
     [AllowAnonymous]
     public async Task<PageResult<ListProductCategoriesQueryDto>> List([FromQuery] ListProductCategoriesQuery query, CancellationToken ct)
@@ -52,6 +57,7 @@ public class ProductCategoriesController(ISender sender) : ControllerBase
     }
 
     [HttpPut("{id:int}/disable")]
+    [Authorize(Policy = PolicyNames.Admin)]
     public async Task Disable(int id, CancellationToken ct)
     {
         await sender.Send(new DisableProductCategoryCommand { Id = id }, ct);
@@ -59,6 +65,7 @@ public class ProductCategoriesController(ISender sender) : ControllerBase
     }
 
     [HttpPut("{id:int}/enable")]
+    [Authorize(Policy = PolicyNames.Admin)]
     public async Task Enable(int id, CancellationToken ct)
     {
         await sender.Send(new EnableProductCategoryCommand { Id = id }, ct);

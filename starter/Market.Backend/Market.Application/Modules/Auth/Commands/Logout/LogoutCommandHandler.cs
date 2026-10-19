@@ -3,7 +3,11 @@
 /// <summary>
 /// Handler that revokes the user's refresh token (idempotently).
 /// </summary>
-public sealed class LogoutCommandHandler(IAppDbContext ctx, IJwtTokenService tokens) : IRequestHandler<LogoutCommand>
+public sealed class LogoutCommandHandler(
+    IAppDbContext ctx,
+    IJwtTokenService tokens,
+    TimeProvider timeProvider)
+    : IRequestHandler<LogoutCommand>
 {
     public async Task Handle(LogoutCommand request, CancellationToken ct)
     {
@@ -20,6 +24,7 @@ public sealed class LogoutCommandHandler(IAppDbContext ctx, IJwtTokenService tok
             return;
 
         rt.IsRevoked = true;
+        rt.RevokedAtUtc = timeProvider.GetUtcNow().UtcDateTime;
         await ctx.SaveChangesAsync(ct);
     }
 }

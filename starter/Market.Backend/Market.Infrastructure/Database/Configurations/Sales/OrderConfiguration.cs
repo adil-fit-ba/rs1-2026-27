@@ -8,7 +8,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<OrderEntity>
     public void Configure(EntityTypeBuilder<OrderEntity> builder)
     {
         builder
-            .ToTable("Oders");
+            .ToTable("Orders");
 
         builder
             .Property(x => x.ReferenceNumber)
@@ -18,7 +18,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<OrderEntity>
           .HasOne(x => x.MarketUser)
           .WithMany() // ako nemamo navigaciju, onda stavimo samo WithMany()
           .HasForeignKey(x => x.MarketUserId)
-          .OnDelete(DeleteBehavior.Restrict);// Restrict — do not allow deleting a MarketUser if it has Order
+          // Restrict — the database rejects a hard DELETE of a user that has orders.
+          // Soft delete (IsDeleted = true) is an UPDATE and never reaches this FK rule.
+          .OnDelete(DeleteBehavior.Restrict);
 
     }
 }

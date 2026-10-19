@@ -28,6 +28,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<ProductEntity>
             .HasOne(x => x.Category)
             .WithMany(x => x.Products)
             .HasForeignKey(x => x.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict);// Restrict — do not allow deleting a category if it has products
+            // Restrict — the database rejects a hard DELETE of a category that still has products.
+            // Soft delete (IsDeleted = true) is an UPDATE and never reaches this FK rule,
+            // so the same rule is also checked in DeleteProductCategoryCommandHandler.
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

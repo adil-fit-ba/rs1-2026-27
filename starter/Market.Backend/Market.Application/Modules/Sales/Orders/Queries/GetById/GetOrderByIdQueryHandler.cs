@@ -14,7 +14,7 @@ public sealed class GetOrderByIdQueryHandler(IAppDbContext ctx, IAppCurrentUser 
             q = q.Where(x => x.MarketUserId == currentUser.UserId);
         }
 
-        var dto = await q.OrderBy(x => x.OrderedAtUtc)
+        var dto = await q
             .Select(x => new GetOrderByIdQueryDto
             {
                 Id = x.Id,

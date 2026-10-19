@@ -7,6 +7,8 @@ public class UpdateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
 {
     public async Task<int> Handle(UpdateOrderCommand request, CancellationToken ct)
     {
+        // Input format (items not empty, quantities, duplicates) is checked by UpdateOrderCommandValidator.
+
         #region Querying existing order and set basic properties
         var q = ctx.Orders
             .Where(x => x.Id == request.Id);
@@ -20,10 +22,11 @@ public class UpdateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
             .FirstOrDefaultAsync(ct);
 
         if (order is null)
-            throw new MarketNotFoundException($"Orders (ID={request.Id}) nije pronađen.");
+            throw new MarketNotFoundException($"Narudžba (ID={request.Id}) nije pronađena.");
 
         if (order.Status != OrderStatusType.Draft)
-            throw new ValidationException("Only draft orders can be updated.");
+            throw new MarketBusinessRuleException("order.update.notDraft",
+                $"Narudžba {order.ReferenceNumber} se ne može mijenjati jer nije u statusu Draft.");
 
         order.Note = request.Note;
         order.TotalAmount = 0m;
@@ -40,8 +43,7 @@ public class UpdateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
 
         #endregion
 
-        #region Delete order items items that are not in the API request
-        //todo: brisanje starih itema
+        #region Delete order items that are not in the API request
 
         var itemsToDelete = exisingOrderItems
             .Where(oi => request.Items.All(ri => ri.Id != oi.Id))
@@ -74,12 +76,21 @@ public class UpdateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
 
             if (product is null)
             {
-                throw new ValidationException(message: $"Invalid productId {item.ProductId}.");
+                throw new MarketNotFoundException($"Proizvod (ID={item.ProductId}) nije pronađen.");
             }
 
-            if (product.IsEnabled == false)
+            if (!product.IsEnabled)
             {
-                throw new ValidationException($"Product {product.Name} is disabled.");
+                throw new MarketBusinessRuleException("order.product.disabled",
+                    $"Proizvod {product.Name} je onemogućen i ne može se naručiti.");
+            }
+
+            // Stock is only checked, not reserved or decremented.
+            // Reservation/decrement is intentionally left for your own business flow (e.g. on Confirmed or Paid).
+            if (item.Quantity > product.StockQuantity)
+            {
+                throw new MarketBusinessRuleException("order.product.insufficientStock",
+                    $"Nema dovoljno zaliha za proizvod {product.Name} (dostupno: {product.StockQuantity}, traženo: {item.Quantity}).");
             }
 
             decimal subtotal = RoundMoney(product.Price * item.Quantity);
@@ -117,7 +128,7 @@ public class UpdateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
 
                 if (orderItem is null)
                 {
-                    throw new ValidationException($"Order item (ID={item.Id}) not found in order (ID={order.Id}).");
+                    throw new MarketNotFoundException($"Stavka narudžbe (ID={item.Id}) nije pronađena u narudžbi (ID={order.Id}).");
                 }
 
                 //orderItem.OrderId = order.Id; // ne moze se menjati

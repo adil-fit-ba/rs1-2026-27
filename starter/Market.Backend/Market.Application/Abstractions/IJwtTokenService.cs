@@ -2,11 +2,11 @@
 
 public sealed class JwtTokenPair
 {
-    public string AccessToken { get; init; }
+    public required string AccessToken { get; init; }
     public DateTime AccessTokenExpiresAtUtc { get; init; }
 
-    public string RefreshTokenRaw { get; init; }
-    public string RefreshTokenHash { get; init; }
+    public required string RefreshTokenRaw { get; init; }
+    public required string RefreshTokenHash { get; init; }
     public DateTime RefreshTokenExpiresAtUtc { get; init; }
 }
 

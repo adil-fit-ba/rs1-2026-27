@@ -16,7 +16,7 @@ public class UserProductFavoriteEntity : BaseEntity
     /// <summary>
     /// Navigation to the user who favorited the product.
     /// </summary>
-    public MarketUserEntity User { get; set; }
+    public MarketUserEntity User { get; set; } = default!;
 
     /// <summary>
     /// Foreign key to the product.
@@ -26,7 +26,7 @@ public class UserProductFavoriteEntity : BaseEntity
     /// <summary>
     /// Navigation to the favorited product.
     /// </summary>
-    public ProductEntity Product { get; set; }
+    public ProductEntity Product { get; set; } = default!;
 
     /// <summary>
     /// When the product was added to favorites (optional).

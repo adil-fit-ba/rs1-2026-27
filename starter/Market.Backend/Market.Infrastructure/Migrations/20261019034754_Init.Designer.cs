@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Market.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20251205000943_init-novi1")]
-    partial class initnovi1
+    [Migration("20261019034754_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.21")
+                .HasAnnotation("ProductVersion", "8.0.32")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -132,7 +132,8 @@ namespace Market.Infrastructure.Migrations
                     b.HasIndex("ProductId");
 
                     b.HasIndex("UserId", "ProductId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("UserProductFavorites", (string)null);
                 });
@@ -166,14 +167,10 @@ namespace Market.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsEmployee")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsManager")
                         .ValueGeneratedOnAdd()
@@ -199,7 +196,8 @@ namespace Market.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -282,8 +280,8 @@ namespace Market.Infrastructure.Migrations
 
                     b.Property<string>("ReferenceNumber")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -296,7 +294,7 @@ namespace Market.Infrastructure.Migrations
 
                     b.HasIndex("MarketUserId");
 
-                    b.ToTable("Oders", (string)null);
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("Market.Domain.Entities.Sales.OrderItemEntity", b =>

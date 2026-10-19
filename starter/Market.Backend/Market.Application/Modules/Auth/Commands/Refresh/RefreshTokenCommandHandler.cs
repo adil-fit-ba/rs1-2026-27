@@ -1,49 +1,75 @@
 ﻿namespace Market.Application.Modules.Auth.Commands.Refresh;
 
+/// <summary>
+/// Rotates the refresh token: the presented token is revoked and a new access/refresh pair is issued.
+/// Every rejection is a <see cref="MarketUnauthorizedException"/> (HTTP 401) with the same message.
+/// </summary>
 public sealed class RefreshTokenCommandHandler(
     IAppDbContext ctx,
     IJwtTokenService jwt,
     TimeProvider timeProvider)
     : IRequestHandler<RefreshTokenCommand, RefreshTokenCommandDto>
 {
+    private const string InvalidTokenMessage = "Refresh token je nevažeći ili je istekao.";
+
+    /// <summary>
+    /// A token rotated less than this long ago is treated as a race (e.g. two browser tabs refreshing
+    /// at the same time with the same token), not as theft: the request gets 401, but other sessions stay alive.
+    /// </summary>
+    private static readonly TimeSpan ReuseGracePeriod = TimeSpan.FromSeconds(30);
+
     public async Task<RefreshTokenCommandDto> Handle(RefreshTokenCommand request, CancellationToken ct)
     {
-        // 1) Hash the received refresh token
+        // 1) Hash the received refresh token (only hashes are stored in the database)
         var incomingHash = jwt.HashRefreshToken(request.RefreshToken);
 
-        // 2) Find the valid refresh token in the database (TRACKING because we will modify it)
+        // 2) Find the token in the database - revoked ones too, so that reuse can be detected.
+        //    TRACKING query, because we are going to modify it.
         var rt = await ctx.RefreshTokens
             .Include(x => x.User)
-            .FirstOrDefaultAsync(x =>
-                x.TokenHash == incomingHash &&
-                !x.IsRevoked &&
-                !x.IsDeleted, ct);
+            .FirstOrDefaultAsync(x => x.TokenHash == incomingHash && !x.IsDeleted, ct);
+
+        if (rt is null)
+            throw new MarketUnauthorizedException(InvalidTokenMessage);
 
         var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
 
-        if (rt is null || rt.ExpiresAtUtc <= nowUtc)
-            throw new MarketConflictException("Refresh token je nevažeći ili je istekao.");
-
-        // (optional) Fingerprint check
-        if (rt.Fingerprint is not null &&
-            request.Fingerprint is not null &&
-            rt.Fingerprint != request.Fingerprint)
+        // 3) Reuse detection: a refresh token can be used only once (rotation).
+        //    If an already revoked token comes back, it was probably stolen or copied,
+        //    so all sessions of that user are closed:
+        //    - every active refresh token of the user is revoked,
+        //    - TokenVersion is incremented, so already issued access tokens are rejected too
+        //      (the "ver" claim is checked on every request, see Market.API DependencyInjection).
+        //    Exception: a token rotated within the last few seconds (ReuseGracePeriod) is a race between
+        //    two tabs/requests of the same client, so only this request is rejected.
+        if (rt.IsRevoked)
         {
-            throw new MarketConflictException("Neispravan klijentski otisak.");
+            var rotatedRecently = rt.RevokedAtUtc is not null && nowUtc - rt.RevokedAtUtc.Value < ReuseGracePeriod;
+            if (!rotatedRecently)
+                await RevokeAllSessionsAsync(rt.User, nowUtc, ct);
+
+            throw new MarketUnauthorizedException(InvalidTokenMessage);
         }
 
-        var user = rt.User;
-        if (user is null || !user.IsEnabled || user.IsDeleted)
-            throw new MarketConflictException("Korisnički nalog je nevažeći.");
+        if (rt.ExpiresAtUtc <= nowUtc)
+            throw new MarketUnauthorizedException(InvalidTokenMessage);
 
-        // 3) Rotation: revoke the old one
+        // 4) Fingerprint check: a token bound to a device can only be refreshed from that device.
+        if (rt.Fingerprint is not null && rt.Fingerprint != request.Fingerprint)
+            throw new MarketUnauthorizedException(InvalidTokenMessage);
+
+        var user = rt.User;
+        if (!user.IsEnabled || user.IsDeleted)
+            throw new MarketUnauthorizedException(InvalidTokenMessage);
+
+        // 5) Rotation: revoke the old one
         rt.IsRevoked = true;
         rt.RevokedAtUtc = nowUtc;
 
-        // 4) Issue a NEW pair (access + refresh) – the service returns both RAW and HASH along with expirations.
+        // 6) Issue a NEW pair (access + refresh) – the service returns both RAW and HASH along with expirations.
         var pair = jwt.IssueTokens(user);
 
-        // 5) Save the NEW refresh token (HASH only) in the database
+        // 7) Save the NEW refresh token (HASH only) in the database
         var newRt = new RefreshTokenEntity
         {
             TokenHash = pair.RefreshTokenHash,
@@ -55,7 +81,7 @@ public sealed class RefreshTokenCommandHandler(
         ctx.RefreshTokens.Add(newRt);
         await ctx.SaveChangesAsync(ct);
 
-        // 6) Return the RAW refresh token and access token to the client
+        // 8) Return the RAW refresh token and access token to the client
         return new RefreshTokenCommandDto
         {
             AccessToken = pair.AccessToken,
@@ -63,5 +89,22 @@ public sealed class RefreshTokenCommandHandler(
             AccessTokenExpiresAtUtc = pair.AccessTokenExpiresAtUtc,
             RefreshTokenExpiresAtUtc = pair.RefreshTokenExpiresAtUtc
         };
+    }
+
+    private async Task RevokeAllSessionsAsync(MarketUserEntity user, DateTime nowUtc, CancellationToken ct)
+    {
+        var activeTokens = await ctx.RefreshTokens
+            .Where(x => x.UserId == user.Id && !x.IsRevoked)
+            .ToListAsync(ct);
+
+        foreach (var token in activeTokens)
+        {
+            token.IsRevoked = true;
+            token.RevokedAtUtc = nowUtc;
+        }
+
+        user.TokenVersion++;
+
+        await ctx.SaveChangesAsync(ct);
     }
 }

@@ -28,7 +28,7 @@ public sealed class JwtTokenService : IJwtTokenService
         var accessExpires = nowInstant.AddMinutes(_jwt.AccessTokenMinutes).UtcDateTime;
         var refreshExpires = nowInstant.AddDays(_jwt.RefreshTokenDays).UtcDateTime;
 
-        // --- Claims (including jti/aud for standard compliance) ---
+        // --- Claims (including jti for standard compliance; "aud" is added by JwtSecurityToken from the audience argument) ---
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -39,8 +39,7 @@ public sealed class JwtTokenService : IJwtTokenService
             new("is_employee", user.IsEmployee.ToString().ToLowerInvariant()),
             new("ver",         user.TokenVersion.ToString()),
             new(JwtRegisteredClaimNames.Iat, ToUnixTimeSeconds(nowInstant).ToString(), ClaimValueTypes.Integer64),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
-            new(JwtRegisteredClaimNames.Aud, _jwt.Audience)
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N"))
         };
 
         // --- Signature ---

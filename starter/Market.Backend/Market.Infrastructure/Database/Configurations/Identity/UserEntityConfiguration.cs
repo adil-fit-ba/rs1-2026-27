@@ -8,8 +8,11 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<MarketUse
 
         b.HasKey(x => x.Id);
 
+        // Unique only among non-deleted users: a soft-deleted user keeps its row,
+        // and without the filter its email could never be registered again.
         b.HasIndex(x => x.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         b.Property(x => x.Email)
             .IsRequired()
@@ -25,14 +28,12 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<MarketUse
         b.Property(x => x.IsManager)
             .HasDefaultValue(false);
 
-        b.Property(x => x.IsEmployee)
-            .HasDefaultValue(true); // Default: regular user
+        // No HasDefaultValue(true) for IsEmployee/IsEnabled: EF Core does not send a bool that has the
+        // CLR default (false) when the column has a database default, so "false" could never be saved -
+        // the database would silently store "true". Defaults belong in the entity (IsEnabled = true).
 
         b.Property(x => x.TokenVersion)
             .HasDefaultValue(0);
-
-        b.Property(x => x.IsEnabled)
-            .HasDefaultValue(true);
 
         // Navigation
         b.HasMany(x => x.RefreshTokens)

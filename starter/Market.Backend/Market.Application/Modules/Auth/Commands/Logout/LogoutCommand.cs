@@ -8,5 +8,5 @@ public sealed class LogoutCommand : IRequest
     /// <summary>
     /// The refresh token to be revoked.
     /// </summary>
-    public string RefreshToken { get; init; }
+    public string RefreshToken { get; init; } = string.Empty;
 }

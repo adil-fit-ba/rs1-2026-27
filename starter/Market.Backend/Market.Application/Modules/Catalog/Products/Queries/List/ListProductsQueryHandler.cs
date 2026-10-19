@@ -15,7 +15,9 @@ public sealed class ListProductsQueryHandler(IAppDbContext ctx)
              q = q.Where(x => x.Name.ToLower().Contains(searchTerm));
         }
 
+        // ThenBy(Id) makes the order stable (Name is not unique), so paging never skips or repeats rows.
         var projectedQuery = q.OrderBy(x => x.Name)
+            .ThenBy(x => x.Id)
             .Select(x => new ListProductsQueryDto
             {
                 Id = x.Id,

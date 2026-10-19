@@ -10,7 +10,7 @@ public class ProductCategoryEntity : BaseEntity
     /// <summary>
     /// Name of the category.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Indicates whether the category is active (enabled).

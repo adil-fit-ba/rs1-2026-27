@@ -10,7 +10,7 @@ public sealed class UpdateProductCommandHandler(IAppDbContext ctx)
             .FirstOrDefaultAsync(ct);
 
         if (entity is null)
-            throw new MarketNotFoundException($"Product (ID={request.Id}) nije pronađena.");
+            throw new MarketNotFoundException($"Proizvod (ID={request.Id}) nije pronađen.");
 
         // Check for duplicate name (case-insensitive, except for the same ID)
         var exists = await ctx.Products
@@ -27,12 +27,13 @@ public sealed class UpdateProductCommandHandler(IAppDbContext ctx)
 
         if (productCategory is null)
         {
-            throw new ValidationException("Invalid CategoryId.");
+            throw new MarketNotFoundException($"Kategorija (ID={request.CategoryId}) nije pronađena.");
         }
 
-        if (productCategory.IsEnabled == false)
+        if (!productCategory.IsEnabled)
         {
-            throw new ValidationException($"Category {productCategory.Name} is disabled.");
+            throw new MarketBusinessRuleException("product.category.disabled",
+                $"Kategorija {productCategory.Name} je onemogućena i ne može se dodijeliti proizvodu.");
         }
 
         entity.Name = request.Name.Trim();

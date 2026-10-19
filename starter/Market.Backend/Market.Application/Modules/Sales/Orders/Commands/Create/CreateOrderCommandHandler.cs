@@ -1,4 +1,5 @@
 ﻿using Market.Domain.Entities.Sales;
+using System.Globalization;
 
 namespace Market.Application.Modules.Sales.Orders.Commands.Create;
 
@@ -7,12 +8,17 @@ public class CreateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
 {
     public async Task<int> Handle(CreateOrderCommand request, CancellationToken ct)
     {
+        // Input format (items not empty, quantities, duplicates) is checked by CreateOrderCommandValidator.
+        var userId = currentUser.UserId
+            ?? throw new MarketUnauthorizedException("Korisnik nije prijavljen.");
+
         #region Create order and set basic properties
+        var nowUtc = DateTime.UtcNow;
         var order = new OrderEntity
         {
-            ReferenceNumber = Guid.NewGuid().ToString().Substring(0, 5).ToUpper(),
-            MarketUserId = currentUser.UserId!.Value,
-            OrderedAtUtc = DateTime.UtcNow,
+            ReferenceNumber = GenerateReferenceNumber(nowUtc),
+            MarketUserId = userId,
+            OrderedAtUtc = nowUtc,
             Status = OrderStatusType.Draft,
             TotalAmount = 0m, //
             Note = request.Note
@@ -44,12 +50,21 @@ public class CreateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
 
             if (product is null)
             {
-                throw new ValidationException(message: $"Invalid productId {item.ProductId}.");
+                throw new MarketNotFoundException($"Proizvod (ID={item.ProductId}) nije pronađen.");
             }
 
-            if (product.IsEnabled == false)
+            if (!product.IsEnabled)
             {
-                throw new ValidationException($"Product {product.Name} is disabled.");
+                throw new MarketBusinessRuleException("order.product.disabled",
+                    $"Proizvod {product.Name} je onemogućen i ne može se naručiti.");
+            }
+
+            // Stock is only checked, not reserved or decremented.
+            // Reservation/decrement is intentionally left for your own business flow (e.g. on Confirmed or Paid).
+            if (item.Quantity > product.StockQuantity)
+            {
+                throw new MarketBusinessRuleException("order.product.insufficientStock",
+                    $"Nema dovoljno zaliha za proizvod {product.Name} (dostupno: {product.StockQuantity}, traženo: {item.Quantity}).");
             }
 
             decimal subtotal = RoundMoney(product.Price * item.Quantity);
@@ -76,6 +91,15 @@ public class CreateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
         await ctx.SaveChangesAsync(ct);
 
         return order.Id;
+    }
+
+    /// <summary>
+    /// Human-readable reference number, e.g. <c>ORD-20261019-1A2B3C4D</c> (date + 8 random hex characters).
+    /// </summary>
+    private static string GenerateReferenceNumber(DateTime nowUtc)
+    {
+        var random = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        return string.Create(CultureInfo.InvariantCulture, $"ORD-{nowUtc:yyyyMMdd}-{random}");
     }
 
     private static decimal RoundMoney(decimal value)

@@ -2,8 +2,6 @@
 
 public partial class StaticDataSeeder
 {
-    private static DateTime DateTime { get; set; } = new DateTime(2022, 4, 13, 1, 22, 18, 866, DateTimeKind.Local);
-
     public static void Seed(ModelBuilder modelBuilder)
     {
         // Static data is added in the migration

@@ -1,20 +1,21 @@
-﻿using Market.Application.Modules.Sales.Orders.Commands.Status;
-using Market.Domain.Entities.Sales;
+﻿using Market.Domain.Entities.Sales;
 
-namespace Market.Application.Modules.Sales.Orders.Commands.ChangeStatus;
-
-
+namespace Market.Application.Modules.Sales.Orders.Commands.Status;
 
 /// <summary>
 /// Handler for changing order status
 /// </summary>
-public class ChangeOrderStatusCommandHandler(IAppDbContext db) : IRequestHandler<ChangeOrderStatusCommand>
+public class ChangeOrderStatusCommandHandler(IAppDbContext db, IAppCurrentUser currentUser) : IRequestHandler<ChangeOrderStatusCommand>
 {
     public async Task Handle(ChangeOrderStatusCommand request, CancellationToken ct)
     {
+        // Defense in depth: the endpoint is already protected by the "Admin" policy.
+        if (!currentUser.IsAdmin)
+            throw new MarketForbiddenException("Samo administrator može mijenjati status narudžbe.");
+
         var order = await db.Orders
             .FirstOrDefaultAsync(o => o.Id == request.Id, ct)
-            ?? throw new MarketNotFoundException($"{nameof(OrderEntity)}, {request.Id}");
+            ?? throw new MarketNotFoundException($"Narudžba (ID={request.Id}) nije pronađena.");
 
         // Validate status transition
         ValidateStatusTransition(order.Status, request.NewStatus);
@@ -45,12 +46,12 @@ public class ChangeOrderStatusCommandHandler(IAppDbContext db) : IRequestHandler
 
         if (!validTransitions.ContainsKey(current))
         {
-            throw new MarketBusinessRuleException("123", $"Unknown current status: {current}");
+            throw new MarketBusinessRuleException("order.status.unknown", $"Unknown current status: {current}");
         }
 
         if (!validTransitions[current].Contains(next))
         {
-            throw new MarketBusinessRuleException("323",
+            throw new MarketBusinessRuleException("order.status.invalidTransition",
                 $"Invalid status transition from {current} to {next}. " +
                 $"Allowed transitions: {string.Join(", ", validTransitions[current])}");
         }

@@ -14,7 +14,7 @@ public sealed class MarketUserEntity : BaseEntity
     public bool IsManager { get; set; }
     public bool IsEmployee { get; set; }
     public int TokenVersion { get; set; } = 0;// For global revocation
-    public bool IsEnabled { get; set; }
+    public bool IsEnabled { get; set; } = true; // New accounts are enabled unless explicitly disabled
     public ICollection<RefreshTokenEntity> RefreshTokens { get; private set; } = new List<RefreshTokenEntity>();
 
     // Many-to-many: User's favorite products

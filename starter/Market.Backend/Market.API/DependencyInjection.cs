@@ -1,35 +1,56 @@
-﻿using Market.Infrastructure.Common;
+﻿using Market.Application.Abstractions;
+using Market.Infrastructure.Common;
+using Market.Shared.Constants;
 using Market.Shared.Dtos;
 using Market.Shared.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Diagnostics;
+using System.Security.Claims;
 using System.Text;
 
 namespace Market.API;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Prefix of the development-only JWT key from appsettings.Development.json.
+    /// Such a key is public (it is in the repository), so it must never be used outside Development/tests.
+    /// </summary>
+    private const string DevOnlyJwtKeyPrefix = "DEV_ONLY";
+
     public static IServiceCollection AddAPI(
         this IServiceCollection services,
         IConfiguration configuration,
         IHostEnvironment env)
     {
-        // Controllers + uniform BadRequest
+        EnsureJwtKeyIsNotDevOnlyKey(configuration, env);
+
+        // Controllers + uniform BadRequest (same ErrorDto shape as FluentValidation errors)
         services.AddControllers()
             .ConfigureApiBehaviorOptions(opts =>
             {
                 opts.InvalidModelStateResponseFactory = ctx =>
                 {
-                    var msg = string.Join("; ",
-                        ctx.ModelState.Values.SelectMany(v => v.Errors)
-                                             .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage)
-                                                 ? "Validation error"
-                                                 : e.ErrorMessage));
-                    return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new ErrorDto
+                    var errors = ctx.ModelState
+                        .Where(kv => kv.Value is not null && kv.Value.Errors.Count > 0)
+                        .SelectMany(kv => kv.Value!.Errors.Select(e => new FieldErrorDto
+                        {
+                            Field = FieldErrorDto.ToCamelCasePath(kv.Key),
+                            Message = string.IsNullOrWhiteSpace(e.ErrorMessage)
+                                ? "Neispravna vrijednost."
+                                : e.ErrorMessage
+                        }))
+                        .ToList();
+
+                    return new BadRequestObjectResult(new ErrorDto
                     {
-                        Code = "validation.failed",
-                        Message = msg
+                        Code = "validation.error",
+                        Message = string.Join(" ", errors.Select(e => e.Message).Distinct()),
+                        TraceId = Activity.Current?.Id ?? ctx.HttpContext.TraceIdentifier,
+                        Errors = errors
                     });
                 };
             });
@@ -40,7 +61,7 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // JWT auth (reads from IOptions<JwtOptions>)
+        // JWT auth
         services.AddAuthentication(o =>
         {
             o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -61,13 +82,24 @@ public static class DependencyInjection
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
+
+            o.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = ValidateUserAndTokenVersionAsync
+            };
         });
 
         services.AddAuthorization(o =>
         {
+            // Every endpoint requires a logged-in user, unless it has [AllowAnonymous]
             o.FallbackPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build();
+
+            // [Authorize(Policy = PolicyNames.Admin)] → 401 without a token, 403 for a non-admin user
+            o.AddPolicy(PolicyNames.Admin, policy => policy
+                .RequireAuthenticatedUser()
+                .RequireClaim("is_admin", "true"));
         });
 
         // Swagger with Bearer auth
@@ -97,5 +129,56 @@ public static class DependencyInjection
         services.AddProblemDetails();
 
         return services;
+    }
+
+    /// <summary>
+    /// Runs after the JWT signature and lifetime are valid. Rejects the token when the user
+    /// no longer exists, is disabled, or the token's "ver" claim differs from the user's TokenVersion
+    /// (TokenVersion is incremented e.g. when refresh token reuse is detected → all old access tokens stop working).
+    /// One small AsNoTracking query per authenticated request.
+    /// </summary>
+    private static async Task ValidateUserAndTokenVersionAsync(TokenValidatedContext context)
+    {
+        var principal = context.Principal;
+
+        if (!int.TryParse(principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ||
+            !int.TryParse(principal?.FindFirstValue("ver"), out var tokenVersion))
+        {
+            context.Fail("Token ne sadrži ispravne podatke o korisniku.");
+            return;
+        }
+
+        var db = context.HttpContext.RequestServices.GetRequiredService<IAppDbContext>();
+
+        var user = await db.Users
+            .AsNoTracking()
+            .Where(u => u.Id == userId)
+            .Select(u => new { u.TokenVersion, u.IsEnabled, u.IsDeleted })
+            .FirstOrDefaultAsync(context.HttpContext.RequestAborted);
+
+        if (user is null || !user.IsEnabled || user.IsDeleted || user.TokenVersion != tokenVersion)
+        {
+            context.Fail("Token više nije važeći.");
+        }
+    }
+
+    /// <summary>
+    /// The DEV_ONLY key from appsettings.Development.json is public. Outside Development and test
+    /// environments a real secret must be configured (environment variable Jwt__Key, user secrets, key vault...).
+    /// </summary>
+    private static void EnsureJwtKeyIsNotDevOnlyKey(IConfiguration configuration, IHostEnvironment env)
+    {
+        if (env.IsDevelopment() || env.IsTest())
+            return;
+
+        var key = configuration[$"{JwtOptions.SectionName}:{nameof(JwtOptions.Key)}"] ?? string.Empty;
+        if (key.StartsWith(DevOnlyJwtKeyPrefix, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Jwt:Key je razvojni ključ ({DevOnlyJwtKeyPrefix}...) i ne smije se koristiti u okruženju '{env.EnvironmentName}'. " +
+                $"Postavite pravi tajni ključ (npr. varijabla okruženja Jwt__Key). / " +
+                $"Jwt:Key is a development-only key and must not be used in the '{env.EnvironmentName}' environment. " +
+                $"Configure a real secret (e.g. environment variable Jwt__Key).");
+        }
     }
 }

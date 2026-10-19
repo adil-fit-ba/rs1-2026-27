@@ -7,7 +7,7 @@ namespace Market.Domain.Entities.Identity;
 
 public sealed class RefreshTokenEntity : BaseEntity
 {
-    public string TokenHash { get; set; } // Store the HASH, not the plain token
+    public string TokenHash { get; set; } = string.Empty; // Store the HASH, not the plain token
     public DateTime ExpiresAtUtc { get; set; }
     public bool IsRevoked { get; set; }
     public int UserId { get; set; }

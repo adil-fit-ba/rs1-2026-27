@@ -11,7 +11,7 @@ public class ProductEntity : BaseEntity
     /// <summary>
     /// Name of the product.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Product description. (optional)

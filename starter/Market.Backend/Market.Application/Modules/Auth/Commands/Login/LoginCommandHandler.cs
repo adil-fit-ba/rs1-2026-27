@@ -1,4 +1,4 @@
-﻿using Market.Application.Modules.Auth.Commands.Login;
+﻿namespace Market.Application.Modules.Auth.Commands.Login;
 
 public sealed class LoginCommandHandler(
     IAppDbContext ctx,
@@ -6,17 +6,23 @@ public sealed class LoginCommandHandler(
     IPasswordHasher<MarketUserEntity> hasher)
     : IRequestHandler<LoginCommand, LoginCommandDto>
 {
+    /// <summary>
+    /// One message for every failed login (unknown email, wrong password, disabled account),
+    /// so the API does not reveal which emails are registered (user enumeration).
+    /// </summary>
+    private const string InvalidCredentialsMessage = "Pogrešan email ili lozinka.";
+
     public async Task<LoginCommandDto> Handle(LoginCommand request, CancellationToken ct)
     {
         var email = request.Email.Trim().ToLowerInvariant();
 
         var user = await ctx.Users
             .FirstOrDefaultAsync(x => x.Email.ToLower() == email && x.IsEnabled && !x.IsDeleted, ct)
-            ?? throw new MarketNotFoundException("Korisnik nije pronađen ili je onemogućen.");
+            ?? throw new MarketUnauthorizedException(InvalidCredentialsMessage);
 
         var verify = hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (verify == PasswordVerificationResult.Failed)
-            throw new MarketConflictException("Pogrešni kredencijali.");
+            throw new MarketUnauthorizedException(InvalidCredentialsMessage);
 
         var tokens = jwt.IssueTokens(user);
 
@@ -34,7 +40,8 @@ public sealed class LoginCommandHandler(
         {
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshTokenRaw,
-            ExpiresAtUtc = tokens.RefreshTokenExpiresAtUtc
+            AccessTokenExpiresAtUtc = tokens.AccessTokenExpiresAtUtc,
+            RefreshTokenExpiresAtUtc = tokens.RefreshTokenExpiresAtUtc
         };
     }
 }

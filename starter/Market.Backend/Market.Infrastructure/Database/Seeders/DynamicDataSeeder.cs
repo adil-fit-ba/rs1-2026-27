@@ -13,10 +13,20 @@ namespace Market.Infrastructure.Database.Seeders;
 /// </summary>
 public static class DynamicDataSeeder
 {
+    /// <summary>
+    /// Demo kupci kojima pripadaju seed narudžbe.
+    /// </summary>
+    private static readonly string[] CustomerEmails =
+    [
+        "nina.bijedic@email.com",
+        "iris.memic@email.com",
+        "azra.smajic@email.com"
+    ];
+
     public static async Task SeedAsync(DatabaseContext context)
     {
-        // Osiguraj da baza postoji (bez migracija)
-        await context.Database.EnsureCreatedAsync();
+        // Šema baze se ne kreira ovdje: DatabaseInitializer prije seed-a pokreće migracije
+        // (SQL Server) ili EnsureCreated (InMemory baza u testovima).
 
         await SeedProductCategoriesAsync(context);
         await SeedUsersAsync(context);
@@ -67,6 +77,7 @@ public static class DynamicDataSeeder
 
     /// <summary>
     /// Kreira demo korisnike ako ih još nema u bazi.
+    /// Uloge i IsEnabled se postavljaju eksplicitno (baza nema default vrijednosti za njih).
     /// </summary>
     private static async Task SeedUsersAsync(DatabaseContext context)
     {
@@ -77,26 +88,38 @@ public static class DynamicDataSeeder
 
         var admin = new MarketUserEntity
         {
+            Firstname = "Admin",
+            Lastname = "Market",
             Email = "admin@market.local",
             PasswordHash = hasher.HashPassword(null!, "Admin123!"),
             IsAdmin = true,
+            IsManager = false,
+            IsEmployee = false,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow
         };
 
         var manager = new MarketUserEntity
         {
+            Firstname = "Manager",
+            Lastname = "Market",
             Email = "manager@market.local",
             PasswordHash = hasher.HashPassword(null!, "Manager123!"),
+            IsAdmin = false,
             IsManager = true,
+            IsEmployee = false,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow
         };
 
         var employee = new MarketUserEntity
         {
+            Firstname = "Employee",
+            Lastname = "Market",
             Email = "employee@market.local",
             PasswordHash = hasher.HashPassword(null!, "Employee123!"),
+            IsAdmin = false,
+            IsManager = false,
             IsEmployee = true,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow
@@ -104,8 +127,12 @@ public static class DynamicDataSeeder
 
         var dummyForSwagger = new MarketUserEntity
         {
+            Firstname = "Swagger",
+            Lastname = "Demo",
             Email = "string",
             PasswordHash = hasher.HashPassword(null!, "string"),
+            IsAdmin = false,
+            IsManager = false,
             IsEmployee = true,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow
@@ -113,8 +140,12 @@ public static class DynamicDataSeeder
 
         var dummyForTests = new MarketUserEntity
         {
+            Firstname = "Test",
+            Lastname = "User",
             Email = "test",
             PasswordHash = hasher.HashPassword(null!, "test123"),
+            IsAdmin = false,
+            IsManager = false,
             IsEmployee = true,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow
@@ -123,24 +154,39 @@ public static class DynamicDataSeeder
         // Demo customers for orders
         var customer1 = new MarketUserEntity
         {
+            Firstname = "Nina",
+            Lastname = "Bijedić",
             Email = "nina.bijedic@email.com",
             PasswordHash = hasher.HashPassword(null!, "Customer123!"),
+            IsAdmin = false,
+            IsManager = false,
+            IsEmployee = false,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow.AddDays(-30)
         };
 
         var customer2 = new MarketUserEntity
         {
+            Firstname = "Iris",
+            Lastname = "Memić",
             Email = "iris.memic@email.com",
             PasswordHash = hasher.HashPassword(null!, "Customer123!"),
+            IsAdmin = false,
+            IsManager = false,
+            IsEmployee = false,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow.AddDays(-25)
         };
 
         var customer3 = new MarketUserEntity
         {
+            Firstname = "Azra",
+            Lastname = "Smajić",
             Email = "azra.smajic@email.com",
             PasswordHash = hasher.HashPassword(null!, "Customer123!"),
+            IsAdmin = false,
+            IsManager = false,
+            IsEmployee = false,
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow.AddDays(-20)
         };
@@ -392,17 +438,20 @@ public static class DynamicDataSeeder
         if (await context.Orders.AnyAsync())
             return;
 
-        // Učitaj korisnike i proizvode
+        // Učitaj demo kupce (ne admin/manager/employee naloge) i proizvode
         var customers = await context.Users
+            .Where(u => CustomerEmails.Contains(u.Email))
             .ToListAsync();
 
+        // Narudžbe ispod biraju proizvode po poziciji (Skip/Take), pa redoslijed mora biti stabilan
         var products = await context.Products
             .Where(p => p.IsEnabled)
+            .OrderBy(p => p.Id)
             .ToListAsync();
 
-        if (!customers.Any() || !products.Any())
+        if (customers.Count < CustomerEmails.Length || products.Count < 12)
         {
-            Console.WriteLine("⚠️  No customers or products found. Skipping orders seed.");
+            Console.WriteLine("⚠️  Demo customers or products not found. Skipping orders seed.");
             return;
         }
 
@@ -410,7 +459,7 @@ public static class DynamicDataSeeder
         var orderCounter = 1;
 
         // Order 1 - Completed (customer1, 15 dana prije)
-        var customer1 = customers[0];
+        var customer1 = customers.Single(c => c.Email == CustomerEmails[0]);
         var order1Date = DateTime.UtcNow.AddDays(-15);
         var order1Products = products.Take(3).ToList();
 
@@ -437,7 +486,7 @@ public static class DynamicDataSeeder
         orders.Add(order1);
 
         // Order 2 - Paid (customer2, 10 dana prije)
-        var customer2 = customers[1];
+        var customer2 = customers.Single(c => c.Email == CustomerEmails[1]);
         var order2Date = DateTime.UtcNow.AddDays(-10);
         var order2Products = products.Skip(4).Take(2).ToList(); // Phone + accessories
 
@@ -463,7 +512,7 @@ public static class DynamicDataSeeder
         orders.Add(order2);
 
         // Order 3 - Confirmed (customer3, 5 dana prije)
-        var customer3 = customers[2];
+        var customer3 = customers.Single(c => c.Email == CustomerEmails[2]);
         var order3Date = DateTime.UtcNow.AddDays(-5);
         var order3Products = products.Skip(8).Take(4).ToList(); // PC components
 
@@ -594,7 +643,7 @@ public static class DynamicDataSeeder
             DiscountPercent = discountPercent > 0 ? discountPercent : null,
             DiscountAmount = discountAmount > 0 ? discountAmount : null,
             Total = total,
-            Order = null!,
+            Order = null, // EF sets the relationship when the item is added to OrderEntity.Items
             CreatedAtUtc = DateTime.UtcNow
         };
     }
