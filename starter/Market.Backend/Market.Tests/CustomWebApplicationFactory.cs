@@ -1,5 +1,9 @@
-﻿using Market.Application.Modules.Auth.Commands.Login;
+﻿using Market.Application.Abstractions;
+using Market.Application.Modules.Auth.Commands.Login;
 using Market.Shared.Constants;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -19,6 +23,16 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<Progr
     /// </summary>
     private const string TestJwtKey = "INTEGRATION_TESTS_ONLY_KEY_0123456789_ABCDEFGHIJ";
 
+    /// <summary>
+    /// Frontend address for links in emails (appsettings.json has it empty; there is no appsettings.IntegrationTests.json).
+    /// </summary>
+    public const string FrontendBaseUrl = "http://localhost:4200";
+
+    /// <summary>
+    /// Every email the API "sends" during the tests (e.g. the password reset link).
+    /// </summary>
+    public CapturingEmailSender Emails { get; } = new();
+
     // Access token per account, so every test does not have to log in again
     private readonly Dictionary<string, string> _cachedTokens = new();
 
@@ -29,6 +43,14 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<Progr
         // UseSetting (not ConfigureAppConfiguration): the value is visible already while Program.cs
         // registers services, and AddAPI stops the startup when Jwt:Key is missing.
         builder.UseSetting("Jwt:Key", TestJwtKey);
+        builder.UseSetting("Frontend:BaseUrl", FrontendBaseUrl);
+
+        // ConfigureTestServices runs after Program.cs registrations, so it replaces LoggingEmailSender.
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(Emails);
+        });
     }
 
     /// <summary>

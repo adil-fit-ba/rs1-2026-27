@@ -1,10 +1,10 @@
 ﻿using Market.Application.Abstractions;
+using Market.Application.Common;
 using Market.Shared.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Market.Infrastructure.Common;
@@ -59,7 +59,7 @@ public sealed class JwtTokenService : IJwtTokenService
         var accessToken = new JwtSecurityTokenHandler().WriteToken(jwt);
 
         // --- refresh token (raw + hash) ---
-        var refreshRaw = GenerateRefreshTokenRaw(64); // base64url
+        var refreshRaw = SecureToken.Generate(64); // 64 random bytes as base64url
         var refreshHash = HashRefreshToken(refreshRaw); // base64url hash
 
         return new JwtTokenPair
@@ -72,20 +72,8 @@ public sealed class JwtTokenService : IJwtTokenService
         };
     }
 
-    public string HashRefreshToken(string rawToken)
-    {
-        using var sha = SHA256.Create();
-        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(rawToken));
-        // Use Base64Url to avoid problematic characters
-        return Base64UrlEncoder.Encode(bytes);
-    }
-
-    private static string GenerateRefreshTokenRaw(int numBytes)
-    {
-        // Base64UrlEncoder from Microsoft.IdentityModel.Tokens (without + / =)
-        var bytes = RandomNumberGenerator.GetBytes(numBytes);
-        return Base64UrlEncoder.Encode(bytes);
-    }
+    // SHA-256 as base64url, the same hash as for password reset tokens (SecureToken)
+    public string HashRefreshToken(string rawToken) => SecureToken.Hash(rawToken);
 
     private static long ToUnixTimeSeconds(DateTimeOffset dto) => dto.ToUnixTimeSeconds();
 }

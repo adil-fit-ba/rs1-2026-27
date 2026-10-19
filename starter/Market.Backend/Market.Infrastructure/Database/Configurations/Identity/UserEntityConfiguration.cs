@@ -14,12 +14,26 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<MarketUse
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
 
+        b.Property(x => x.Firstname)
+            .IsRequired()
+            .HasMaxLength(MarketUserEntity.Constraints.FirstnameMaxLength);
+
+        b.Property(x => x.Lastname)
+            .IsRequired()
+            .HasMaxLength(MarketUserEntity.Constraints.LastnameMaxLength);
+
         b.Property(x => x.Email)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(MarketUserEntity.Constraints.EmailMaxLength);
 
         b.Property(x => x.PasswordHash)
             .IsRequired();
+
+        b.Property(x => x.Address)
+            .HasMaxLength(MarketUserEntity.Constraints.AddressMaxLength);
+
+        b.Property(x => x.City)
+            .HasMaxLength(MarketUserEntity.Constraints.CityMaxLength);
 
         // Roles
         b.Property(x => x.IsAdmin)

@@ -1,4 +1,6 @@
-﻿namespace Market.Application.Modules.Auth.Commands.Refresh;
+﻿using Market.Application.Modules.Auth.Common;
+
+namespace Market.Application.Modules.Auth.Commands.Refresh;
 
 /// <summary>
 /// Rotates the refresh token: the presented token is revoked and a new access/refresh pair is issued.
@@ -24,6 +26,7 @@ public sealed class RefreshTokenCommandHandler(
         var incomingHash = jwt.HashRefreshToken(request.RefreshToken);
 
         // 2) Find the token in the database - revoked ones too, so that reuse can be detected.
+        //    Deleted ones are not found (sessions closed on purpose, e.g. by a password change - see UserSessionExtensions).
         //    TRACKING query, because we are going to modify it.
         var rt = await ctx.RefreshTokens
             .Include(x => x.User)
@@ -46,7 +49,10 @@ public sealed class RefreshTokenCommandHandler(
         {
             var rotatedRecently = rt.RevokedAtUtc is not null && nowUtc - rt.RevokedAtUtc.Value < ReuseGracePeriod;
             if (!rotatedRecently)
-                await RevokeAllSessionsAsync(rt.User, nowUtc, ct);
+            {
+                await ctx.RevokeAllSessionsAsync(rt.User, nowUtc, ct);
+                await ctx.SaveChangesAsync(ct);
+            }
 
             throw new MarketUnauthorizedException(InvalidTokenMessage);
         }
@@ -66,19 +72,9 @@ public sealed class RefreshTokenCommandHandler(
         rt.IsRevoked = true;
         rt.RevokedAtUtc = nowUtc;
 
-        // 6) Issue a NEW pair (access + refresh) – the service returns both RAW and HASH along with expirations.
-        var pair = jwt.IssueTokens(user);
-
-        // 7) Save the NEW refresh token (HASH only) in the database
-        var newRt = new RefreshTokenEntity
-        {
-            TokenHash = pair.RefreshTokenHash,
-            ExpiresAtUtc = pair.RefreshTokenExpiresAtUtc,
-            UserId = user.Id,
-            Fingerprint = request.Fingerprint,
-        };
-
-        ctx.RefreshTokens.Add(newRt);
+        // 6) Issue a NEW pair (access + refresh) and 7) save the NEW refresh token (HASH only) in the database
+        //    (see UserSessionExtensions.StartSession; the pair contains both the RAW token and its HASH)
+        var pair = ctx.StartSession(jwt, user, request.Fingerprint);
         await ctx.SaveChangesAsync(ct);
 
         // 8) Return the RAW refresh token and access token to the client
@@ -89,22 +85,5 @@ public sealed class RefreshTokenCommandHandler(
             AccessTokenExpiresAtUtc = pair.AccessTokenExpiresAtUtc,
             RefreshTokenExpiresAtUtc = pair.RefreshTokenExpiresAtUtc
         };
-    }
-
-    private async Task RevokeAllSessionsAsync(MarketUserEntity user, DateTime nowUtc, CancellationToken ct)
-    {
-        var activeTokens = await ctx.RefreshTokens
-            .Where(x => x.UserId == user.Id && !x.IsRevoked)
-            .ToListAsync(ct);
-
-        foreach (var token in activeTokens)
-        {
-            token.IsRevoked = true;
-            token.RevokedAtUtc = nowUtc;
-        }
-
-        user.TokenVersion++;
-
-        await ctx.SaveChangesAsync(ct);
     }
 }

@@ -19,8 +19,8 @@ public sealed class ListOrdersWithItemsQueryDtoUser
 {
     public required string UserFirstname { get; set; }
     public required string UserLastname { get; set; }
-    public required string UserAddress { get; set; }//todo
-    public required string UserCity { get; set; }//todo
+    public required string? UserAddress { get; set; }
+    public required string? UserCity { get; set; }
 }
 
 public class ListOrdersWithItemsQueryDtoItem

@@ -11,6 +11,7 @@ public interface IAppDbContext
     DbSet<PromotionEntity> Promotions { get; }
     DbSet<MarketUserEntity> Users { get; }
     DbSet<RefreshTokenEntity> RefreshTokens { get; }
+    DbSet<PasswordResetTokenEntity> PasswordResetTokens { get; }
 
     DbSet<OrderEntity> Orders{ get; }
     DbSet<OrderItemEntity> OrderItems { get; }

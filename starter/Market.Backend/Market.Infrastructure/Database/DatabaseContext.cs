@@ -11,6 +11,7 @@ public partial class DatabaseContext : DbContext, IAppDbContext
     public DbSet<PromotionEntity> Promotions => Set<PromotionEntity>();
     public DbSet<MarketUserEntity> Users => Set<MarketUserEntity>();
     public DbSet<RefreshTokenEntity> RefreshTokens => Set<RefreshTokenEntity>();
+    public DbSet<PasswordResetTokenEntity> PasswordResetTokens => Set<PasswordResetTokenEntity>();
 
     public DbSet<OrderEntity> Orders => Set<OrderEntity>();
     public DbSet<OrderItemEntity> OrderItems => Set<OrderItemEntity>();

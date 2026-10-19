@@ -36,8 +36,8 @@ public sealed class ListOrdersQueryHandler(IAppDbContext ctx, IAppCurrentUser cu
                 {
                     UserFirstname = x.MarketUser!.Firstname,
                     UserLastname = x.MarketUser!.Lastname,
-                    UserAddress = "Todo",//todo: ticket no 126
-                    UserCity = "Todo",//todo: ticket no 126
+                    UserAddress = x.MarketUser!.Address,
+                    UserCity = x.MarketUser!.City,
                 },
                 OrderedAtUtc = x.OrderedAtUtc,
                 PaidAtUtc = x.PaidAtUtc,

@@ -1,4 +1,6 @@
-﻿namespace Market.Application.Modules.Auth.Commands.Login;
+﻿using Market.Application.Modules.Auth.Common;
+
+namespace Market.Application.Modules.Auth.Commands.Login;
 
 public sealed class LoginCommandHandler(
     IAppDbContext ctx,
@@ -24,15 +26,8 @@ public sealed class LoginCommandHandler(
         if (verify == PasswordVerificationResult.Failed)
             throw new MarketUnauthorizedException(InvalidCredentialsMessage);
 
-        var tokens = jwt.IssueTokens(user);
-
-        ctx.RefreshTokens.Add(new RefreshTokenEntity
-        {
-            TokenHash = tokens.RefreshTokenHash,
-            ExpiresAtUtc = tokens.RefreshTokenExpiresAtUtc,
-            UserId = user.Id,
-            Fingerprint = request.Fingerprint
-        });
+        // New access/refresh pair; the refresh token is stored as a hash (see UserSessionExtensions)
+        var tokens = ctx.StartSession(jwt, user, request.Fingerprint);
 
         await ctx.SaveChangesAsync(ct);
 

@@ -132,7 +132,11 @@ public class UpdateOrderCommandHandler(IAppDbContext ctx, IAppCurrentUser curren
                 }
 
                 //orderItem.OrderId = order.Id; // ne moze se menjati
-                orderItem.ProductId = item.ProductId;//todo: dozvoliti menjanje proizvoda?
+
+                // The product of an existing item may be changed. The new product was checked above
+                // (exists, enabled, enough stock) like the product of a new item, and the price below
+                // is the current price of the new product.
+                orderItem.ProductId = item.ProductId;
                 orderItem.Quantity = item.Quantity;
                 orderItem.UnitPrice = product.Price;
                 orderItem.Subtotal = subtotal;

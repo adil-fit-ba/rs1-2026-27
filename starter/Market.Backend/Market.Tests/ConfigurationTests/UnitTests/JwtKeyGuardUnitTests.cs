@@ -1,8 +1,6 @@
 using Market.API;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 
 namespace Market.Tests.ConfigurationTests.UnitTests;
 
@@ -46,13 +44,5 @@ public class JwtKeyGuardUnitTests
             .Build();
 
         new ServiceCollection().AddAPI(configuration, new FakeHostEnvironment(environmentName));
-    }
-
-    private sealed class FakeHostEnvironment(string environmentName) : IHostEnvironment
-    {
-        public string EnvironmentName { get; set; } = environmentName;
-        public string ApplicationName { get; set; } = "Market.Tests";
-        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
-        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }
