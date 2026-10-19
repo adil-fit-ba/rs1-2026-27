@@ -1,11 +1,10 @@
+// pozadinu daje ClientLayoutComponent
 .client-home {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 100vh;
   padding: 64px 16px;
   box-sizing: border-box;
-  background: linear-gradient(135deg, #f5faff 0%, #e8f4fd 100%);
 }
 
 .client-card {
@@ -26,5 +25,6 @@ mat-card-content p {
 }
 
 mat-card-actions {
+  flex-wrap: wrap;
   gap: 8px;
 }

@@ -13,6 +13,7 @@ import {
   OrderStatusType
 } from './orders-api.models';
 import { buildHttpParams } from '../../core/models/build-http-params';
+import { CreatedResponse } from '../../core/models/created-response';
 
 @Injectable({
   providedIn: 'root'
@@ -57,11 +58,11 @@ export class OrdersApiService {
 
   /**
    * POST /Orders
-   * Create a new order.
-   * @returns ID of the newly created order
+   * Create a new order (checkout – bilo koji prijavljeni korisnik).
+   * @returns { id } of the newly created order
    */
-  create(payload: CreateOrderCommand): Observable<number> {
-    return this.http.post<number>(this.baseUrl, payload);
+  create(payload: CreateOrderCommand): Observable<CreatedResponse> {
+    return this.http.post<CreatedResponse>(this.baseUrl, payload);
   }
 
   /**

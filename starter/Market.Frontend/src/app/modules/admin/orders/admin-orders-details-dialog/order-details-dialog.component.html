@@ -106,7 +106,8 @@
             <td class="text-right discount-cell">
               <span *ngIf="item.discountAmount && item.discountAmount > 0">
                 -{{ item.discountAmount | currency:'BAM':'symbol':'1.2-2' }}
-                <span class="discount-percent" *ngIf="item.discountPercent">({{ item.discountPercent }}%)</span>
+                <!-- discountPercent je udio (0.05), percent pipe ga prikaže kao "5 %" -->
+                <span class="discount-percent" *ngIf="item.discountPercent">({{ item.discountPercent | percent: '1.0-2' }})</span>
               </span>
               <span *ngIf="!item.discountAmount || item.discountAmount === 0">-</span>
             </td>

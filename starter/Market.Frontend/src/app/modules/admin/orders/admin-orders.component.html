@@ -163,6 +163,18 @@
         </th>
         <td mat-cell *matCellDef="let order">
           <div class="action-buttons">
+            <!-- uređivanje stavki: backend dozvoljava samo za narudžbe u statusu Draft -->
+            @if (order.status === OrderStatusType.Draft) {
+              <a
+                mat-icon-button
+                color="primary"
+                [routerLink]="['/admin/orders', order.id, 'edit']"
+                (click)="$event.stopPropagation()"
+                [matTooltip]="'ORDERS.ACTIONS.EDIT' | translate"
+                class="action-btn edit-btn">
+                <mat-icon>edit</mat-icon>
+              </a>
+            }
             <button
               mat-icon-button
               color="primary"

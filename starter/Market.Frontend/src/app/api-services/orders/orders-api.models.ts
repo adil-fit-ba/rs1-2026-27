@@ -137,7 +137,7 @@ export interface GetByIdOrderQueryDtoUser {
 export interface GetByIdOrderQueryDtoItemProduct {
   productId: number;
   productName: string | null;
-  productCategoryName: number;
+  productCategoryName: string | null;
 }
 
 /**
@@ -148,8 +148,9 @@ export interface GetByIdOrderQueryDtoItem {
   product: GetByIdOrderQueryDtoItemProduct;
   quantity: number;
   unitPrice: number;
-  discountPercent: number;
-  discountAmount: number;
+  /** udio, ne procenat: 0.05 = 5 % (prikaz: {{ x | percent }}); null = bez popusta */
+  discountPercent: number | null;
+  discountAmount: number | null;
   subtotal: number;
   total: number;
 }
@@ -196,15 +197,18 @@ export interface CreateOrderCommandItem {
  */
 export interface CreateOrderCommand {
   note?: string | null;
-  items?: CreateOrderCommandItem[];
+  /** bar jedna stavka, bez ponavljanja istog proizvoda */
+  items: CreateOrderCommandItem[];
 }
 
 /**
  * Order item for update command
  */
 export interface UpdateOrderCommandItem {
-  id?: number; // Optional - if present, updates existing item
+  /** 0 = nova stavka; > 0 = postojeća stavka ove narudžbe. Stavke koje se ne pošalju se brišu. */
+  id: number;
   productId: number;
+  /** cijeli broj > 0 */
   quantity: number;
 }
 
@@ -214,5 +218,6 @@ export interface UpdateOrderCommandItem {
  */
 export interface UpdateOrderCommand {
   note?: string | null;
-  items?: UpdateOrderCommandItem[];
+  /** bar jedna stavka, bez ponavljanja istog proizvoda; samo narudžba u statusu Draft */
+  items: UpdateOrderCommandItem[];
 }

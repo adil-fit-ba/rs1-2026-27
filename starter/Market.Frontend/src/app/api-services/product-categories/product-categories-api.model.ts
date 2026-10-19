@@ -45,6 +45,7 @@ export type ListProductCategoriesResponse = PageResult<ListProductCategoriesQuer
  */
 export interface CreateProductCategoryCommand {
   name: string;
+  isEnabled: boolean;
 }
 
 /**
@@ -53,4 +54,5 @@ export interface CreateProductCategoryCommand {
  */
 export interface UpdateProductCategoryCommand {
   name: string;
+  isEnabled: boolean;
 }

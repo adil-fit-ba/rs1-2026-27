@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../../core/components/base-classes/base-component';
 import { AuthFacadeService } from '../../../core/services/auth/auth-facade.service';
 import { LoginCommand } from '../../../api-services/auth/auth-api.model';
 import { CurrentUserService } from '../../../core/services/auth/current-user.service';
+import { isSafeReturnUrl } from '../../../core/services/auth/return-url';
 import { getErrorMessage } from '../../../core/interceptors/error-logging-interceptor.service';
 import { environment } from '../../../../environments/environment';
 
@@ -19,6 +20,7 @@ export class LoginComponent extends BaseComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthFacadeService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private currentUser = inject(CurrentUserService);
   hidePassword = true;
 
@@ -43,8 +45,14 @@ export class LoginComponent extends BaseComponent {
     this.auth.login(payload).subscribe({
       next: () => {
         this.stopLoading();
-        const target = this.currentUser.getDefaultRoute();
-        this.router.navigate([target]);
+        // ?returnUrl=... postavlja guard (myAuthGuard). Vjerujemo mu samo ako je putanja
+        // unutar aplikacije; inače korisnik ide na svoju početnu stranicu.
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        if (isSafeReturnUrl(returnUrl)) {
+          this.router.navigateByUrl(returnUrl);
+        } else {
+          this.router.navigate([this.currentUser.getDefaultRoute()]);
+        }
       },
       error: (err: HttpErrorResponse) => {
         // 401 → poruka sa backenda ("Pogrešan email ili lozinka."),

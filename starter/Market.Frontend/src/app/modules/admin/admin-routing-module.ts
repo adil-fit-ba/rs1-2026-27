@@ -8,6 +8,11 @@ import { ProductsEditComponent } from './catalogs/products/products-edit/product
 import { ProductCategoriesComponent } from './catalogs/product-categories/product-categories.component';
 import {AdminOrdersComponent} from './orders/admin-orders.component';
 import {AdminSettingsComponent} from './admin-settings/admin-settings.component';
+import {PromotionsComponent} from './catalogs/promotions/promotions.component';
+import {PromotionUpsertComponent} from './catalogs/promotions/promotion-upsert/promotion-upsert.component';
+import {OrderEditComponent} from './orders/order-edit/order-edit.component';
+import {ExchangeRatesComponent} from './finance/exchange-rates/exchange-rates.component';
+import {unsavedChangesGuard} from '../shared/guards/unsaved-changes.guard';
 
 const routes: Routes = [
   {
@@ -34,9 +39,36 @@ const routes: Routes = [
         component: ProductCategoriesComponent,
       },
 
+      // PROMOTIONS (baneri na početnoj stranici)
+      {
+        path: 'promotions',
+        component: PromotionsComponent,
+      },
+      {
+        path: 'promotions/add',
+        component: PromotionUpsertComponent,
+      },
+      {
+        path: 'promotions/:id/edit',
+        component: PromotionUpsertComponent,
+      },
+
+      // ORDERS
       {
         path: 'orders',
         component: AdminOrdersComponent,
+      },
+      {
+        // canDeactivate: pita prije napuštanja stranice sa nesačuvanim izmjenama
+        path: 'orders/:id/edit',
+        component: OrderEditComponent,
+        canDeactivate: [unsavedChangesGuard],
+      },
+
+      // FINANCE
+      {
+        path: 'exchange-rates',
+        component: ExchangeRatesComponent,
       },
 
       {

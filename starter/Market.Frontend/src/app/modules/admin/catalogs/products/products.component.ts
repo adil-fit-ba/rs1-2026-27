@@ -2,6 +2,7 @@
 
 import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import {
   ListProductsRequest,
   ListProductsQueryDto
@@ -26,8 +27,10 @@ export class ProductsComponent
   private router = inject(Router);
   private toaster = inject(ToasterService);
   private dialogHelper = inject(DialogHelperService);
+  private translate = inject(TranslateService);
 
   displayedColumns: string[] = [
+    'image',
     'name',
     'categoryName',
     'price',
@@ -54,7 +57,7 @@ export class ProductsComponent
         this.stopLoading();
       },
       error: (err) => {
-        this.stopLoading('Failed to load products');
+        this.stopLoading(this.translate.instant('PRODUCTS.DIALOGS.ERROR_LOAD_LIST'));
         console.error('Load products error:', err);
       }
     });

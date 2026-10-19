@@ -5,7 +5,6 @@ $primary-blue: #4a90e2;
 $light-blue: #e8f4fd;
 $lighter-blue: #f5faff;
 $dark-blue: #2e5c8a;
-$accent-blue: #64b5f6;
 $text-dark: #1a1a1a;
 $text-light: #666666;
 $white: #ffffff;
@@ -259,15 +258,20 @@ $white: #ffffff;
   }
 }
 
-// === FEATURES SECTION ===
-.features-section {
-  @include section-padding;
+// === KATALOG (promocije, kategorije, proizvodi sa /Catalog/home) ===
+.catalog-section {
   @include container;
+  padding: 48px 20px 0;
+
+  // prijavljen korisnik nema CTA sekciju ispod
+  &:last-child {
+    padding-bottom: 64px;
+  }
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 32px;
 }
 
 .section-title {
@@ -287,128 +291,56 @@ $white: #ffffff;
   margin: 0;
 }
 
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-
-  @media (max-width: 968px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.feature-card {
-  background: $white;
-  padding: 32px;
-  border-radius: 16px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
-
-    .feature-icon {
-      background: $primary-blue;
-      mat-icon {
-        color: $white;
-      }
-    }
-  }
-
-  h3 {
-    font-size: 20px;
-    font-weight: 600;
-    color: $text-dark;
-    margin: 20px 0 12px 0;
-  }
-
-  p {
-    font-size: 15px;
-    color: $text-light;
-    line-height: 1.6;
-    margin: 0;
-  }
-}
-
-.feature-icon {
-  width: 64px;
-  height: 64px;
-  background: $light-blue;
-  border-radius: 12px;
+.category-list {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-  transition: all 0.3s ease;
-
-  mat-icon {
-    font-size: 32px;
-    width: 32px;
-    height: 32px;
-    color: $primary-blue;
-    transition: all 0.3s ease;
-  }
+  gap: 12px;
 }
 
-// === STATS SECTION ===
-.stats-section {
-  @include section-padding;
-  background: linear-gradient(135deg, $primary-blue 0%, $dark-blue 100%);
-  color: $white;
+.category-chip {
+  border-radius: 24px;
+  background: $white;
 }
 
-.stats-grid {
-  @include container;
+.products-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 40px;
-
-  @media (max-width: 968px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
 }
 
-.stat-card {
+.section-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.empty-text {
   text-align: center;
-  animation: fadeInUp 0.6s ease-out both;
-
-  @for $i from 1 through 4 {
-    &:nth-child(#{$i}) {
-      animation-delay: #{$i * 0.1}s;
-    }
-  }
+  color: $text-light;
 }
 
-.stat-icon {
+// učitavanje / greška
+.state-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 64px 20px;
+  color: $text-light;
+}
+
+.state-icon {
   font-size: 48px;
   width: 48px;
   height: 48px;
-  color: $accent-blue;
-  margin-bottom: 16px;
-}
-
-.stat-number {
-  font-size: 48px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.stat-label {
-  font-size: 16px;
-  opacity: 0.9;
+  color: #c62828;
 }
 
 // === CTA SECTION ===
 .cta-section {
   @include section-padding;
+  margin-top: 64px;
   background: $lighter-blue;
 }
 

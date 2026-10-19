@@ -1,5 +1,4 @@
-import { Component, inject } from '@angular/core';
-import { CurrentUserService } from '../../../core/services/auth/current-user.service';
+import { Component } from '@angular/core';
 
 /**
  * Layout javnog dijela: zaglavlje + stranica (router-outlet) + podnožje.
@@ -12,7 +11,5 @@ import { CurrentUserService } from '../../../core/services/auth/current-user.ser
   styleUrl: './public-layout.component.scss',
 })
 export class PublicLayoutComponent {
-  protected currentUser = inject(CurrentUserService);
-
   currentYear = new Date().getFullYear();
 }

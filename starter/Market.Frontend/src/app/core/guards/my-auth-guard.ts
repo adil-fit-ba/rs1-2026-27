@@ -1,6 +1,6 @@
 // src/app/core/guards/my-auth-guard.ts
 import { inject } from '@angular/core';
-import { CanActivateFn, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { CanActivateFn, ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthFacadeService } from '../services/auth/auth-facade.service';
 import { CurrentUserService } from '../services/auth/current-user.service';
 
@@ -15,10 +15,18 @@ import { CurrentUserService } from '../services/auth/current-user.service';
  *     ...
  *   }
  *
+ * Guard može stajati i na jednoj child ruti (vidi /checkout u public-routing-module.ts).
+ *
+ * Neprijavljen korisnik ide na /auth/login?returnUrl=<tražena adresa>, a login ga poslije
+ * vrati tamo (samo na putanju unutar aplikacije – vidi core/services/auth/return-url.ts).
+ *
  * Napomena: guard samo štiti UI (navigaciju). Pravu zaštitu podataka radi backend
  * ([Authorize] / policy) – frontend se uvijek može zaobići.
  */
-export const myAuthGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+export const myAuthGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot
+) => {
   const auth = inject(AuthFacadeService);
   const currentUser = inject(CurrentUserService);
   const router = inject(Router);
@@ -38,10 +46,10 @@ export const myAuthGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
     return true;
   }
 
-  // 1) user nije logiran ili mu je sesija istekla → login
+  // 1) user nije logiran ili mu je sesija istekla → login, uz adresu na koju se vraća
   const user = currentUser.snapshot;
   if (!user || !auth.hasValidSession()) {
-    return router.createUrlTree(['/auth/login']);
+    return router.createUrlTree(['/auth/login'], { queryParams: { returnUrl: state.url } });
   }
 
   // 2) role check – ako user nema traženu ulogu → njegova početna ruta

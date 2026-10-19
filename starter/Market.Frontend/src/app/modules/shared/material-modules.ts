@@ -8,7 +8,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -35,6 +34,9 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTreeModule } from '@angular/material/tree';
 
+// DateAdapter za mat-datepicker (MatNativeDateModule) NIJE ovdje nego jednom u app-module.ts
+// (BsDateAdapter): modul iz ove liste importuje i svaki lazy modul preko SharedModule-a,
+// a lazy modul bi tada dobio vlastiti NativeDateAdapter umjesto bosanskog.
 export const materialModules = [
   MatAutocompleteModule,
   MatBadgeModule,
@@ -46,7 +48,6 @@ export const materialModules = [
   MatChipsModule,
   MatStepperModule,
   MatDatepickerModule,
-  MatNativeDateModule,
   MatDialogModule,
   MatDividerModule,
   MatExpansionModule,

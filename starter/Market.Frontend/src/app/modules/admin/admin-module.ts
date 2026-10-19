@@ -14,6 +14,12 @@ import {AdminSettingsComponent} from './admin-settings/admin-settings.component'
 import {SharedModule} from '../shared/shared-module';
 import { OrderDetailsDialogComponent } from './orders/admin-orders-details-dialog/order-details-dialog.component';
 import { ChangeStatusDialogComponent } from './orders/change-status-dialog/change-status-dialog.component';
+import { ProductImageComponent } from './catalogs/products/product-image/product-image.component';
+import { PromotionsComponent } from './catalogs/promotions/promotions.component';
+import { PromotionUpsertComponent } from './catalogs/promotions/promotion-upsert/promotion-upsert.component';
+import { OrderEditComponent } from './orders/order-edit/order-edit.component';
+import { ProductAutocompleteComponent } from './orders/order-edit/product-autocomplete/product-autocomplete.component';
+import { ExchangeRatesComponent } from './finance/exchange-rates/exchange-rates.component';
 
 
 @NgModule({
@@ -28,6 +34,12 @@ import { ChangeStatusDialogComponent } from './orders/change-status-dialog/chang
     AdminSettingsComponent,
     OrderDetailsDialogComponent,
     ChangeStatusDialogComponent,
+    ProductImageComponent,
+    PromotionsComponent,
+    PromotionUpsertComponent,
+    OrderEditComponent,
+    ProductAutocompleteComponent,
+    ExchangeRatesComponent,
   ],
   imports: [
     AdminRoutingModule,

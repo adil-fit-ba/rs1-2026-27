@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import {FitPaginatorBarComponent} from './components/fit-paginator-bar/fit-paginator-bar.component';
 import {materialModules} from './material-modules';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -8,6 +9,11 @@ import { FitConfirmDialogComponent } from './components/fit-confirm-dialog/fit-c
 import {DialogHelperService} from './services/dialog-helper.service';
 import { FitLoadingBarComponent } from './components/fit-loading-bar/fit-loading-bar.component';
 import { FitTableSkeletonComponent } from './components/fit-table-skeleton/fit-table-skeleton.component';
+import { FitFieldErrorComponent } from './components/fit-field-error/fit-field-error.component';
+import { CurrencySelectorComponent } from './components/currency-selector/currency-selector.component';
+import { StoreHeaderComponent } from './components/store-header/store-header.component';
+import { MoneyPipe } from './pipes/money.pipe';
+import { ApiUrlPipe } from './pipes/api-url.pipe';
 
 
 
@@ -16,10 +22,17 @@ import { FitTableSkeletonComponent } from './components/fit-table-skeleton/fit-t
     FitPaginatorBarComponent,
     FitConfirmDialogComponent,
     FitLoadingBarComponent,
-    FitTableSkeletonComponent
+    FitTableSkeletonComponent,
+    FitFieldErrorComponent,
+    CurrencySelectorComponent,
+    StoreHeaderComponent,
+    MoneyPipe,
+    ApiUrlPipe
   ],
   imports: [
     CommonModule,
+    // routerLink u StoreHeaderComponent (samo direktive, bez ruta)
+    RouterModule,
     ReactiveFormsModule,
     FormsModule,
     TranslatePipe,
@@ -36,6 +49,11 @@ import { FitTableSkeletonComponent } from './components/fit-table-skeleton/fit-t
     FormsModule,
     FitLoadingBarComponent,
     FitTableSkeletonComponent,
+    FitFieldErrorComponent,
+    CurrencySelectorComponent,
+    StoreHeaderComponent,
+    MoneyPipe,
+    ApiUrlPipe,
     materialModules
   ]
 })

@@ -10,6 +10,7 @@ import {
   UpdateProductCategoryCommand
 } from './product-categories-api.model';
 import { buildHttpParams } from '../../core/models/build-http-params';
+import { CreatedResponse } from '../../core/models/created-response';
 
 @Injectable({
   providedIn: 'root',
@@ -41,10 +42,10 @@ export class ProductCategoriesApiService {
   /**
    * POST /ProductCategories
    * Create a new category.
-   * @returns ID of the newly created category
+   * @returns { id } of the newly created category
    */
-  create(payload: CreateProductCategoryCommand): Observable<number> {
-    return this.http.post<number>(this.baseUrl, payload);
+  create(payload: CreateProductCategoryCommand): Observable<CreatedResponse> {
+    return this.http.post<CreatedResponse>(this.baseUrl, payload);
   }
 
   /**

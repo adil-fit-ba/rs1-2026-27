@@ -14,6 +14,7 @@ import {
 } from '../../../api-services/auth/auth-api.model';
 
 import { AuthStorageService } from './auth-storage.service';
+import { isSafeReturnUrl } from './return-url';
 import { CurrentUserDto } from './current-user.dto';
 import { JwtPayloadDto } from './jwt-payload.dto';
 
@@ -110,10 +111,14 @@ export class AuthFacadeService {
 
   /**
    * Utility za guardove/interceptore – očisti auth state i prebaci na /auth/login.
+   * Trenutna stranica ide kao returnUrl, pa se korisnik nakon ponovne prijave vraća na nju.
    */
   redirectToLogin(): void {
     this.clearUserState();
-    this.router.navigate(['/auth/login']);
+    const returnUrl = this.router.url;
+    this.router.navigate(['/auth/login'], {
+      queryParams: isSafeReturnUrl(returnUrl) && returnUrl !== '/' ? { returnUrl } : {}
+    });
   }
 
   /**

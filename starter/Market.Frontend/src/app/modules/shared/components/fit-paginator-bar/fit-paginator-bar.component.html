@@ -4,12 +4,13 @@
     <div class="paginator-info">
       <mat-icon class="info-icon">info_outline</mat-icon>
       <span class="info-text">
-        Stranica <strong>{{ vm.request.paging.page }}</strong> od
+        {{ 'PAGINATION.PAGE' | translate }} <strong>{{ vm.request.paging.page }}</strong>
+        {{ 'PAGINATION.OF' | translate }}
         <strong>{{ vm.totalPages || 1 }}</strong>
       </span>
       <span class="info-divider">•</span>
       <span class="info-total">
-        Ukupno: <strong>{{ vm.totalItems }}</strong> zapisa
+        {{ 'PAGINATION.TOTAL' | translate }}: <strong>{{ vm.totalItems }}</strong>
       </span>
     </div>
 
@@ -17,7 +18,7 @@
     <div class="paginator-actions">
       <!-- Page Size Selector -->
       <div class="page-size-selector">
-        <span class="selector-label">Po stranici:</span>
+        <span class="selector-label">{{ 'PAGINATION.ITEMS_PER_PAGE' | translate }}:</span>
         <mat-form-field appearance="fill" class="page-size-field">
           <mat-select
             [value]="vm.request.paging.pageSize"
@@ -41,7 +42,7 @@
           [disabled]="vm.request.paging.page <= 1 || vm.isLoading"
         >
           <mat-icon>chevron_left</mat-icon>
-          <span>Prethodna</span>
+          <span>{{ 'PAGINATION.PREVIOUS' | translate }}</span>
         </button>
 
         <div class="page-indicator">
@@ -54,7 +55,7 @@
           (click)="vm.nextPage()"
           [disabled]="(vm.totalPages && vm.request.paging.page >= vm.totalPages) || vm.isLoading"
         >
-          <span>Sljedeća</span>
+          <span>{{ 'PAGINATION.NEXT' | translate }}</span>
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>

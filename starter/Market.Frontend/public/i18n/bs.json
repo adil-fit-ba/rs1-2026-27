@@ -23,16 +23,118 @@
     "NAV": {
       "SEARCH_PRODUCTS": "Pretraga proizvoda",
       "MY_ACCOUNT": "Moj nalog",
-      "LOGIN": "Prijava"
+      "LOGIN": "Prijava",
+      "CONVERTER": "Konvertor valuta",
+      "CART": "Korpa",
+      "MY_ORDERS": "Moje narudžbe",
+      "ADMIN_PANEL": "Admin panel",
+      "LOGOUT": "Odjava"
     }
+  },
+  "LANDING": {
+    "HERO_TITLE": "Vaš online market",
+    "HERO_DESCRIPTION": "Pregledajte ponudu, dodajte proizvode u korpu i naručite u nekoliko koraka. Cijene možete vidjeti i u drugim valutama.",
+    "BROWSE_PRODUCTS": "Pregledaj proizvode",
+    "STATS_PRODUCTS": "{{count}} proizvoda",
+    "STATS_CATEGORIES": "{{count}} kategorija",
+    "STATS_CURRENCIES": "Cijene u više valuta",
+    "LOADING": "Učitavanje ponude...",
+    "ERROR": "Ponuda trenutno nije dostupna.",
+    "PROMOTIONS_TITLE": "Akcijske ponude",
+    "PROMOTION_MORE": "Saznaj više",
+    "CATEGORIES_TITLE": "Kategorije",
+    "NEWEST_TITLE": "Najnoviji proizvodi",
+    "NEWEST_SUBTITLE": "Pogledajte šta je novo u ponudi",
+    "ALL_PRODUCTS": "Svi proizvodi",
+    "NO_PRODUCTS": "Trenutno nema proizvoda u ponudi.",
+    "CTA_TITLE": "Spremni za kupovinu?",
+    "CTA_TEXT": "Prijavite se da biste naručili i pratili svoje narudžbe.",
+    "CTA_BUTTON": "Prijavite se"
+  },
+  "SEARCH": {
+    "TITLE": "Pretraga proizvoda",
+    "SEARCH_LABEL": "Pretraga",
+    "SEARCH_PLACEHOLDER": "Naziv proizvoda...",
+    "CATEGORY_LABEL": "Kategorija",
+    "ALL_CATEGORIES": "Sve kategorije",
+    "CLEAR_FILTERS": "Očisti filtere",
+    "LOADING": "Učitavanje proizvoda...",
+    "NO_RESULTS": "Nema proizvoda koji odgovaraju pretrazi."
+  },
+  "PRODUCT_CARD": {
+    "ADD_TO_CART": "Dodaj u korpu",
+    "OUT_OF_STOCK": "Nema na stanju"
+  },
+  "CART": {
+    "TITLE": "Korpa",
+    "ADDED": "\"{{name}}\" je dodan u korpu.",
+    "EMPTY_TITLE": "Korpa je prazna",
+    "EMPTY_TEXT": "Dodajte proizvode u korpu da biste naručili.",
+    "CONTINUE_SHOPPING": "Nastavi kupovinu",
+    "CHECKOUT": "Nastavi na narudžbu",
+    "REMOVE": "Ukloni iz korpe",
+    "INCREASE": "Povećaj količinu",
+    "DECREASE": "Smanji količinu",
+    "QUANTITY": "Količina",
+    "SUMMARY": "Pregled",
+    "ITEMS_COUNT": "Broj artikala",
+    "TOTAL_QUANTITY": "Ukupna količina",
+    "TOTAL": "Ukupno",
+    "PRICE_NOTE": "Cijene u korpi su informativne; konačan iznos (sa popustima) računa se pri narudžbi."
+  },
+  "CHECKOUT": {
+    "TITLE": "Narudžba",
+    "EMPTY_TEXT": "Dodajte proizvode u korpu prije narudžbe.",
+    "STEP_CART": "Korpa",
+    "STEP_DETAILS": "Napomena",
+    "STEP_SUBMIT": "Potvrda",
+    "BACK_TO_CART": "Nazad na korpu",
+    "NEXT": "Dalje",
+    "BACK": "Nazad",
+    "NOTE_LABEL": "Napomena (opciono)",
+    "NOTE_PLACEHOLDER": "Npr. vrijeme dostave, sprat...",
+    "CONFIRM_LABEL": "Provjerio/la sam narudžbu i želim je poslati.",
+    "CONFIRM_REQUIRED": "Potvrdite narudžbu da biste nastavili.",
+    "SUBMIT": "Naruči",
+    "SUBMITTING": "Slanje narudžbe...",
+    "SUCCESS": "Narudžba je uspješno kreirana."
+  },
+  "CURRENCY": {
+    "SELECT": "Valuta za prikaz cijena",
+    "KM_NOTE": "Narudžba se obračunava u KM; iznos u drugoj valuti je informativan."
+  },
+  "CONVERTER": {
+    "TITLE": "Konvertor valuta",
+    "INTRO": "Iznos preračunava server po kursnoj listi; za raniji datum koristi se kurs koji je tada važio.",
+    "AMOUNT": "Iznos",
+    "FROM": "Iz valute",
+    "TO": "U valutu",
+    "SWAP": "Zamijeni valute",
+    "DATE": "Datum kursa (opciono)",
+    "DATE_HINT": "Prazno = današnji kurs",
+    "CONVERT": "Preračunaj",
+    "RATE": "Kurs",
+    "RATE_DATE": "Kurs važi od"
   },
   "CLIENT": {
     "HOME": {
       "TITLE": "Dobrodošli",
       "LOGGED_IN_AS": "Prijavljeni ste kao {{email}}.",
-      "DESCRIPTION": "Pregledajte ponudu proizvoda ili se odjavite.",
+      "DESCRIPTION": "Pregledajte svoje narudžbe ili ponudu proizvoda.",
       "SEARCH_PRODUCTS": "Pretraga proizvoda",
-      "LOGOUT": "Odjava"
+      "LOGOUT": "Odjava",
+      "MY_ORDERS": "Moje narudžbe"
+    },
+    "ORDERS": {
+      "TITLE": "Moje narudžbe",
+      "NEW_ORDER": "Nova kupovina",
+      "EMPTY_TITLE": "Još nemate narudžbi",
+      "EMPTY_TEXT": "Kad naručite proizvode, narudžbe će se pojaviti ovdje.",
+      "START_SHOPPING": "Započnite kupovinu"
+    },
+    "ORDER_DETAILS": {
+      "TITLE": "Narudžba {{reference}}",
+      "BACK": "Nazad na narudžbe"
     }
   },
   "ADMIN_PANEL": {
@@ -50,7 +152,9 @@
       "ORDERS": "Pregled Narudžbi",
       "SYSTEM": "SISTEM",
       "SETTINGS": "Postavke",
-      "LOGOUT": "Odjava"
+      "LOGOUT": "Odjava",
+      "PROMOTIONS": "Promocije",
+      "EXCHANGE_RATES": "Kursna lista"
     }
   },
   "PRODUCT_CATEGORIES": {
@@ -81,7 +185,10 @@
       "LOADING": "Učitavanje...",
       "CANCEL": "Otkaži",
       "SAVE": "Sačuvaj",
-      "UPDATE": "Ažuriraj"
+      "UPDATE": "Ažuriraj",
+      "CREATE_TITLE": "Nova kategorija",
+      "EDIT_TITLE": "Uredi kategoriju",
+      "IS_ENABLED": "Aktivna (vidljiva kupcima)"
     },
     "DIALOGS": {
       "DELETE_TITLE": "Brisanje Kategorije",
@@ -96,7 +203,8 @@
       "ERROR_CREATE": "Greška pri kreiranju kategorije.",
       "ERROR_UPDATE": "Greška pri ažuriranju kategorije.",
       "ERROR_DELETE": "Greška pri brisanju kategorije.",
-      "ERROR_TOGGLE": "Greška pri promjeni statusa kategorije \"{{name}}\"."
+      "ERROR_TOGGLE": "Greška pri promjeni statusa kategorije \"{{name}}\".",
+      "ERROR_LOAD": "Greška pri učitavanju kategorije."
     }
   },
   "PRODUCTS": {
@@ -141,7 +249,10 @@
       "STOCK_PLACEHOLDER": "0",
       "CANCEL": "Otkaži",
       "SAVE": "Sačuvaj",
-      "UPDATE": "Ažuriraj"
+      "UPDATE": "Ažuriraj",
+      "IS_ENABLED": "Aktivan (vidljiv kupcima)",
+      "NAME_CHECKING": "Provjera naziva...",
+      "NAME_TAKEN": "Proizvod sa ovim nazivom već postoji."
     },
     "DIALOGS": {
       "DELETE_TITLE": "Brisanje Proizvoda",
@@ -153,7 +264,53 @@
       "ERROR_UPDATE": "Greška pri ažuriranju proizvoda.",
       "ERROR_DELETE": "Greška pri brisanju proizvoda.",
       "UNSAVED_CHANGES": "Imate nesačuvane izmjene u formi.",
-      "CONFIRM_CANCEL": "Da li želite otkazati izmjene i vratiti se nazad?"
+      "CONFIRM_CANCEL": "Da li želite otkazati izmjene i vratiti se nazad?",
+      "ERROR_LOAD": "Proizvod nije pronađen ili se ne može učitati.",
+      "ERROR_LOAD_LIST": "Greška pri učitavanju proizvoda.",
+      "ERROR_LOAD_CATEGORIES": "Greška pri učitavanju kategorija.",
+      "SUCCESS_CREATE_ADD_IMAGE": "Proizvod je kreiran. Sada mu možete dodati sliku."
+    },
+    "IMAGE": {
+      "TITLE": "Slika proizvoda",
+      "NONE": "Nema slike",
+      "PREVIEW": "Pregled odabrane slike",
+      "CURRENT": "Trenutna slika",
+      "CHOOSE": "Odaberi sliku",
+      "REPLACE": "Zamijeni sliku",
+      "UPLOAD": "Učitaj",
+      "DELETE": "Obriši sliku",
+      "HINT": "JPG, PNG ili WEBP, najviše {{max}} MB.",
+      "UPLOADED": "Slika je učitana.",
+      "DELETED": "Slika je obrisana.",
+      "DELETE_TITLE": "Brisanje slike",
+      "DELETE_MESSAGE": "Da li ste sigurni da želite obrisati sliku proizvoda?"
+    }
+  },
+  "PROMOTIONS": {
+    "TITLE": "Promocije",
+    "SEARCH": "Pretraži po naslovu",
+    "FILTER_ACTIVE": "Status",
+    "ACTIVE": "Aktivne",
+    "INACTIVE": "Neaktivne",
+    "NEW": "Nova promocija",
+    "PERIOD": "Period",
+    "NO_DATA": "Nema promocija za prikaz",
+    "ADD_TITLE": "Nova promocija",
+    "EDIT_TITLE": "Uredi promociju",
+    "SAVED": "Promocija je sačuvana.",
+    "DELETED": "Promocija je obrisana.",
+    "FORM": {
+      "TITLE": "Naslov",
+      "IMAGE_URL": "URL slike",
+      "IMAGE_URL_HINT": "Apsolutna adresa slike (https://...)",
+      "TARGET_URL": "Odredište (opciono)",
+      "TARGET_URL_HINT": "Ruta aplikacije (/search?categoryId=1) ili https:// adresa",
+      "STARTS_AT": "Početak",
+      "ENDS_AT": "Kraj",
+      "DATE_OPTIONAL": "Prazno = bez ograničenja",
+      "SORT_ORDER": "Redoslijed",
+      "SORT_ORDER_HINT": "Manji broj se prikazuje prije",
+      "IS_ACTIVE": "Aktivna (prikazuje se na početnoj stranici)"
     }
   },
   "ORDERS": {
@@ -195,7 +352,8 @@
     },
     "ACTIONS": {
       "VIEW_DETAILS": "Pogledaj Detalje",
-      "CHANGE_STATUS": "Promijeni Status"
+      "CHANGE_STATUS": "Promijeni Status",
+      "EDIT": "Uredi narudžbu"
     },
     "DETAILS": {
       "TITLE": "Detalji Narudžbe",
@@ -223,8 +381,49 @@
     },
     "MESSAGES": {
       "STATUS_UPDATED": "Status narudžbe uspješno ažuriran",
-      "CANNOT_CHANGE_STATUS": "Status ove narudžbe ne može se promijeniti"
+      "CANNOT_CHANGE_STATUS": "Status ove narudžbe ne može se promijeniti",
+      "LOAD_ERROR": "Greška pri učitavanju narudžbi.",
+      "STATUS_UPDATE_ERROR": "Greška pri promjeni statusa narudžbe."
+    },
+    "EDIT": {
+      "TITLE": "Uredi narudžbu",
+      "PRODUCT": "Proizvod",
+      "PRODUCT_PLACEHOLDER": "Upišite naziv proizvoda...",
+      "PRODUCT_DISABLED": "onemogućen – ne može se naručiti",
+      "NO_PRODUCTS": "Nema proizvoda za ovu pretragu",
+      "ADD_ITEM": "Dodaj stavku",
+      "REMOVE_ITEM": "Ukloni stavku",
+      "LINE_TOTAL": "Iznos (procjena)",
+      "SERVER_TOTAL": "snimljeno: {{amount}}",
+      "AT_LEAST_ONE_ITEM": "Narudžba mora imati bar jednu stavku.",
+      "NOTE_LABEL": "Napomena (opciono)",
+      "PREVIEW_SUBTOTAL": "Međuzbir (procjena, bez popusta)",
+      "SERVER_ORDER_TOTAL": "Ukupno sa popustima (server, zadnje snimanje)",
+      "TOTALS_HINT": "Cijene, popuste i konačan iznos računa server pri snimanju; iznosi u formi su samo procjena.",
+      "SAVED": "Narudžba je sačuvana.",
+      "NOT_DRAFT": "Narudžba nije u statusu Nacrt i ne može se mijenjati.",
+      "BACK_TO_LIST": "Nazad na narudžbe"
     }
+  },
+  "EXCHANGE_RATES": {
+    "TITLE": "Kursna lista",
+    "SUBTITLE": "Koliko KM vrijedi 1 jedinica valute. Kurs važi od svog datuma do sljedećeg kursa iste valute.",
+    "REFRESH": "Osvježi s ECB",
+    "REFRESH_DONE": "Preuzeto novih kurseva: {{updated}} (izvor: {{source}}).",
+    "REFRESH_SKIPPED": "Izvor ne objavljuje: {{codes}}.",
+    "REFRESH_FAILED": "Osvježavanje kursne liste nije uspjelo",
+    "ADD_TITLE": "Novi kurs",
+    "CURRENCY": "Valuta",
+    "RATE": "Kurs u KM",
+    "RATE_HINT": "Najviše 6 decimala, npr. 1.955830",
+    "VALID_FROM": "Važi od",
+    "SOURCE": "Izvor",
+    "FILTER_CURRENCY": "Valuta",
+    "NO_DATA": "Nema kurseva za prikaz",
+    "SAVED": "Kurs je dodan.",
+    "DELETED": "Kurs je obrisan.",
+    "DELETE_TITLE": "Brisanje kursa",
+    "DELETE_MESSAGE": "Da li ste sigurni da želite obrisati ovaj kurs valute {{code}}? Konverzije za taj period koristiće prethodni kurs."
   },
   "COMMON": {
     "YES": "Da",
@@ -348,7 +547,10 @@
     "SHOWING": "Prikazano",
     "TO": "do",
     "RESULTS": "rezultata",
-    "NO_ITEMS": "Nema stavki za prikaz"
+    "NO_ITEMS": "Nema stavki za prikaz",
+    "TOTAL": "Ukupno",
+    "PREVIOUS": "Prethodna",
+    "NEXT": "Sljedeća"
   },
   "VALIDATION": {
     "REQUIRED": "Ovo polje je obavezno",
@@ -369,7 +571,14 @@
     "PHONE": "Unesite validan broj telefona",
     "PASSWORD_MATCH": "Lozinke se ne podudaraju",
     "UNIQUE": "Ova vrijednost već postoji",
-    "CUSTOM": "Greška pri validaciji"
+    "CUSTOM": "Greška pri validaciji",
+    "URL_OR_PATH": "Unesite https:// adresu ili rutu aplikacije koja počinje sa \"/\"",
+    "MAX_DECIMALS": "Najviše {{max}} decimala",
+    "DATE_RANGE": "Kraj mora biti nakon početka",
+    "SELECT_FROM_LIST": "Odaberite vrijednost iz liste",
+    "DUPLICATE_PRODUCT": "Isti proizvod ne može biti u dvije stavke.",
+    "FILE_TYPE": "Dozvoljeni formati: {{types}}",
+    "FILE_SIZE": "Fajl je veći od {{max}} MB"
   },
   "ERRORS": {
     "GENERIC": "Došlo je do greške. Pokušajte ponovo.",

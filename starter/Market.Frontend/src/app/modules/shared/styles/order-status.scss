@@ -1,6 +1,8 @@
 // ============================================
 // ORDER STATUS BADGE STYLES
 // ============================================
+// Zajedničko za admin i klijentski dio (klase vraća OrderStatusHelper.getColorClass).
+// U SCSS komponente:  @use '<relativna putanja>/shared/styles/order-status';
 
 // Status badge base
 .status-badge {

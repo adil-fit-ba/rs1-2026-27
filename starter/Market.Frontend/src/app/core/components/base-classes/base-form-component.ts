@@ -11,11 +11,16 @@ import { BaseComponent } from './base-component';
  * 2. Implement loadData() for edit mode
  * 3. Implement save() for submit logic
  * 4. Call initForm(isEdit) in ngOnInit
+ *
+ * TForm (opciono) je tip forme – tipizirana forma daje tipove i u save():
+ *   export class PromotionUpsertComponent
+ *     extends BaseFormComponent<GetPromotionByIdQueryDto, FormGroup<PromotionForm>> { ... }
+ *   this.form.controls.title.value   // string, ne any
  */
 @Directive()
-export abstract class BaseFormComponent<TModel> extends BaseComponent {
+export abstract class BaseFormComponent<TModel, TForm extends FormGroup = FormGroup> extends BaseComponent {
 
-  form!: FormGroup;
+  form!: TForm;
   isEditMode = false;
   model?: TModel;
 
@@ -49,7 +54,8 @@ export abstract class BaseFormComponent<TModel> extends BaseComponent {
     // Mark all controls as touched to show validation errors
     this.form.markAllAsTouched();
 
-    if (this.form.invalid) {
+    // pending = async validator (npr. provjera jedinstvenog naziva) još čeka odgovor servera
+    if (this.form.invalid || this.form.pending) {
       return;
     }
 

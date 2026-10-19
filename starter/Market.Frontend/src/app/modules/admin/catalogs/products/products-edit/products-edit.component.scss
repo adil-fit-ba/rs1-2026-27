@@ -447,3 +447,15 @@ $hover-bg: rgba(73, 118, 181, 0.04);
     }
   }
 }
+
+// checkbox u redu sa poljem forme (ista visina kao mat-form-field)
+.checkbox-cell {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+}
+
+// async validator naziva čeka odgovor servera
+.pending-spinner {
+  margin-right: 12px;
+}

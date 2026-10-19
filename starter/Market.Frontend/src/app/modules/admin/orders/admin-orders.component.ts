@@ -3,6 +3,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
 import {FormControl} from '@angular/forms';
+import {TranslateService} from '@ngx-translate/core';
 import {BaseListPagedComponent} from '../../../core/components/base-classes/base-list-paged-component';
 import {ListOrdersQueryDto, ListOrdersRequest, OrderStatusType} from '../../../api-services/orders/orders-api.models';
 import {OrdersApiService} from '../../../api-services/orders/orders-api.service';
@@ -25,6 +26,7 @@ export class AdminOrdersComponent
   private ordersApi = inject(OrdersApiService);
   private dialog = inject(MatDialog);
   private toaster = inject(ToasterService);
+  private translate = inject(TranslateService);
   private destroy$ = new Subject<void>();
 
   // Table columns
@@ -90,7 +92,7 @@ export class AdminOrdersComponent
         this.stopLoading();
       },
       error: (err) => {
-        this.stopLoading('Failed to load orders');
+        this.stopLoading(this.translate.instant('ORDERS.MESSAGES.LOAD_ERROR'));
         console.error('Load orders error:', err);
       },
     });
@@ -171,7 +173,7 @@ export class AdminOrdersComponent
 
     this.ordersApi.changeStatus(orderId, newStatus).subscribe({
       next: () => {
-        this.toaster.success('Order status updated successfully');
+        this.toaster.success(this.translate.instant('ORDERS.MESSAGES.STATUS_UPDATED'));
         this.loadPagedData(); // Reload list
       },
       error: (err) => {
@@ -179,7 +181,7 @@ export class AdminOrdersComponent
 
         // Extract error message
         const errorMessage = this.extractErrorMessage(err);
-        this.toaster.error(errorMessage || 'Failed to update order status');
+        this.toaster.error(errorMessage || this.translate.instant('ORDERS.MESSAGES.STATUS_UPDATE_ERROR'));
 
         console.error('Change status error:', err);
       }

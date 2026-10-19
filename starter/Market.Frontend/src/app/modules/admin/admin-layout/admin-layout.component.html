@@ -70,6 +70,11 @@
         <span matListItemTitle>{{ 'ADMIN_PANEL.MENU.PRODUCTS' | translate }}</span>
       </a>
 
+      <a mat-list-item routerLink="/admin/promotions" routerLinkActive="active">
+        <mat-icon matListItemIcon>campaign</mat-icon>
+        <span matListItemTitle>{{ 'ADMIN_PANEL.MENU.PROMOTIONS' | translate }}</span>
+      </a>
+
       <mat-divider></mat-divider>
 
       <!-- ORDERS SECTION -->
@@ -88,6 +93,11 @@
       <div class="nav-section-title">
         {{ 'ADMIN_PANEL.MENU.SYSTEM' | translate }}
       </div>
+
+      <a mat-list-item routerLink="/admin/exchange-rates" routerLinkActive="active">
+        <mat-icon matListItemIcon>currency_exchange</mat-icon>
+        <span matListItemTitle>{{ 'ADMIN_PANEL.MENU.EXCHANGE_RATES' | translate }}</span>
+      </a>
 
       <a mat-list-item routerLink="/admin/settings" routerLinkActive="active">
         <mat-icon matListItemIcon>settings</mat-icon>

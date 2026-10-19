@@ -1,32 +1,8 @@
 <div class="public-shell">
-  <!-- Header -->
-  <header class="public-header">
-    <a routerLink="/" class="brand">
-      <mat-icon>storefront</mat-icon>
-      <span>FIT Market</span>
-    </a>
+  <!-- Header (shared: isti header ima i klijentski dio /client) -->
+  <app-store-header />
 
-    <nav class="public-nav">
-      <a mat-button routerLink="/search" routerLinkActive="active">
-        <mat-icon>search</mat-icon>
-        {{ 'PUBLIC.NAV.SEARCH_PRODUCTS' | translate }}
-      </a>
-
-      @if (currentUser.isAuthenticated()) {
-        <a mat-flat-button [routerLink]="currentUser.getDefaultRoute()">
-          <mat-icon>account_circle</mat-icon>
-          {{ 'PUBLIC.NAV.MY_ACCOUNT' | translate }}
-        </a>
-      } @else {
-        <a mat-flat-button routerLink="/auth/login">
-          <mat-icon>login</mat-icon>
-          {{ 'PUBLIC.NAV.LOGIN' | translate }}
-        </a>
-      }
-    </nav>
-  </header>
-
-  <!-- Stranica (landing, pretraga proizvoda, ...) -->
+  <!-- Stranica (landing, pretraga, korpa, checkout, konvertor) -->
   <main class="public-content">
     <router-outlet></router-outlet>
   </main>
