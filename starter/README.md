@@ -6,7 +6,6 @@ Starter je kompletna aplikacija na kojoj radite seminarski rad:
 |---|---|
 | [`Market.Backend/`](Market.Backend/) | ASP.NET Core Web API, .NET 10, Clean Architecture, CQRS (MediatR), FluentValidation, EF Core (SQL Server), JWT + refresh tokeni |
 | [`Market.Frontend/`](Market.Frontend/) | Angular 21 (NgModules), Angular Material, ngx-translate (bosanski/engleski) |
-| [`screenshots/`](screenshots/) | Screenshotovi admin dijela |
 
 Starter sadrži i gotove primjere (korpa, checkout, narudžbe kupca, promocije, upload slike, konvertor valuta…). Ono što vašoj temi ne treba – obrišite. Kod iz startera se ne boduje; boduje se ono što sami napravite.
 
@@ -183,15 +182,3 @@ Uz svaki obrisani entitet uklonite i njegov `DbSet` u `IAppDbContext`/`DatabaseC
 - **Greške:** `ErrorDto.errors` vraća greške po polju i forme ih prikazuju; create vraća `201 { id }`, akcije bez rezultata `204`.
 - **Frontend:** Angular 21.2 (bez poznatih ranjivosti), produkcijski build prolazi, folder je `Market.Frontend` (ranije `rs1-frontend-2025-26`).
 - **Novo:** sve iz poglavlja „Šta starter sadrži” osim osnovnih kategorija, proizvoda i narudžbi.
-
-## Screenshotovi
-
-Screenshotovi su iz verzije 2025/26; izgled admin dijela je ostao isti.
-
-| Ekran | Slika |
-|---|---|
-| Narudžbe | ![Narudžbe](screenshots/preview-template-orders.png) |
-| Detalji narudžbe | ![Detalji narudžbe](screenshots/preview-template-order-details.png) |
-| Promjena statusa narudžbe | ![Promjena statusa](screenshots/preview-template-order-change-status.png) |
-| Uređivanje kategorije | ![Kategorija](screenshots/preview-template-product-category-edit.png) |
-| Uređivanje proizvoda | ![Proizvod](screenshots/preview-template-product-edit.png) |
