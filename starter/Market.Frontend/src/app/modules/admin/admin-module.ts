@@ -20,6 +20,7 @@ import { PromotionUpsertComponent } from './catalogs/promotions/promotion-upsert
 import { OrderEditComponent } from './orders/order-edit/order-edit.component';
 import { ProductAutocompleteComponent } from './orders/order-edit/product-autocomplete/product-autocomplete.component';
 import { ExchangeRatesComponent } from './finance/exchange-rates/exchange-rates.component';
+import { AdminSettingsComponent } from './admin-settings/admin-settings.component';
 
 
 @NgModule({
@@ -39,11 +40,12 @@ import { ExchangeRatesComponent } from './finance/exchange-rates/exchange-rates.
     OrderEditComponent,
     ProductAutocompleteComponent,
     ExchangeRatesComponent,
+    AdminSettingsComponent,
   ],
   imports: [
     AdminRoutingModule,
     SharedModule,
-    // "Moj profil" (/admin/settings) – ista stranica kao /client/profile
+    // "Moj profil" (/admin/profile) – ista stranica kao /client/profile
     AccountModule,
   ]
 })

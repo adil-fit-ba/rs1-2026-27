@@ -229,11 +229,16 @@
       "ORDERS_SECTION": "NARUDŽBE",
       "ORDERS": "Pregled Narudžbi",
       "SYSTEM": "SISTEM",
+      "SETTINGS": "Postavke",
       "MY_PROFILE": "Moj profil",
       "LOGOUT": "Odjava",
       "PROMOTIONS": "Promocije",
       "EXCHANGE_RATES": "Kursna lista"
     }
+  },
+  "ADMIN_SETTINGS": {
+    "TITLE": "Postavke",
+    "EMPTY": "Ovdje dolaze postavke aplikacije (npr. podaci o firmi, podrazumijevana valuta, pravila poslovanja). Lični podaci i lozinka su na stranici „Moj profil”."
   },
   "PRODUCT_CATEGORIES": {
     "TITLE": "Kategorije Proizvoda",

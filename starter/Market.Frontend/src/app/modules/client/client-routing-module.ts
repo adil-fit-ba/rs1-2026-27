@@ -16,7 +16,7 @@ const routes: Routes = [
       { path: '', component: ClientHomeComponent, pathMatch: 'full' },
       { path: 'orders', component: ClientOrdersComponent },
       { path: 'orders/:id', component: ClientOrderDetailsComponent },
-      // ista stranica kao /admin/settings (deklarisana u AccountModule)
+      // ista stranica kao /admin/profile (deklarisana u AccountModule)
       { path: 'profile', component: MyProfileComponent },
     ]
   }

@@ -229,11 +229,16 @@
       "ORDERS_SECTION": "ORDERS",
       "ORDERS": "Orders Overview",
       "SYSTEM": "SYSTEM",
+      "SETTINGS": "Settings",
       "MY_PROFILE": "My profile",
       "LOGOUT": "Logout",
       "PROMOTIONS": "Promotions",
       "EXCHANGE_RATES": "Exchange rates"
     }
+  },
+  "ADMIN_SETTINGS": {
+    "TITLE": "Settings",
+    "EMPTY": "Application settings go here (e.g. company details, default currency, business rules). Personal data and password are on the “My profile” page."
   },
   "PRODUCT_CATEGORIES": {
     "TITLE": "Product Categories",

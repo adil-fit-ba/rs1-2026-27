@@ -126,7 +126,7 @@ Integracijski testovi koriste in-memory bazu (okruženje `IntegrationTests`).
 | Landing (promocije, kategorije, najnoviji proizvodi), pretraga, korpa, checkout, konvertor valuta | `/`, `/search`, `/cart`, `/checkout`, `/converter` | svi (checkout traži prijavu) |
 | Registracija, zaboravljena lozinka, nova lozinka | `/auth/register`, `/auth/forgot-password`, `/auth/reset-password` | svi |
 | Moje narudžbe, moj profil | `/client`, `/client/orders`, `/client/orders/:id`, `/client/profile` | prijavljeni kupac |
-| Kategorije, proizvodi (slika, zalihe), promocije, narudžbe (pregled, promjena statusa, uređivanje stavki), kursna lista, moj profil (`/admin/settings`) | `/admin/...` | administrator |
+| Kategorije, proizvodi (slika, zalihe), promocije, narudžbe (pregled, promjena statusa, uređivanje stavki), kursna lista, moj profil (`/admin/profile`), prazna stranica za postavke aplikacije (`/admin/settings`) | `/admin/...` | administrator |
 
 ### Primjeri formi
 
@@ -161,7 +161,7 @@ Svaki obrazac je urađen jednom, na mjestu gdje mu je prirodno (putanje su u `Ma
 - Registracija: `/auth/register` → `POST /api/auth/register`.
 - Zaboravljena lozinka: `/auth/forgot-password` šalje jednokratni link koji važi 30 minuta (`/auth/reset-password?email=…&token=…`). Odgovor je uvijek isti, da se ne otkrije postoji li nalog. U bazi se čuva samo hash tokena.
 - U Development i Testing okruženju email se ne šalje nego ispisuje u konzolu backenda i u `Logs/app-*.log` (red počinje sa `[DEV EMAIL]`), pa link kopirate odatle. Za pravi pregled emailova pokrenite Mailpit ili Papercut i postavite `Email:Smtp:Host=localhost`, `Port=1025`, `EnableSsl=false`.
-- Moj profil (`/client/profile`, za admina `/admin/settings`): ime, prezime, adresa i grad (`GET/PUT /api/auth/me`) i promjena lozinke (`POST /api/auth/change-password`). Promjena ili reset lozinke odjavljuje sve ostale uređaje.
+- Moj profil (`/client/profile`, za admina `/admin/profile`): ime, prezime, adresa i grad (`GET/PUT /api/auth/me`) i promjena lozinke (`POST /api/auth/change-password`). Promjena ili reset lozinke odjavljuje sve ostale uređaje.
 - Adresa i grad iz profila se prikazuju uz narudžbu.
 
 ### Upload slika

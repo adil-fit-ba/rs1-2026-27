@@ -8,6 +8,7 @@ import { ProductsEditComponent } from './catalogs/products/products-edit/product
 import { ProductCategoriesComponent } from './catalogs/product-categories/product-categories.component';
 import {AdminOrdersComponent} from './orders/admin-orders.component';
 import {MyProfileComponent} from '../account/my-profile/my-profile.component';
+import {AdminSettingsComponent} from './admin-settings/admin-settings.component';
 import {PromotionsComponent} from './catalogs/promotions/promotions.component';
 import {PromotionUpsertComponent} from './catalogs/promotions/promotion-upsert/promotion-upsert.component';
 import {OrderEditComponent} from './orders/order-edit/order-edit.component';
@@ -71,9 +72,15 @@ const routes: Routes = [
         component: ExchangeRatesComponent,
       },
 
-      // MOJ PROFIL (ista stranica kao /client/profile, deklarisana u AccountModule)
+      // POSTAVKE APLIKACIJE (prazna stranica – ovdje idu postavke vaše aplikacije)
       {
         path: 'settings',
+        component: AdminSettingsComponent,
+      },
+
+      // MOJ PROFIL (ista stranica kao /client/profile, deklarisana u AccountModule)
+      {
+        path: 'profile',
         component: MyProfileComponent,
       },
 

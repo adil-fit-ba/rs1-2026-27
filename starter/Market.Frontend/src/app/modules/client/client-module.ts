@@ -19,7 +19,7 @@ import {AccountModule} from '../account/account-module';
   imports: [
     SharedModule,
     ClientRoutingModule,
-    // "Moj profil" (/client/profile) – ista stranica kao /admin/settings
+    // "Moj profil" (/client/profile) – ista stranica kao /admin/profile
     AccountModule
   ]
 })
