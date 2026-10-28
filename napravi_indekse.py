@@ -27,7 +27,7 @@ grupa = lambda naslov, kartice: f'  <h3>{naslov}</h3>\n  <div class="veze">\n{""
 
 def v04(p):
     return (grupa("Prezentacije", [
-        k(p + "v04-nadogradnja-v03-na-cqrs.html", "Nadogradnja V03 na CQRS", "Korak po korak, komponenta po komponenta: paketi, izuzeci, GlobalExceptionHandler, ValidationBehavior, projekcija, queries, commands (30 slajdova)."),
+        k(p + "v04-nadogradnja-v03-na-cqrs.html", "Nadogradnja V03 na CQRS", "Sedam koraka, komponenta po komponenta: paketi, izuzeci, GlobalExceptionHandler, ValidationBehavior, queries, commands, čišćenje (30 slajdova)."),
         k(p + "v04-nadogradnja-v03-na-cqrs.pdf", "Nadogradnja V03 na CQRS (PDF)", "Ista prezentacija za štampu ili čitanje bez interneta."),
         k(p + "v04-put-zahtjeva-kroz-slojeve.html", "Put zahtjeva kroz slojeve", "Živi primjer: zahtjev prolazi kroz kontroler, validator i handler korak po korak, sa SQL-om i odgovorom.")])
       + grupa("Kod", [
