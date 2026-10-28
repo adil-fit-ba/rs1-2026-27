@@ -6,9 +6,10 @@
 <title>RS1 2026/27: materijali s vježbi</title>
 <meta name="description" content="Prezentacije, živi primjeri i kod s vježbi iz Razvoja softvera I, FIT UNMO 2026/27.">
 <style>
-:root { --papir: #eef1f4; --list: #fff; --tinta: #17212b; --siva: #56636f; --linija: #d3dae1; --narandza: #b9531a;
-  --f-naslov: Cambria, Georgia, serif; --f-tekst: "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
-@media (prefers-color-scheme: dark) { :root { --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540; --narandza: #f0894a; color-scheme: dark; } }
+:root { --papir: #eef1f4; --list: #fff; --tinta: #17212b; --siva: #56636f; --linija: #d3dae1; --narandza: #b9531a; --narandza-meko: #fbeee5;
+  --za: #345da9; --kod-bg: #14213d; --kod-tx: #f3f5f8; --kod-kom: #f2c14e;
+  --f-naslov: Cambria, Georgia, serif; --f-tekst: "Segoe UI", "Helvetica Neue", Arial, sans-serif; --f-mono: Consolas, "Courier New", monospace; }
+@media (prefers-color-scheme: dark) { :root { --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540; --narandza: #f0894a; --narandza-meko: #2c2119; --za: #7aa2e3; --kod-bg: #0b1320; color-scheme: dark; } }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--papir); color: var(--tinta); font: 17px/1.5 var(--f-tekst); }
 main { max-width: 960px; margin: 0 auto; padding: 2rem max(16px, env(safe-area-inset-left)) 3rem; }
@@ -22,7 +23,26 @@ h3 { font-size: 1.2rem; margin-top: 1.6rem; }
 .veze a:hover, .veze a:focus-visible { border-color: var(--narandza); }
 .veze b { color: var(--narandza); }
 .veze span { display: block; color: var(--siva); font-size: 0.9rem; }
+.veze a.istaknuto { background: var(--narandza-meko); border: 2px solid var(--narandza); }
+.veze a.istaknuto b::after { content: " →"; }
 a { color: var(--narandza); }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--list); border: 1px solid var(--linija); border-radius: 3px; padding: 0 0.25em; overflow-wrap: anywhere; }
+.tab-okvir { overflow-x: auto; margin: 0.6rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; background: var(--list); }
+th, td { border: 1px solid var(--linija); padding: 0.4rem 0.55rem; text-align: left; vertical-align: top; }
+th { background: var(--kod-bg); color: #fff; font-weight: 600; }
+ul { padding-left: 1.3rem; } li { margin: 0.2rem 0; }
+.cilj { background: var(--list); border-left: 4px solid var(--narandza); padding: 0.7rem 1rem; border-radius: 4px; }
+.kod { position: relative; background: var(--kod-bg); color: var(--kod-tx); border-radius: 6px; margin: 0.6rem 0; }
+.kod .jezik { font: 600 0.78rem var(--f-tekst); color: #c9d3e0; padding: 0.5rem 6.5rem 0.4rem 0.9rem; border-bottom: 1px solid rgb(255 255 255 / 0.12); }
+.kod pre { margin: 0; padding: 0.7rem 0.9rem; overflow-x: auto; font: 0.86rem/1.5 var(--f-mono); }
+.kod .kom { color: var(--kod-kom); }
+.kod code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+.kopiraj { position: absolute; top: 0.32rem; right: 0.45rem; z-index: 2; font: 600 0.74rem/1.2 var(--f-tekst); padding: 0.2rem 0.6rem;
+  border: 1px solid rgb(255 255 255 / 0.4); border-radius: 4px; background: var(--kod-bg); color: #fff; cursor: pointer; }
+.kopiraj:hover, .kopiraj:focus-visible { border-color: var(--narandza); }
+.kopiraj.ok { border-color: #7fd4a0; }
+@media print { .kopiraj { display: none; } }
 footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--siva); border-top: 1px solid var(--linija); padding-top: 0.8rem; }
 </style>
 </head>
@@ -32,6 +52,10 @@ footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--siva); border-top:
   <h1>Razvoj softvera I: materijali s vježbi</h1>
   <p class="siva">Stranice rade u web pregledniku, bez instalacije. Prezentacije se listaju strelicama ← →; opcija „Čitanje“ prikazuje sve slajdove na jednoj stranici.</p>
   <h2>Vježbe 4 (29.10.2026.): CQRS, MediatR i validacija</h2>
+  <h3>Samostalna vježba</h3>
+  <div class="veze">
+    <a href="vjezbe-04/samostalna-vjezba-nastavnik.html" class="istaknuto"><b>Samostalna vježba: entitet Nastavnik</b><span>Nova entity klasa s GetById i Dodaj, po obrascu iz V04: model, migracija, query, command, validator, kontroler i provjera.</span></a>
+  </div>
   <h3>Prezentacije</h3>
   <div class="veze">
     <a href="vjezbe-04/v04-nadogradnja-v03-na-cqrs.html"><b>Nadogradnja V03 na CQRS</b><span>Sedam koraka, komponenta po komponenta: paketi, izuzeci, GlobalExceptionHandler, ValidationBehavior, queries, commands, čišćenje (30 slajdova).</span></a>

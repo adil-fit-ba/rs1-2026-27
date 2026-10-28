@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Samostalna vježba: entitet Nastavnik</title>
+<meta name="description" content="RS1 vježbe 4: nova entity klasa Nastavnik s GetById i Dodaj, po obrascu iz V04.">
+<style>
+:root { --papir: #eef1f4; --list: #fff; --tinta: #17212b; --siva: #56636f; --linija: #d3dae1; --narandza: #b9531a; --narandza-meko: #fbeee5;
+  --za: #345da9; --kod-bg: #14213d; --kod-tx: #f3f5f8; --kod-kom: #f2c14e;
+  --f-naslov: Cambria, Georgia, serif; --f-tekst: "Segoe UI", "Helvetica Neue", Arial, sans-serif; --f-mono: Consolas, "Courier New", monospace; }
+@media (prefers-color-scheme: dark) { :root { --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540; --narandza: #f0894a; --narandza-meko: #2c2119; --za: #7aa2e3; --kod-bg: #0b1320; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--papir); color: var(--tinta); font: 17px/1.5 var(--f-tekst); }
+main { max-width: 960px; margin: 0 auto; padding: 2rem max(16px, env(safe-area-inset-left)) 3rem; }
+h1, h2, h3 { font-family: var(--f-naslov); line-height: 1.2; margin: 0 0 0.4rem; }
+h1 { font-size: 2.1rem; } h2 { font-size: 1.6rem; margin-top: 2.6rem; padding-top: 1.2rem; border-top: 1px solid var(--linija); }
+h3 { font-size: 1.2rem; margin-top: 1.6rem; }
+.oznaka { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--narandza); }
+.siva { color: var(--siva); }
+.veze { display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); margin-top: 0.8rem; }
+.veze a { display: block; text-decoration: none; background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 0.8rem 1rem; color: var(--tinta); }
+.veze a:hover, .veze a:focus-visible { border-color: var(--narandza); }
+.veze b { color: var(--narandza); }
+.veze span { display: block; color: var(--siva); font-size: 0.9rem; }
+.veze a.istaknuto { background: var(--narandza-meko); border: 2px solid var(--narandza); }
+.veze a.istaknuto b::after { content: " →"; }
+a { color: var(--narandza); }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--list); border: 1px solid var(--linija); border-radius: 3px; padding: 0 0.25em; overflow-wrap: anywhere; }
+.tab-okvir { overflow-x: auto; margin: 0.6rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; background: var(--list); }
+th, td { border: 1px solid var(--linija); padding: 0.4rem 0.55rem; text-align: left; vertical-align: top; }
+th { background: var(--kod-bg); color: #fff; font-weight: 600; }
+ul { padding-left: 1.3rem; } li { margin: 0.2rem 0; }
+.cilj { background: var(--list); border-left: 4px solid var(--narandza); padding: 0.7rem 1rem; border-radius: 4px; }
+.kod { position: relative; background: var(--kod-bg); color: var(--kod-tx); border-radius: 6px; margin: 0.6rem 0; }
+.kod .jezik { font: 600 0.78rem var(--f-tekst); color: #c9d3e0; padding: 0.5rem 6.5rem 0.4rem 0.9rem; border-bottom: 1px solid rgb(255 255 255 / 0.12); }
+.kod pre { margin: 0; padding: 0.7rem 0.9rem; overflow-x: auto; font: 0.86rem/1.5 var(--f-mono); }
+.kod .kom { color: var(--kod-kom); }
+.kod code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+.kopiraj { position: absolute; top: 0.32rem; right: 0.45rem; z-index: 2; font: 600 0.74rem/1.2 var(--f-tekst); padding: 0.2rem 0.6rem;
+  border: 1px solid rgb(255 255 255 / 0.4); border-radius: 4px; background: var(--kod-bg); color: #fff; cursor: pointer; }
+.kopiraj:hover, .kopiraj:focus-visible { border-color: var(--narandza); }
+.kopiraj.ok { border-color: #7fd4a0; }
+@media print { .kopiraj { display: none; } }
+footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--siva); border-top: 1px solid var(--linija); padding-top: 0.8rem; }
+</style>
+</head>
+<body>
+<main>
+  <span class="oznaka">Razvoj softvera I · FIT UNMO 2026/27</span>
+  <h1>Samostalna vježba: entitet Nastavnik</h1>
+  <p class="siva">Vježbe 4 · nova entity klasa s GetById i Dodaj, po obrascu iz V04 · <a href="../index.html">svi materijali</a></p>
+  <p class="cilj"><b>Cilj:</b> cijeli put za novi entitet, od modela do provjere u <code>.http</code> fajlu. Infrastruktura iz V04 se ne mijenja: MediatR sam pronalazi nove handlere, a <code>AddValidatorsFromAssembly</code> novi validator, pa <code>Program.cs</code> ostaje isti.</p>
+  <p><b>Polazna tačka:</b> vlastiti projekat nakon V04 ili <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V04/rjesenje/MojaApp">rješenje V04</a> (folder <code>nastava/V04/rjesenje</code>).</p>
+  <h2>Koraci</h2>
+  <p class="siva">Istim redom kao postupak iz prezentacije V04. Poslije svakog koraka: build.</p>
+  <div class="tab-okvir"><table><tr><th>#</th><th>Šta</th><th>Fajl</th></tr><tr><td>1</td><td>Entitet: <code>Id</code>, <code>Ime</code>, <code>Prezime</code>, <code>Email</code>, <code>Zvanje</code> (nije obavezno), <code>DatumKreiranja</code></td><td><code>Models/Nastavnik.cs</code></td></tr><tr><td>2</td><td><code>DbSet&lt;Nastavnik&gt; Nastavnici</code> i Fluent API: <code>Ime</code> i <code>Prezime</code> do 50 znakova, <code>Email</code> do 100 znakova i jedinstven indeks, <code>Zvanje</code> do 50 znakova</td><td><code>Data/AppDbContext.cs</code></td></tr><tr><td>3</td><td>Migracija <code>Nastavnici</code>, pa <code>Update-Database</code></td><td><code>Migrations/</code></td></tr><tr><td>4</td><td>Odgovor <code>NastavnikResponse</code>: <code>Id</code>, <code>ImePrezime</code>, <code>Email</code>, <code>Zvanje</code></td><td><code>Dtos/NastavnikResponse.cs</code></td></tr><tr><td>5</td><td>Query <code>NastavnikGetByIdQuery</code> i handler: projekcija u <code>Select</code>; ako nastavnik ne postoji, <code>NotFoundException</code></td><td><code>Modules/Nastavnici/Queries/GetById/</code></td></tr><tr><td>6</td><td>Command <code>DodajNastavnikaCommand</code>, validator i handler: ako email već postoji, <code>ConflictException</code></td><td><code>Modules/Nastavnici/Commands/Dodaj/</code></td></tr><tr><td>7</td><td><code>NastavniciController</code> sa <code>ISender</code>: <code>GET /Nastavnici/{id}</code> i <code>POST /Nastavnici</code> (201, <code>CreatedAtAction</code>)</td><td><code>Controllers/NastavniciController.cs</code></td></tr></table></div>
+  <h2>Pravila u validatoru</h2>
+  <p class="siva">Validator ne pristupa bazi: provjerava samo podatke iz zahtjeva. Jedinstven email provjerava handler (409).</p>
+  <ul>
+    <li><code>Ime</code> i <code>Prezime</code>: obavezni, najviše 50 znakova.</li>
+    <li><code>Email</code>: obavezan, ispravan email (<code>EmailAddress()</code>), najviše 100 znakova.</li>
+    <li><code>Zvanje</code>: najviše 50 znakova.</li>
+  </ul>
+  <h2>Provjera</h2>
+  <div class="tab-okvir"><table><tr><th>Zahtjev</th><th>Očekivano</th></tr><tr><td><code>POST /Nastavnici</code> s ispravnim podacima</td><td>201, zaglavlje <code>Location: /Nastavnici/{id}</code></td></tr><tr><td><code>POST</code> s praznim imenom i emailom <code>abc</code></td><td>400, greške za <code>Ime</code> i <code>Email</code></td></tr><tr><td><code>POST</code> s emailom koji već postoji</td><td>409</td></tr><tr><td><code>GET /Nastavnici/{id}</code></td><td>200</td></tr><tr><td><code>GET /Nastavnici/999</code></td><td>404</td></tr></table></div>
+  <p class="siva">Zahtjevi za kraj fajla <code>MojaApp.API.http</code>:</p>
+  <div class="kod"><div class="jezik">MojaApp.API.http</div><pre><code><span class="kom">### Samostalna vježba: novi nastavnik (201)</span>
+POST {{MojaApp.API_HostAddress}}/nastavnici
+Content-Type: application/json
+
+{
+  &quot;ime&quot;: &quot;Lejla&quot;,
+  &quot;prezime&quot;: &quot;Lejlić&quot;,
+  &quot;email&quot;: &quot;lejla.lejlic@example.com&quot;,
+  &quot;zvanje&quot;: &quot;docent&quot;
+}
+
+<span class="kom">### Isti email (409)</span>
+POST {{MojaApp.API_HostAddress}}/nastavnici
+Content-Type: application/json
+
+{
+  &quot;ime&quot;: &quot;Lejla&quot;,
+  &quot;prezime&quot;: &quot;Druga&quot;,
+  &quot;email&quot;: &quot;lejla.lejlic@example.com&quot;
+}
+
+<span class="kom">### Prazno ime i neispravan email (400)</span>
+POST {{MojaApp.API_HostAddress}}/nastavnici
+Content-Type: application/json
+
+{
+  &quot;ime&quot;: &quot;&quot;,
+  &quot;prezime&quot;: &quot;Test&quot;,
+  &quot;email&quot;: &quot;abc&quot;
+}
+
+<span class="kom">### Postojeći nastavnik (200): Id iz odgovora na prvi zahtjev</span>
+GET {{MojaApp.API_HostAddress}}/nastavnici/1
+
+<span class="kom">### Nepostojeći nastavnik (404)</span>
+GET {{MojaApp.API_HostAddress}}/nastavnici/999</code></pre></div>
+  <h2>Dodatno</h2>
+  <ul>
+    <li><code>GET /Nastavnici</code>: lista bez paginga, sortirana po prezimenu.</li>
+    <li>Veza <code>Predmet</code> → <code>Nastavnik</code>: <code>NastavnikId</code> nije obavezan; nepostojeći nastavnik daje 404 iz handlera, kao smjer kod studenta.</li>
+  </ul>
+  <p class="siva">Rad ide kao u V02 i V03: issue, grana, commit po koraku i pull request.</p>
+
+  <footer>Razvoj softvera I, Fakultet informacijskih tehnologija, Univerzitet „Džemal Bijedić“ u Mostaru, 2026/27.
+  Početni projekat za seminarski rad: <a href="https://github.com/adil-fit-ba/rs1-2026-27">github.com/adil-fit-ba/rs1-2026-27</a>.</footer>
+</main>
+<script>
+// Dugme „Kopiraj“ u svakom bloku koda (.kod s <pre>): mini-prezentacije i HTML prezentacije iz lib.js.
+// Tekst se uzima iz innerText, pa ostaju prelomi redova i kad su redovi <span> s display: block.
+(function () {
+  async function uClipboard(t) {
+    try { await navigator.clipboard.writeText(t); return true; }
+    catch (e) {
+      // rezerva kad Clipboard API nije dostupan (stariji web preglednik, stranica bez HTTPS-a)
+      const a = document.createElement("textarea");
+      a.value = t; a.setAttribute("readonly", ""); a.style.position = "fixed"; a.style.opacity = "0";
+      document.body.append(a); a.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      a.remove(); return ok;
+    }
+  }
+  function dodaj() {
+    document.querySelectorAll(".kod").forEach((k) => {
+      const pre = k.querySelector("pre");
+      if (!pre || k.querySelector(".kopiraj")) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "kopiraj"; b.textContent = "Kopiraj"; b.setAttribute("aria-label", "Kopiraj kod");
+      b.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const t = pre.innerText.replace(/ /g, " ").replace(/[ \t]+$/gm, "").replace(/\n+$/, "");
+        const ok = await uClipboard(t);
+        b.textContent = ok ? "Kopirano" : "Nije kopirano"; b.classList.toggle("ok", ok);
+        clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = "Kopiraj"; b.classList.remove("ok"); }, 1500);
+      });
+      k.append(b);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", dodaj); else dodaj();
+})();
+</script>
+</body>
+</html>
