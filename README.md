@@ -5,6 +5,7 @@ Repozitorij predmeta Razvoj softvera I (FIT, Univerzitet „Džemal Bijedić” 
 | Folder | Sadržaj |
 |---|---|
 | [`starter/`](starter/) | Starter projekat na kojem se radi seminarski rad: ASP.NET Core (.NET 10, Clean Architecture sa CQRS) i Angular 21 |
+| [`nastava/`](nastava/) | Kod s vježbi (MojaApp, .NET 8), po sedmicama |
 
 Materijali s vježbi (prezentacije, primjeri i početni kod): [adil-fit-ba.github.io/rs1-2026-27](https://adil-fit-ba.github.io/rs1-2026-27/). Objavljuju se s grane `gh-pages`.
 

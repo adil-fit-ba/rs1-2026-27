@@ -1,0 +1,206 @@
+@MojaApp.API_HostAddress = http://localhost:5183
+
+### Svi studenti
+GET {{MojaApp.API_HostAddress}}/studenti
+Accept: application/json
+
+### Student po Id-u (200)
+GET {{MojaApp.API_HostAddress}}/studenti/1
+
+### Nepostojeći student (404)
+GET {{MojaApp.API_HostAddress}}/studenti/999
+
+### Dodavanje (201)
+POST {{MojaApp.API_HostAddress}}/studenti
+Content-Type: application/json
+
+{
+  "ime": "Lejla",
+  "prezime": "Lejlić",
+  "brojIndeksa": "IB260003",
+  "datumRodjenja": "2006-09-01"
+}
+
+### Neispravan broj indeksa (400)
+POST {{MojaApp.API_HostAddress}}/studenti
+Content-Type: application/json
+
+{
+  "ime": "Test",
+  "prezime": "Test",
+  "brojIndeksa": "123"
+}
+
+### Zadatak 3: pretraga (200, samo Ana)
+GET {{MojaApp.API_HostAddress}}/studenti?pretraga=ANA
+
+### Zadatak 4: postojeći broj indeksa (409)
+POST {{MojaApp.API_HostAddress}}/studenti
+Content-Type: application/json
+
+{
+  "ime": "Ana",
+  "prezime": "Druga",
+  "brojIndeksa": "IB260001"
+}
+
+### Zadatak 2: izmjena (204)
+PUT {{MojaApp.API_HostAddress}}/studenti/2
+Content-Type: application/json
+
+{
+  "ime": "Edin",
+  "prezime": "Novi",
+  "datumRodjenja": "2005-12-24"
+}
+
+### Zadatak 2: nepostojeći student (404)
+PUT {{MojaApp.API_HostAddress}}/studenti/99
+Content-Type: application/json
+
+{
+  "ime": "X",
+  "prezime": "Y"
+}
+
+### Zadatak 1: brisanje (204; ponovljeni zahtjev vraća 404)
+DELETE {{MojaApp.API_HostAddress}}/studenti/1
+
+### ===== V03 =====
+
+### Studenti sa smjerom
+GET {{MojaApp.API_HostAddress}}/studenti
+
+### Student s upisima
+GET {{MojaApp.API_HostAddress}}/studenti/1
+
+### Smjerovi s brojem studenata
+GET {{MojaApp.API_HostAddress}}/smjerovi
+
+### Predmeti s brojem upisanih
+GET {{MojaApp.API_HostAddress}}/predmeti
+
+### Upis studenta na predmet (201; ponovljen zahtjev 409)
+POST {{MojaApp.API_HostAddress}}/upisi
+Content-Type: application/json
+
+{
+  "studentId": 2,
+  "predmetId": 2
+}
+
+### Upis: nepostojeći student (400)
+POST {{MojaApp.API_HostAddress}}/upisi
+Content-Type: application/json
+
+{
+  "studentId": 99,
+  "predmetId": 1
+}
+
+### Student s nepostojećim smjerom (V03: 400; V04: 404, vidi ispod)
+POST {{MojaApp.API_HostAddress}}/studenti
+Content-Type: application/json
+
+{
+  "ime": "Amar",
+  "prezime": "Amić",
+  "brojIndeksa": "IB260010",
+  "smjerId": 77
+}
+
+### Brisanje studenta s upisima (409)
+DELETE {{MojaApp.API_HostAddress}}/studenti/1
+
+### Zadatak 1: novi predmet (201; ista šifra 409)
+POST {{MojaApp.API_HostAddress}}/predmeti
+Content-Type: application/json
+
+{
+  "naziv": "Algoritmi i strukture podataka",
+  "sifra": "ASP",
+  "ects": 6
+}
+
+### Zadatak 2: ocjena (204; ocjena 4 → 400)
+PUT {{MojaApp.API_HostAddress}}/upisi/1/ocjena
+Content-Type: application/json
+
+{
+  "ocjena": 9
+}
+
+### Zadatak 3: statistika predmeta
+GET {{MojaApp.API_HostAddress}}/predmeti/1/statistika
+
+### Zadatak 4: brisanje predmeta s upisima (409)
+DELETE {{MojaApp.API_HostAddress}}/predmeti/1
+
+### Zadatak 5: ispis s predmeta s ocjenom (409)
+DELETE {{MojaApp.API_HostAddress}}/upisi/1
+
+
+### ===== V04 =====
+### Isti zahtjevi kao gore vraćaju iste statuse, osim nepostojećeg smjera (404 umjesto 400).
+### Greške su sada ProblemDetails iz GlobalExceptionHandler-a.
+
+### Validator: više grešaka odjednom (400, errors po polju)
+POST {{MojaApp.API_HostAddress}}/studenti
+Content-Type: application/json
+
+{
+  "ime": "",
+  "prezime": "Test",
+  "brojIndeksa": "123"
+}
+
+### Handler: nepostojeći smjer → NotFoundException → 404 (validator ne pristupa bazi)
+POST {{MojaApp.API_HostAddress}}/studenti
+Content-Type: application/json
+
+{
+  "ime": "Amar",
+  "prezime": "Amić",
+  "brojIndeksa": "IB260010",
+  "smjerId": 77
+}
+
+### Handler: NotFoundException → 404
+GET {{MojaApp.API_HostAddress}}/studenti/999
+
+### Handler: ConflictException → 409
+DELETE {{MojaApp.API_HostAddress}}/studenti/1
+
+### Zadatak 1: predmeti (lista i jedan predmet)
+GET {{MojaApp.API_HostAddress}}/predmeti/1
+
+### Zadatak 2: novi predmet (201; ista šifra 409; prazni podaci 400)
+POST {{MojaApp.API_HostAddress}}/predmeti
+Content-Type: application/json
+
+{
+  "naziv": "",
+  "sifra": "",
+  "ects": 0
+}
+
+### Zadatak 3: ocjena izvan raspona (400)
+PUT {{MojaApp.API_HostAddress}}/upisi/1/ocjena
+Content-Type: application/json
+
+{
+  "ocjena": 4
+}
+
+### Zadatak 4: brisanje nepostojećeg predmeta (404)
+DELETE {{MojaApp.API_HostAddress}}/predmeti/99
+
+### Zadatak 5: izmjena; Id iz tijela se ignoriše ([JsonIgnore]), važi Id iz rute (204)
+PUT {{MojaApp.API_HostAddress}}/studenti/2
+Content-Type: application/json
+
+{
+  "id": 999,
+  "ime": "Edin",
+  "prezime": "Edić"
+}
