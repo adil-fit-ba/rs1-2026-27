@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RS1 V04 – put zahtjeva kroz slojeve</title>
+<meta name="description" content="RS1 vježbe 4: tanak kontroler, MediatR handler, FluentValidation i globalni handler grešaka, korak po korak na MojaApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Raspored: mini-prezentacija od 10 slajdova; jedan slajd na ekranu (strelice), ili svi jedan ispod
+   drugog (način „Čitanje“). Papir je svijetao, svijet i putanje su na tamnoj podlozi kao u NetLogu. */
+:root {
+  --papir: #eef1f4; --list: #ffffff; --tinta: #17212b; --siva: #56636f; --linija: #d3dae1;
+  --narandza: #b9531a; --narandza-meko: #f6dfd0; --margina: #e5a3a3; --svijet: #0b0d10;
+  --za: #345da9; --protiv: #d73229; --neodlucni: #8d8d8d;
+  --f-naslov: "Bitter", "Georgia", "Cambria", serif;
+  --f-tekst: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+  --t-0: 0.83rem; --t-1: 1rem; --t-2: 1.17rem; --t-3: 1.5rem; --t-4: 2.2rem; --t-5: 3.1rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540;
+    --narandza: #f0894a; --narandza-meko: #3a2416; --margina: #6b3535; --za: #5b86d6; --protiv: #e5574e; --neodlucni: #9a9a9a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540;
+  --narandza: #f0894a; --narandza-meko: #3a2416; --margina: #6b3535; --za: #5b86d6; --protiv: #e5574e; --neodlucni: #9a9a9a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { font-size: 18px; }
+@media (max-width: 600px) { html { font-size: 16px; } }
+body { margin: 0; background: var(--papir); color: var(--tinta); font-family: var(--f-tekst); line-height: 1.55; }
+[hidden] { display: none !important; }
+a { color: var(--narandza); text-underline-offset: 0.15em; }
+:focus-visible { outline: 3px solid var(--narandza); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--f-naslov); text-wrap: balance; line-height: 1.18; margin: 0; }
+p { margin: 0; }
+code { font-family: var(--f-mono); font-size: 0.9em; }
+p code, li code, td code { background: var(--narandza-meko); padding: 0.05em 0.3em; border-radius: 3px; }
+.okvir { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.oznaka { font-family: var(--f-mono); font-size: var(--t-0); letter-spacing: 0.08em; text-transform: uppercase; color: var(--narandza); font-weight: 500; }
+.siva { color: var(--siva); }
+.mala { font-size: var(--t-0); }
+
+/* traka na vrhu */
+.vrh { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--papir); border-bottom: 1px solid var(--linija); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--papir); }
+.vrh .okvir { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding-block: 0.55rem; flex-wrap: wrap; }
+.vrh b { font-family: var(--f-naslov); font-weight: 700; }
+.nacin { display: flex; gap: 0.3rem; }
+button { font: 500 var(--t-0) var(--f-mono); border-radius: 4px; padding: 0.4rem 0.8rem; cursor: pointer;
+  border: 1px solid var(--narandza); background: transparent; color: var(--narandza); }
+button[aria-pressed="true"], button.glavno { background: var(--narandza); color: var(--list); }
+button:disabled { opacity: 0.45; cursor: default; }
+
+/* slajdovi */
+.slajd { padding-block: 2rem 6rem; scroll-margin-top: 3.4rem; }
+main.prezentacija .slajd { display: none; min-height: calc(100svh - 3.2rem); }
+main.prezentacija .slajd.aktivan { display: block; }
+main.citanje .slajd { border-bottom: 1px solid var(--linija); padding-block: 2.5rem; }
+.glava { display: grid; gap: 0.35rem; margin-bottom: 1.4rem; }
+.glava h2 { font-size: var(--t-4); max-width: 30ch; }
+.glava .podnaslov { font-size: var(--t-2); color: var(--siva); max-width: 52rem; }
+.dvije { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+.dvije > * { min-width: 0; }
+@media (max-width: 900px) { .dvije { grid-template-columns: minmax(0, 1fr); } }
+.tekst { display: grid; gap: 1rem; }
+.tekst ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
+.panel { background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 1rem; }
+.pitanje { background: var(--narandza-meko); border-radius: 4px; padding: 0.9rem 1rem; }
+.pitanje h3 { font-size: var(--t-1); margin-bottom: 0.25rem; }
+
+/* naslovni slajd */
+.naslovni { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 2.4rem; align-items: center; padding-top: 1rem; }
+.naslovni > * { min-width: 0; }
+.naslovni h1 { font-size: var(--t-5); letter-spacing: -0.01em; margin: 0.4rem 0 0.9rem; }
+.naslovni .teza { font-size: var(--t-3); font-family: var(--f-naslov); line-height: 1.3; }
+.naslovni .uvod { margin-top: 1rem; color: var(--siva); }
+@media (max-width: 900px) { .naslovni { grid-template-columns: minmax(0, 1fr); } }
+
+/* list papira: pravilo za model na papiru */
+.papir {
+  margin: 0; background-color: var(--list); border: 1px solid var(--linija); border-radius: 4px;
+  padding: 1rem 1.2rem 1.2rem 2.4rem; position: relative; line-height: 1.75rem;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.75rem - 1px), var(--linija) calc(1.75rem - 1px), var(--linija) 1.75rem);
+  background-position: 0 2.55rem;
+}
+.papir::before { content: ""; position: absolute; left: 1.5rem; top: 0; bottom: 0; width: 2px; background: var(--margina); }
+.papir figcaption { font-family: var(--f-mono); font-size: var(--t-0); color: var(--siva); letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.75rem; }
+.papir p, .papir li { font-family: var(--f-naslov); font-size: 1.08rem; }
+.papir ul { list-style: none; margin: 0; padding: 0 0 0 1.2rem; }
+.papir li::before { content: "→ "; color: var(--narandza); font-family: var(--f-tekst); }
+.papir b { color: var(--narandza); }
+
+/* kartice (pojava, sastavni dijelovi, koraci) */
+.kartice { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.kartica { background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 1rem; display: grid; gap: 0.6rem; align-content: start; }
+.kartica h3 { font-size: var(--t-2); }
+.kartica svg { width: 100%; height: auto; display: block; }
+.kartica ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.25rem; }
+.kartica .kod-cip { font-family: var(--f-mono); font-size: 0.78rem; color: var(--siva); border-top: 1px dashed var(--linija); padding-top: 0.5rem; }
+.korak-broj { font-family: var(--f-mono); font-weight: 500; color: var(--narandza); }
+
+/* SVG ilustracije: boje iz tokena */
+.il-osa { stroke: var(--siva); stroke-width: 1.5; }
+.il-tekst { fill: var(--siva); font: 13px var(--f-mono); }
+.il-tekst-veci { fill: var(--tinta); font: 600 15px var(--f-tekst); }
+.il-za { fill: var(--za); } .il-protiv { fill: var(--protiv); } .il-neo { fill: var(--neodlucni); }
+.il-prozor { fill: var(--narandza-meko); stroke: var(--narandza); stroke-dasharray: 4 3; }
+.il-strelica { stroke: var(--narandza); stroke-width: 2.5; fill: none; }
+.il-vrh { fill: var(--narandza); }
+.il-domet { fill: none; stroke: var(--narandza); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.il-svijet { fill: var(--svijet); }
+.il-kuca { fill: #eded2f; }
+.il-precrtano { stroke: var(--protiv); stroke-width: 3; }
+.il-oblak { fill: var(--list); stroke: var(--siva); stroke-width: 1.2; }
+
+/* kalkulator jednog susreta */
+.kalk { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 1.5rem; }
+.kalk > * { min-width: 0; }
+@media (max-width: 900px) { .kalk { grid-template-columns: minmax(0, 1fr); } }
+.klizaci { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 1.2rem; }
+@media (max-width: 520px) { .klizaci { grid-template-columns: minmax(0, 1fr); } }
+.klizac { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.klizac label { font-family: var(--f-mono); font-size: var(--t-0); }
+.klizac output { font-family: var(--f-mono); font-size: var(--t-0); font-variant-numeric: tabular-nums; }
+.klizac input { grid-column: 1 / -1; width: 100%; accent-color: var(--narandza); }
+.racun { font-family: var(--f-mono); font-size: 0.86rem; line-height: 1.7; background: var(--papir); border-radius: 4px; padding: 0.7rem 0.9rem; overflow-x: auto; white-space: pre; }
+.racun .da { color: var(--za); font-weight: 600; } .racun .ne { color: var(--protiv); font-weight: 600; }
+.dugmad { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+/* putanje stava */
+.putanje-okvir { background: var(--svijet); border-radius: 6px; padding: 0.6rem; }
+canvas.putanje { width: 100%; aspect-ratio: 2 / 1; display: block; }
+.izbor { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.izbor button { border-color: var(--linija); color: var(--siva); }
+.izbor button[aria-pressed="true"] { border-color: var(--narandza); color: var(--list); background: var(--narandza); }
+.legenda { display: flex; gap: 1rem; flex-wrap: wrap; font-size: var(--t-0); color: var(--siva); margin-top: 0.4rem; }
+.legenda i { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; margin-right: 0.35em; vertical-align: -0.05em; }
+.potpis { font-size: var(--t-0); color: var(--siva); margin-top: 0.4rem; }
+.potpis b { color: var(--tinta); font-weight: 600; }
+
+/* grafikoni iz mjerenja */
+svg.grafik { width: 100%; height: auto; display: block; overflow: visible; }
+.g-mreza { stroke: var(--linija); stroke-width: 1; } .g-os { stroke: var(--siva); stroke-width: 1; }
+.g-oznaka { fill: var(--siva); font: 12px var(--f-mono); } .g-naslov-x { fill: var(--siva); font: 12px var(--f-tekst); }
+.g-vrijednost { fill: var(--tinta); font: 500 12px var(--f-mono); }
+.g-raspon { stroke: var(--narandza); stroke-width: 3; stroke-linecap: round; opacity: 0.35; }
+.g-tacka { fill: var(--narandza); }
+.g-ref { stroke: var(--siva); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.g-ref-tekst { fill: var(--siva); font: italic 12px var(--f-tekst); }
+
+/* kod */
+.kodovi { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+.kodovi > * { min-width: 0; }
+@media (max-width: 900px) { .kodovi { grid-template-columns: minmax(0, 1fr); } }
+.kod { background: var(--list); border: 1px solid var(--linija); border-radius: 6px; overflow: hidden; }
+.kod .jezik { font-family: var(--f-mono); font-size: var(--t-0); padding: 0.4rem 0.8rem; border-bottom: 1px solid var(--linija); color: var(--siva); }
+.kod pre { margin: 0; padding: 0.8rem; overflow-x: auto; }
+.kod code { font-size: 14px; line-height: 1.55; white-space: pre; }
+.kod .kom { color: var(--siva); font-style: italic; }
+.kod mark { background: var(--narandza-meko); color: inherit; border-radius: 2px; padding: 0 0.15em; }
+.kod mark b { color: var(--narandza); font-family: var(--f-tekst); }
+.oblacici { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 1rem; margin-top: 1rem; }
+.oblacici div { border-left: 3px solid var(--narandza); padding-left: 0.8rem; }
+.oblacici b.br { font-family: var(--f-mono); color: var(--narandza); margin-right: 0.3rem; }
+
+/* probaj */
+.veze { display: grid; gap: 0.7rem; }
+.veze a { display: block; text-decoration: none; background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 0.8rem 1rem; color: var(--tinta); }
+.veze a:hover { border-color: var(--narandza); }
+.veze a b { color: var(--narandza); }
+.veze a span { display: block; color: var(--siva); font-size: var(--t-0); }
+.literatura { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; font-size: 0.92rem; }
+
+/* donja navigacija */
+.navigacija { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--papir); border-top: 1px solid var(--linija);
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.navigacija .okvir { display: flex; align-items: center; gap: 0.8rem; padding-block: 0.5rem; }
+.navigacija .naslov-slajda { flex: 1; min-width: 0; font-size: var(--t-0); color: var(--siva); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.navigacija .broj { font-family: var(--f-mono); font-size: var(--t-0); font-variant-numeric: tabular-nums; }
+.napredak { position: absolute; top: -1px; left: 0; height: 2px; background: var(--narandza); transition: width 0.25s; }
+main.citanje ~ .navigacija { display: none; }
+@media (prefers-reduced-motion: reduce) { .napredak { transition: none; } }
+
+</style>
+<style>
+/* V04: cijev slojeva, kod s obojenim odgovornostima, kviz */
+.cijev { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; margin: 0.2rem 0 1rem; }
+.cvor { font: 500 0.74rem var(--f-mono); text-align: center; padding: 0.55rem 0.2rem; border-radius: 5px; background: var(--list);
+  border: 1.5px solid var(--linija); color: var(--siva); position: relative; line-height: 1.25; overflow-wrap: anywhere; min-width: 0; }
+.cvor small { display: block; font-weight: 400; font-size: 0.66rem; opacity: 0.85; }
+.cvor.prosao { border-color: var(--za); color: var(--tinta); }
+.cvor.aktivan { background: var(--narandza); border-color: var(--narandza); color: var(--list); }
+.cvor.preskocen { opacity: 0.28; border-style: dashed; }
+@media (max-width: 760px) { .cijev { grid-template-columns: repeat(4, minmax(0, 1fr)); } .cvor { font-size: 0.62rem; } .cvor small { font-size: 0.56rem; } }
+.korak-opis { font-size: var(--t-2); min-height: 3.2em; }
+.korak-opis b { color: var(--narandza); }
+.status { font: 600 var(--t-3) var(--f-mono); }
+.status.s2 { color: var(--za); } .status.s4 { color: var(--protiv); }
+.sql { font: 0.74rem/1.45 var(--f-mono); white-space: pre; overflow-x: auto; background: var(--papir); border-radius: 4px;
+  padding: 0.6rem 0.8rem; margin: 0.4rem 0 0; max-height: 15rem; overflow-y: auto; }
+.brojaci { display: flex; gap: 1.2rem; flex-wrap: wrap; font-family: var(--f-mono); font-size: var(--t-0); color: var(--siva); }
+.brojaci b { color: var(--tinta); }
+.kod code span.l { display: block; border-left: 4px solid transparent; padding-left: 0.4rem; margin-left: -0.4rem; }
+.kod code span.l.pravilo { border-color: var(--narandza); }
+.kod code span.l.baza { border-color: var(--za); }
+.kod code span.l.http { border-color: var(--protiv); }
+.kod.prigusi code span.l:not(.istakni) { opacity: 0.35; }
+.legenda button.pravilo[aria-pressed="true"] { background: var(--narandza); border-color: var(--narandza); }
+.legenda button.baza[aria-pressed="true"] { background: var(--za); border-color: var(--za); color: #fff; }
+.legenda button.http[aria-pressed="true"] { background: var(--protiv); border-color: var(--protiv); color: #fff; }
+.legenda button.pravilo { border-left: 4px solid var(--narandza); } .legenda button.baza { border-left: 4px solid var(--za); }
+.legenda button.http { border-left: 4px solid var(--protiv); }
+.kviz { display: grid; gap: 0.5rem; }
+.kviz .red { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; align-items: center; background: var(--list);
+  border: 1px solid var(--linija); border-radius: 6px; padding: 0.55rem 0.8rem; }
+.kviz .red .obj { grid-column: 1 / -1; font-size: var(--t-0); color: var(--siva); display: none; }
+.kviz .red.odgovoreno .obj { display: block; }
+.kviz .red.tacno { border-color: var(--za); } .kviz .red.netacno { border-color: var(--protiv); }
+.kviz .red .obj b.da { color: var(--za); } .kviz .red .obj b.ne { color: var(--protiv); }
+table.mapa { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+table.mapa th, table.mapa td { border-bottom: 1px solid var(--linija); padding: 0.45rem 0.5rem; text-align: left; vertical-align: top; }
+table.mapa td:first-child, table.mapa td:nth-child(2) { font-family: var(--f-mono); font-size: 0.8rem; overflow-wrap: anywhere; }
+.mapa-okvir { overflow-x: auto; max-width: 100%; }
+@media (max-width: 700px) { table.mapa { font-size: 0.8rem; } table.mapa td:first-child, table.mapa td:nth-child(2) { font-size: 0.7rem; } }
+table.mapa tr.vidi td { background: var(--narandza-meko); }
+.json { font: 0.78rem/1.45 var(--f-mono); white-space: pre-wrap; word-break: break-word; background: var(--papir); border-radius: 4px; padding: 0.6rem 0.8rem; margin: 0.4rem 0 0; }
+</style>
+</head>
+<body>
+
+<header class="vrh">
+  <div class="okvir">
+    <span><span class="oznaka">RS1 · Vježbe 4</span> &nbsp;<b>Put zahtjeva kroz slojeve</b></span>
+    <div class="nacin" role="group" aria-label="Način prikaza">
+      <button type="button" id="nacin-prezentacija" aria-pressed="true">Prezentacija</button>
+      <button type="button" id="nacin-citanje" aria-pressed="false">Čitanje</button>
+    </div>
+  </div>
+</header>
+
+<main class="prezentacija" id="slajdovi">
+
+<!-- 1 ============================================================ -->
+<section class="slajd" id="s1" data-naslov="Slojevi i CQRS">
+  <div class="okvir naslovni">
+    <div>
+      <span class="oznaka">Razvoj softvera I · Vježbe 4 · MojaApp (.NET 8)</span>
+      <h1>Kontroler prima, handler radi, pravila čuvaju validator i jedan handler grešaka</h1>
+      <p class="teza">Isti endpointi kao u V03, ali svaki dio koda ima svoje mjesto.</p>
+      <p class="uvod">Obrazac je isti kao u početnom projektu (starteru) za seminarski rad (<code>Market.Application\Modules\…</code>):
+        query čita, command mijenja podatke, a MediatR ih vodi do handlera kroz validaciju.</p>
+    </div>
+    <div class="kartice">
+      <div class="kartica"><h3><span class="korak-broj">1</span> Tanak kontroler</h3>
+        <p>Prima HTTP zahtjev i šalje ga dalje: <code>sender.Send(command)</code>. Ne pristupa bazi i ne provjerava pravila.</p></div>
+      <div class="kartica"><h3><span class="korak-broj">2</span> Validator</h3>
+        <p>Provjerava podatke iz zahtjeva, bez pristupa bazi. Ako nisu ispravni, vraća se 400 i handler se ne poziva.</p></div>
+      <div class="kartica"><h3><span class="korak-broj">3</span> Handler</h3>
+        <p>Rad s bazom i pravila koja zavise od postojećih podataka (404, 409).</p></div>
+      <div class="kartica"><h3><span class="korak-broj">4</span> Globalni handler grešaka</h3>
+        <p>Izuzetak postaje HTTP odgovor na jednom mjestu, bez <code>try/catch</code> po kontrolerima.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 ============================================================ -->
+<section class="slajd" id="s2" data-naslov="Prije i poslije">
+  <div class="okvir">
+    <div class="glava">
+      <span class="oznaka">Isti endpoint: POST /Studenti</span>
+      <h2>V03: sve u akciji kontrolera. V04: svaka odgovornost u svom fajlu</h2>
+      <p class="podnaslov">Kliknite boju u legendi da istaknete redove koda s tom odgovornošću. Lijevo je akcija iz V03, desno ista funkcionalnost u V04.</p>
+    </div>
+    <div class="dugmad legenda" role="group" aria-label="Odgovornosti">
+      <button type="button" class="pravilo" data-kat="pravilo" aria-pressed="false">pravila (validacija, konflikt)</button>
+      <button type="button" class="baza" data-kat="baza" aria-pressed="false">rad s bazom</button>
+      <button type="button" class="http" data-kat="http" aria-pressed="false">HTTP odgovor</button>
+    </div>
+    <div class="kodovi" style="margin-top:0.8rem">
+      <div class="kod" id="k-v03"><div class="jezik">V03 · Controllers/StudentiController.cs (Dodaj)</div><pre><code></code></pre></div>
+      <div class="kod" id="k-v04"><div class="jezik">V04 · kontroler, validator, handler (skraćeno)</div><pre><code></code></pre></div>
+    </div>
+    <p class="potpis">U V03 su pravila formata bila u atributima na <code>StudentDodajRequest</code> (<code>[Required]</code>, <code>[RegularExpression]</code>), a pravila nad bazom i statusni kodovi u akciji. U V04 ni kontroler ni validator nemaju <code>AppDbContext</code>: sva pravila nad bazom su u handleru.</p>
+  </div>
+</section>
+
+<!-- 3 ============================================================ -->
+<section class="slajd" id="s3" data-naslov="Živi primjer: put zahtjeva">
+  <div class="okvir">
+    <div class="glava">
+      <span class="oznaka">Živi primjer · korak po korak</span>
+      <h2>Gdje se zahtjev zaustavlja i koji se SQL izvršava</h2>
+      <p class="podnaslov">Izaberite zahtjev i pritisnite „Korak“. Odgovori i SQL snimljeni su u rješenju MojaApp V04. Nisu izmišljeni.</p>
+    </div>
+    <div class="interaktivno">
+      <div class="izbor" role="group" aria-label="Zahtjev" id="scenariji"></div>
+      <div class="cijev" id="cijev" aria-label="Slojevi"></div>
+      <div class="dvije" style="gap:1.2rem">
+        <div>
+          <p class="korak-opis" id="opis" aria-live="polite"></p>
+          <div class="kod"><div class="jezik" id="kod-fajl">—</div><pre><code id="kod-tekst"></code></pre></div>
+        </div>
+        <div>
+          <div class="brojaci"><span>korak <b id="br-korak">0</b> / <b id="br-ukupno">0</b></span><span>SQL upita do sada: <b id="br-sql">0</b></span><span>status: <b id="br-status">—</b></span></div>
+          <div class="sql" id="sql" aria-label="SQL">—</div>
+          <div class="dugmad" style="margin-top:0.8rem">
+            <button type="button" class="glavno" id="b-korak">Korak</button>
+            <button type="button" id="b-kraj">Do kraja</button>
+            <button type="button" id="b-ispocetka">Ispočetka</button>
+          </div>
+        </div>
+      </div>
+      <p class="potpis">Snimljeno u LocalDB-u 28.10.2026: svaki zahtjev jednom, SQL iz loga EF Core (<code>Database.Command</code>), u bazi sa početnim podacima iz migracija.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4 ============================================================ -->
+<section class="slajd" id="s4" data-naslov="Validator ili handler">
+  <div class="okvir">
+    <div class="glava">
+      <span class="oznaka">Pitanje za čas</span>
+      <h2>Gdje ide koje pravilo?</h2>
+      <p class="podnaslov">Validator provjerava samo podatke iz zahtjeva, bez pristupa bazi (400). Handler provjerava pravila koja zavise od stanja u bazi: zapis ne postoji (404) ili bi se pravilo prekršilo (409). Za svako pravilo izaberite validator ili handler.</p>
+    </div>
+    <div class="kviz" id="kviz"></div>
+    <p class="potpis" id="kviz-rez" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- 5 ============================================================ -->
+<section class="slajd" id="s5" data-naslov="Projekcija kao Expression">
+  <div class="okvir">
+    <div class="glava">
+      <span class="oznaka">Projekcija na jednom mjestu</span>
+      <h2>Expression postaje SQL; Func se izvršava tek u memoriji</h2>
+      <p class="podnaslov">Ista projekcija, dva tipa. Prekidač prikazuje stvarni SQL i odgovor za <code>GET /Studenti</code>.</p>
+    </div>
+    <div class="izbor" role="group" aria-label="Tip projekcije">
+      <button type="button" id="p-expr" aria-pressed="true">Expression&lt;Func&lt;Student, StudentResponse&gt;&gt;</button>
+      <button type="button" id="p-func" aria-pressed="false">Func&lt;Student, StudentResponse&gt;</button>
+    </div>
+    <div class="dvije" style="gap:1.2rem">
+      <div>
+        <div class="kod"><div class="jezik">Modules/Studenti/Queries/Lista/ListaStudenataQueryHandler.cs</div><pre><code id="p-kod"></code></pre></div>
+        <div class="oblacici" id="p-obl"></div>
+      </div>
+      <div>
+        <p class="mala siva" style="margin:0">SQL koji je EF Core poslao bazi</p>
+        <div class="sql" id="p-sql"></div>
+        <p class="mala siva" style="margin:0.6rem 0 0">Odgovor (prvi student)</p>
+        <div class="json" id="p-json"></div>
+      </div>
+    </div>
+    <p class="potpis">Verzija s <code>Func</code> je napravljena samo za ovo mjerenje (<code>Projekcija.Compile()</code>), u kopiji rješenja; rješenje koristi <code>Expression</code>.</p>
+  </div>
+</section>
+
+<!-- 6 ============================================================ -->
+<section class="slajd" id="s6" data-naslov="MojaApp i starter">
+  <div class="okvir">
+    <div class="glava">
+      <span class="oznaka">Veza sa seminarskim radom</span>
+      <h2>Isti obrazac, u starteru razdvojen u projekte</h2>
+      <p class="podnaslov">U aplikaciji MojaApp sve je u jednom projektu, raspoređeno po folderima. Starter (.NET 10) isto raspoređuje u četiri projekta. Kliknite red da vidite primjer iz startera.</p>
+    </div>
+    <div class="mapa-okvir"><table class="mapa" id="mapa">
+      <tr><th>MojaApp V04</th><th>Starter</th><th>Šta je</th></tr>
+    </table></div>
+    <p class="potpis" id="mapa-primjer" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- 7 ============================================================ -->
+<section class="slajd" id="s7" data-naslov="Zadaci">
+  <div class="okvir">
+    <div class="glava">
+      <span class="oznaka">Zadaci</span>
+      <h2>Predmeti i upisi po istom obrascu</h2>
+      <p class="podnaslov">Statusni kodovi ostaju kao u V03. Provjera: zahtjevi u <code>MojaApp.API.http</code>, odjeljak V04.</p>
+    </div>
+    <div class="kartice">
+      <div class="kartica"><h3><span class="korak-broj">1</span> GET /Predmeti i /Predmeti/{id}</h3>
+        <p>Dva queryja; <code>PredmetResponse.Projekcija</code> kao <code>Expression</code>, s brojem upisanih.</p><div class="kod-cip">200 · 404</div></div>
+      <div class="kartica"><h3><span class="korak-broj">2</span> POST /Predmeti</h3>
+        <p>Command i validator (naziv, šifra, ECTS 1–30). Ista šifra: <code>ConflictException</code>.</p><div class="kod-cip">201 · 400 · 409</div></div>
+      <div class="kartica"><h3><span class="korak-broj">3</span> PUT /Upisi/{id}/ocjena</h3>
+        <p>Ocjena 6–10 u validatoru; <code>UpisId</code> iz rute (<code>[JsonIgnore]</code>).</p><div class="kod-cip">204 · 400 · 404</div></div>
+      <div class="kartica"><h3><span class="korak-broj">4</span> DELETE /Predmeti/{id}</h3>
+        <p>Predmet s upisima se ne briše. Bez <code>try/catch</code> i bez <code>return Conflict()</code> u kontroleru.</p><div class="kod-cip">204 · 404 · 409</div></div>
+      <div class="kartica"><h3><span class="korak-broj">5</span> Dodatno</h3>
+        <p><code>UrediStudentaCommand</code> s validatorom, ili <code>LoggingBehavior</code> koji loguje naziv zahtjeva i trajanje.</p><div class="kod-cip">204 · 400 · 404</div></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="navigacija" aria-label="Slajdovi">
+  <div class="napredak" id="napredak"></div>
+  <div class="okvir">
+    <button type="button" id="nazad" aria-label="Prethodni slajd">←</button>
+    <span class="broj" id="broj">1 / 7</span>
+    <button type="button" id="naprijed" aria-label="Sljedeći slajd">→</button>
+    <span class="naslov-slajda" id="naslov-slajda"></span>
+  </div>
+</nav>
+
+<script>window.SNIMLJENO = {"ok":{"metoda":"POST","put":"/studenti","zahtjev":{"ime":"Lejla","prezime":"Lejlić","brojIndeksa":"IB260003","smjerId":1},"status":201,"odgovor":{"id":3,"imePrezime":"Lejla Lejlić","brojIndeksa":"IB260003","datumRodjenja":null,"smjer":"Softverski inženjering"},"sql":["SELECT CASE\n    WHEN EXISTS (\n        SELECT 1\n        FROM [Smjerovi] AS [s]\n        WHERE [s].[Id] = @__request_SmjerId_0) THEN CAST(1 AS bit)\n    ELSE CAST(0 AS bit)\nEND","SELECT CASE\n    WHEN EXISTS (\n        SELECT 1\n        FROM [Studenti] AS [s]\n        WHERE [s].[BrojIndeksa] = @__request_BrojIndeksa_0) THEN CAST(1 AS bit)\n    ELSE CAST(0 AS bit)\nEND","SET IMPLICIT_TRANSACTIONS OFF;\nSET NOCOUNT ON;\nINSERT INTO [Studenti] ([BrojIndeksa], [DatumKreiranja], [DatumRodjenja], [Ime], [Prezime], [SmjerId])\nOUTPUT INSERTED.[Id]\nVALUES (@p0, @p1, @p2, @p3, @p4, @p5);","SELECT TOP(1) [s].[Id], [s].[Ime] + N' ' + [s].[Prezime] AS [ImePrezime], [s].[BrojIndeksa], [s].[DatumRodjenja], [s0].[Naziv] AS [Smjer]\nFROM [Studenti] AS [s]\nLEFT JOIN [Smjerovi] AS [s0] ON [s].[SmjerId] = [s0].[Id]\nWHERE [s].[Id] = @__student_Id_0"]},"400":{"metoda":"POST","put":"/studenti","zahtjev":{"ime":"","prezime":"Test","brojIndeksa":"123"},"status":400,"odgovor":{"title":"Podaci nisu ispravni.","status":400,"errors":{"Ime":["Ime je obavezno."],"BrojIndeksa":["Broj indeksa mora biti u formatu IB123456."]}},"sql":[]},"404smjer":{"metoda":"POST","put":"/studenti","zahtjev":{"ime":"Amar","prezime":"Amić","brojIndeksa":"IB260010","smjerId":77},"status":404,"odgovor":{"title":"Nije pronađeno.","status":404,"detail":"Smjer (Id = 77) ne postoji."},"sql":["SELECT CASE\n    WHEN EXISTS (\n        SELECT 1\n        FROM [Smjerovi] AS [s]\n        WHERE [s].[Id] = @__request_SmjerId_0) THEN CAST(1 AS bit)\n    ELSE CAST(0 AS bit)\nEND"]},"409":{"metoda":"POST","put":"/studenti","zahtjev":{"ime":"Ana","prezime":"Druga","brojIndeksa":"IB260001"},"status":409,"odgovor":{"title":"Konflikt s postojećim podacima.","status":409,"detail":"Student s brojem indeksa IB260001 već postoji."},"sql":["SELECT CASE\n    WHEN EXISTS (\n        SELECT 1\n        FROM [Studenti] AS [s]\n        WHERE [s].[BrojIndeksa] = @__request_BrojIndeksa_0) THEN CAST(1 AS bit)\n    ELSE CAST(0 AS bit)\nEND"]},"404":{"metoda":"GET","put":"/studenti/999","zahtjev":null,"status":404,"odgovor":{"title":"Nije pronađeno.","status":404,"detail":"Student (Id = 999) ne postoji."},"sql":["SELECT [t].[Id], [t].[c], [t].[BrojIndeksa], [t].[Naziv], [t].[Id0], [t0].[UpisId], [t0].[Predmet], [t0].[Sifra], [t0].[DatumUpisa], [t0].[Ocjena], [t0].[Id]\nFROM (\n    SELECT TOP(1) [s].[Id], [s].[Ime] + N' ' + [s].[Prezime] AS [c], [s].[BrojIndeksa], [s0].[Naziv], [s0].[Id] AS [Id0]\n    FROM [Studenti] AS [s]\n    LEFT JOIN [Smjerovi] AS [s0] ON [s].[SmjerId] = [s0].[Id]\n    WHERE [s].[Id] = @__request_Id_0\n) AS [t]\nLEFT JOIN (\n    SELECT [u].[Id] AS [UpisId], [p].[Naziv] AS [Predmet], [p].[Sifra], [u].[DatumUpisa], [u].[Ocjena], [p].[Id], [u].[StudentId]\n    FROM [Upisi] AS [u]\n    INNER JOIN [Predmeti] AS [p] ON [u].[PredmetId] = [p].[Id]\n) AS [t0] ON [t].[Id] = [t0].[StudentId]\nORDER BY [t].[Id], [t].[Id0], [t0].[Predmet], [t0].[UpisId]"]},"expr":{"metoda":"GET","put":"/studenti","zahtjev":null,"status":200,"odgovor":[{"id":1,"imePrezime":"Ana Anić","brojIndeksa":"IB260001","datumRodjenja":"2006-03-14","smjer":"Softverski inženjering"},{"id":2,"imePrezime":"Edin Edić","brojIndeksa":"IB260002","datumRodjenja":null,"smjer":"Informacioni sistemi"},{"id":3,"imePrezime":"Lejla Lejlić","brojIndeksa":"IB260003","datumRodjenja":null,"smjer":"Softverski inženjering"}],"sql":["SELECT [s].[Id], [s].[Ime] + N' ' + [s].[Prezime] AS [ImePrezime], [s].[BrojIndeksa], [s].[DatumRodjenja], [s0].[Naziv] AS [Smjer]\nFROM [Studenti] AS [s]\nLEFT JOIN [Smjerovi] AS [s0] ON [s].[SmjerId] = [s0].[Id]\nORDER BY [s].[Prezime], [s].[Ime]"]},"func":{"metoda":"GET","put":"/studenti?pretraga=FUNC","zahtjev":null,"status":200,"odgovor":[{"id":1,"imePrezime":"Ana Anić","brojIndeksa":"IB260001","datumRodjenja":"2006-03-14","smjer":null},{"id":2,"imePrezime":"Edin Edić","brojIndeksa":"IB260002","datumRodjenja":null,"smjer":null},{"id":3,"imePrezime":"Lejla Lejlić","brojIndeksa":"IB260003","datumRodjenja":null,"smjer":null}],"sql":["SELECT [s].[Id], [s].[BrojIndeksa], [s].[DatumKreiranja], [s].[DatumRodjenja], [s].[Ime], [s].[Prezime], [s].[SmjerId]\nFROM [Studenti] AS [s]\nORDER BY [s].[Prezime], [s].[Ime]"]}};</script>
+<script>
+// Zajednički dio lekcija (isti kao u mini-prezentacijama blokova s vježbi 3): jedan slajd na ekranu ili svi jedan
+// ispod drugog (način „Čitanje“), strelice i prevlačenje, adresa #sN, zapamćen način prikaza.
+// Upotreba: Prezentacija("lekcija1", crtajVidljivo), gdje crtajVidljivo iscrta grafike na vidljivim slajdovima.
+window.Prezentacija = function (kljuc, crtajVidljivo) {
+  const $ = s => document.querySelector(s);
+  const main = $("#slajdovi"), slajdovi = [...document.querySelectorAll(".slajd")];
+  let tren = 0;
+  function prikazi(i, izHasha) {
+    tren = Math.max(0, Math.min(slajdovi.length - 1, i));
+    slajdovi.forEach((s, k) => s.classList.toggle("aktivan", k === tren));
+    $("#broj").textContent = `${tren + 1} / ${slajdovi.length}`;
+    $("#naslov-slajda").textContent = slajdovi[tren].dataset.naslov;
+    $("#napredak").style.width = `${((tren + 1) / slajdovi.length) * 100}%`;
+    $("#nazad").disabled = tren === 0; $("#naprijed").disabled = tren === slajdovi.length - 1;
+    if (!izHasha) { try { history.replaceState(null, "", "#" + slajdovi[tren].id); } catch (e) {} }
+    if (main.classList.contains("prezentacija")) window.scrollTo(0, 0);
+    crtajVidljivo();
+  }
+  $("#nazad").addEventListener("click", () => prikazi(tren - 1));
+  $("#naprijed").addEventListener("click", () => prikazi(tren + 1));
+  document.addEventListener("keydown", e => {
+    if (!main.classList.contains("prezentacija") || e.target.closest("input, textarea, select")) return;
+    if (["ArrowRight", "PageDown"].includes(e.key) || (e.key === " " && !e.target.closest("button"))) { e.preventDefault(); prikazi(tren + 1); }
+    if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); prikazi(tren - 1); }
+    if (e.key === "Home") prikazi(0);
+    if (e.key === "End") prikazi(slajdovi.length - 1);
+  });
+  let dodirX = null;
+  main.addEventListener("touchstart", e => { dodirX = e.touches[0].clientX; }, { passive: true });
+  main.addEventListener("touchend", e => {
+    if (dodirX === null || !main.classList.contains("prezentacija")) return;
+    const dx = e.changedTouches[0].clientX - dodirX; dodirX = null;
+    if (e.target.closest("input, select, canvas, .interaktivno")) return;
+    if (Math.abs(dx) > 70) prikazi(tren + (dx < 0 ? 1 : -1));
+  });
+  function nacin(citanje) {
+    main.classList.toggle("citanje", citanje); main.classList.toggle("prezentacija", !citanje);
+    $("#nacin-citanje").setAttribute("aria-pressed", citanje); $("#nacin-prezentacija").setAttribute("aria-pressed", !citanje);
+    try { localStorage.setItem(kljuc + "-nacin", citanje ? "citanje" : "prezentacija"); } catch (e) {}
+    if (citanje) requestAnimationFrame(() => slajdovi[tren].scrollIntoView());
+    crtajVidljivo();
+  }
+  $("#nacin-citanje").addEventListener("click", () => nacin(true));
+  $("#nacin-prezentacija").addEventListener("click", () => nacin(false));
+  addEventListener("resize", () => crtajVidljivo());
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => crtajVidljivo());
+
+  let pocetni = 0;
+  const h = location.hash.replace("#", ""), k = slajdovi.findIndex(s => s.id === h); if (k >= 0) pocetni = k;
+  let sacuvano = null; try { sacuvano = localStorage.getItem(kljuc + "-nacin"); } catch (e) {}
+  if (sacuvano === "citanje") nacin(true);
+  prikazi(pocetni, true);
+  if (main.classList.contains("prezentacija")) setTimeout(() => window.scrollTo(0, 0), 0);
+  addEventListener("hashchange", () => {
+    const i = slajdovi.findIndex(s => s.id === location.hash.replace("#", ""));
+    if (i >= 0 && i !== tren) { prikazi(i, true); if (main.classList.contains("citanje")) slajdovi[i].scrollIntoView(); }
+  });
+  return { prikazi };
+};
+
+// Zajedničke pomoćne funkcije za grafike (SVG) i brojeve.
+window.Pomoc = (() => {
+  const SVG = "http://www.w3.org/2000/svg";
+  const el = (ime, atr = {}, tekst) => { const e = document.createElementNS(SVG, ime); for (const [k, v] of Object.entries(atr)) e.setAttribute(k, v); if (tekst !== undefined) e.textContent = tekst; return e; };
+  const zarez = (x, d = 2) => x.toFixed(d).replace(".", ",").replace("-", "−");
+  const pct = x => `${Math.round(x * 100)}%`;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  // mulberry32: ponovljivi slučajni brojevi za ilustracije u web pregledniku
+  const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  return { el, zarez, pct, css, rng };
+})();
+
+</script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const D = window.SNIMLJENO;
+  const novi = (tag, atr = {}, tekst) => { const e = document.createElement(tag); Object.assign(e, atr); if (tekst !== undefined) e.textContent = tekst; return e; };
+  const json = o => JSON.stringify(o, null, 2);
+
+  // ---------------- slajd 2: kod s obojenim odgovornostima ----------------
+  // svaki red: [kategorija, tekst]; kategorija "" = bez oznake
+  const V03 = [
+    ["", "[HttpPost]"],
+    ["", "public async Task<ActionResult<StudentResponse>> Dodaj("],
+    ["", "    StudentDodajRequest request, CancellationToken ct)"],
+    ["", "{"],
+    ["pravilo", "    if (await db.Studenti.AnyAsync(x => x.BrojIndeksa == request.BrojIndeksa, ct))"],
+    ["http", "        return Conflict($\"Student s brojem indeksa … već postoji.\"); // 409"],
+    ["", ""],
+    ["pravilo", "    if (request.SmjerId != null && !await db.Smjerovi.AnyAsync(x => x.Id == request.SmjerId, ct))"],
+    ["http", "        return SmjerNePostoji(); // 400 preko ModelState"],
+    ["", ""],
+    ["baza", "    Student student = new() { Ime = request.Ime, …, DatumKreiranja = DateTime.UtcNow };"],
+    ["baza", "    db.Studenti.Add(student);"],
+    ["baza", "    await db.SaveChangesAsync(ct);"],
+    ["", ""],
+    ["baza", "    StudentResponse response = await db.Studenti"],
+    ["baza", "        .Where(x => x.Id == student.Id)"],
+    ["baza", "        .Select(x => new StudentResponse { … })   // ista projekcija kao u GetAll"],
+    ["baza", "        .FirstAsync(ct);"],
+    ["http", "    return CreatedAtAction(nameof(GetById), new { id = student.Id }, response);"],
+    ["", "}"],
+  ];
+  const V04 = [
+    ["", "// Controllers/StudentiController.cs"],
+    ["", "[HttpPost]"],
+    ["", "public async Task<ActionResult<StudentResponse>> Dodaj("],
+    ["", "    DodajStudentaCommand command, CancellationToken ct)"],
+    ["", "{"],
+    ["", "    StudentResponse student = await sender.Send(command, ct);"],
+    ["http", "    return CreatedAtAction(nameof(GetById), new { id = student.Id }, student); // 201"],
+    ["", "}"],
+    ["", ""],
+    ["", "// …/Commands/Dodaj/DodajStudentaCommandValidator.cs (bez AppDbContext)"],
+    ["pravilo", "RuleFor(x => x.Ime).NotEmpty().MaximumLength(50);"],
+    ["pravilo", "RuleFor(x => x.BrojIndeksa).Matches(@\"^IB\\d{6}$\");   // 400"],
+    ["", ""],
+    ["", "// …/Commands/Dodaj/DodajStudentaCommandHandler.cs"],
+    ["pravilo", "if (request.SmjerId != null && !await db.Smjerovi.AnyAsync(x => x.Id == request.SmjerId, ct))"],
+    ["pravilo", "    throw new NotFoundException(\"Smjer … ne postoji.\"); // 404"],
+    ["", ""],
+    ["pravilo", "if (await db.Studenti.AnyAsync(x => x.BrojIndeksa == request.BrojIndeksa, ct))"],
+    ["pravilo", "    throw new ConflictException(\"Student s brojem indeksa … već postoji.\"); // 409"],
+    ["", ""],
+    ["baza", "Student student = new() { Ime = request.Ime, …, DatumKreiranja = DateTime.UtcNow };"],
+    ["baza", "db.Studenti.Add(student);"],
+    ["baza", "await db.SaveChangesAsync(ct);"],
+    ["", ""],
+    ["baza", "StudentResponse response = await db.Studenti"],
+    ["baza", "    .Where(x => x.Id == student.Id)"],
+    ["baza", "    .Select(StudentResponse.Projekcija)   // projekcija s jednog mjesta"],
+    ["baza", "    .FirstAsync(ct);"],
+    ["", "return response;"],
+  ];
+  function ispisi(cilj, redovi) {
+    const c = cilj.querySelector("code");
+    c.replaceChildren(...redovi.map(([k, t]) => novi("span", { className: "l " + k }, t || " ")));
+  }
+  ispisi($("#k-v03"), V03); ispisi($("#k-v04"), V04);
+  document.querySelectorAll(".legenda button").forEach(b => b.addEventListener("click", () => {
+    const ukljuci = b.getAttribute("aria-pressed") !== "true";
+    document.querySelectorAll(".legenda button").forEach(x => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", ukljuci);
+    for (const k of [$("#k-v03"), $("#k-v04")]) {
+      k.classList.toggle("prigusi", ukljuci);
+      k.querySelectorAll("span.l").forEach(s => s.classList.toggle("istakni", ukljuci && s.classList.contains(b.dataset.kat)));
+    }
+  }));
+
+  // ---------------- slajd 3: put zahtjeva korak po korak ----------------
+  const CVOROVI = [
+    ["klijent", "Klijent", "Swagger, .http"], ["kontroler", "Kontroler", "StudentiController"],
+    ["behavior", "Validation­Behavior", "MediatR pipeline"], ["validator", "Validator", "FluentValidation"],
+    ["handler", "Handler", "IRequestHandler"], ["baza", "Baza", "AppDbContext → SQL"],
+    ["global", "GlobalException­Handler", "izuzetak → HTTP"], ["odgovor", "Odgovor", "status i JSON"],
+  ];
+  const KOD = {
+    kontrolerPost: ["Controllers/StudentiController.cs", "[HttpPost]\npublic async Task<ActionResult<StudentResponse>> Dodaj(\n    DodajStudentaCommand command, CancellationToken ct)\n{\n    StudentResponse student = await sender.Send(command, ct);\n    return CreatedAtAction(nameof(GetById), new { id = student.Id }, student);\n}"],
+    kontrolerGet: ["Controllers/StudentiController.cs", "[HttpGet(\"{id:int}\")]\npublic Task<StudentDetaljiResponse> GetById(int id, CancellationToken ct)\n    => sender.Send(new StudentPoIdQuery { Id = id }, ct);"],
+    behavior: ["Common/Behaviors/ValidationBehavior.cs", "foreach (IValidator<TRequest> validator in validators)\n{\n    ValidationResult rezultat = await validator.ValidateAsync(context, ct);\n    greske.AddRange(rezultat.Errors);\n}\n\nif (greske.Count != 0)\n    throw new ValidationException(greske);   // handler se ne poziva\n\nreturn await next();                          // sljedeći korak: handler"],
+    validator: ["Modules/Studenti/Commands/Dodaj/DodajStudentaCommandValidator.cs", "RuleFor(x => x.Ime).NotEmpty().WithMessage(\"Ime je obavezno.\")…\nRuleFor(x => x.Prezime).NotEmpty()…\nRuleFor(x => x.BrojIndeksa)\n    .Matches(@\"^IB\\d{6}$\").WithMessage(\"Broj indeksa mora biti u formatu IB123456.\");\n// nema AppDbContext: postojanje smjera provjerava handler"],
+    handlerPostava: ["Modules/Studenti/Commands/Dodaj/DodajStudentaCommandHandler.cs", "if (request.SmjerId != null && !await db.Smjerovi.AnyAsync(x => x.Id == request.SmjerId, ct))\n    throw new NotFoundException($\"Smjer (Id = {request.SmjerId}) ne postoji.\");\n\nif (await db.Studenti.AnyAsync(x => x.BrojIndeksa == request.BrojIndeksa, ct))\n    throw new ConflictException(\n        $\"Student s brojem indeksa {request.BrojIndeksa} već postoji.\");"],
+    handlerUpis: ["Modules/Studenti/Commands/Dodaj/DodajStudentaCommandHandler.cs", "Student student = new() { Ime = request.Ime, …, DatumKreiranja = DateTime.UtcNow };\ndb.Studenti.Add(student);\nawait db.SaveChangesAsync(ct);"],
+    handlerProj: ["Modules/Studenti/Commands/Dodaj/DodajStudentaCommandHandler.cs", "StudentResponse response = await db.Studenti\n    .Where(x => x.Id == student.Id)\n    .Select(StudentResponse.Projekcija)\n    .FirstAsync(ct);\n\nreturn response;"],
+    handlerGet: ["Modules/Studenti/Queries/PoId/StudentPoIdQueryHandler.cs", "StudentDetaljiResponse? student = await db.Studenti\n    .Where(x => x.Id == request.Id)\n    .Select(x => new StudentDetaljiResponse { …, Upisi = … })\n    .FirstOrDefaultAsync(ct);\n\nif (student == null)\n    throw new NotFoundException($\"Student (Id = {request.Id}) ne postoji.\");"],
+    global: ["Middleware/GlobalExceptionHandler.cs", "ProblemDetails problem = ex switch\n{\n    ValidationException v => new ValidationProblemDetails(…) { Status = 400 },\n    NotFoundException     => new ProblemDetails { Status = 404, Detail = ex.Message },\n    ConflictException     => new ProblemDetails { Status = 409, Detail = ex.Message },\n    _                     => new ProblemDetails { Status = 500 },  // detalji samo u logu\n};"],
+  };
+  const zahtjev = s => `${s.metoda} ${s.put.replace("/studenti", "/Studenti")}` + (s.zahtjev ? "\n" + json(s.zahtjev) : "");
+  // korak: [čvor, opis (HTML), ključ koda ili null, indeks SQL-a ili null]
+  const SCENARIJI = {
+    ok: { naziv: "201 ispravan", koraci: s => [
+      ["klijent", "Klijent šalje <b>POST /Studenti</b> s ispravnim podacima i <code>smjerId: 1</code>.", null, null, zahtjev(s)],
+      ["kontroler", "ASP.NET od JSON-a pravi <b>DodajStudentaCommand</b>; kontroler ga samo pošalje: <code>sender.Send(command)</code>.", "kontrolerPost"],
+      ["behavior", "MediatR prije handlera pokreće <b>ValidationBehavior</b>: za ovaj command postoji jedan validator.", "behavior"],
+      ["validator", "Ime, prezime i format indeksa provjeravaju se <b>bez pristupa bazi</b>: nema grešaka i nema SQL-a.", "validator"],
+      ["behavior", "Nema grešaka: <code>next()</code> poziva handler.", "behavior"],
+      ["handler", "Handler provjerava podatke u bazi: <b>smjer 1 postoji</b>.", "handlerPostava", 0],
+      ["handler", "Handler provjerava da li <b>broj indeksa već postoji</b>. Ne postoji.", "handlerPostava", 1],
+      ["handler", "Upis studenta: <b>INSERT</b> i novi <code>Id</code>.", "handlerUpis", 2],
+      ["handler", "Odgovor preko <b>StudentResponse.Projekcija</b>: SELECT s LEFT JOIN na Smjerovi.", "handlerProj", 3],
+      ["kontroler", "Kontroler vraća <b>201 Created</b>; zaglavlje <code>Location</code> pokazuje na <code>GET /Studenti/{id}</code>.", "kontrolerPost"],
+      ["odgovor", "Odgovor: <b>201</b> i student s nazivom smjera.", null, null, null, true],
+    ] },
+    "400": { naziv: "400 format", koraci: s => [
+      ["klijent", "Klijent šalje prazno ime i broj indeksa <code>123</code>.", null, null, zahtjev(s)],
+      ["kontroler", "Kontroler šalje command kao i za ispravan zahtjev. Ne provjerava pravila.", "kontrolerPost"],
+      ["behavior", "<b>ValidationBehavior</b> pokreće validator.", "behavior"],
+      ["validator", "Dvije greške: ime je prazno, a broj indeksa nije u propisanom formatu. Validator ne pristupa bazi.", "validator"],
+      ["behavior", "Greške postoje: <b>throw ValidationException</b>. <b>Handler se ne poziva</b>, nema pristupa bazi (0 SQL upita).", "behavior"],
+      ["global", "<b>GlobalExceptionHandler</b> hvata izuzetak i pravi <code>ValidationProblemDetails</code> s greškama po polju.", "global"],
+      ["odgovor", "Odgovor: <b>400</b>, obje greške odjednom.", null, null, null, true],
+    ] },
+    "404smjer": { naziv: "404 smjer ne postoji", koraci: s => [
+      ["klijent", "Klijent šalje ispravne podatke, ali <code>smjerId: 77</code>.", null, null, zahtjev(s)],
+      ["kontroler", "Kontroler šalje command.", "kontrolerPost"],
+      ["behavior", "<b>ValidationBehavior</b> pokreće validator.", "behavior"],
+      ["validator", "Format je ispravan: <b>nema grešaka</b> i nema SQL-a. Validator ne zna koji smjerovi postoje u bazi.", "validator"],
+      ["behavior", "Nema grešaka: <code>next()</code> poziva handler.", "behavior"],
+      ["handler", "Handler provjerava podatke u bazi: smjer 77 <b>ne postoji</b> → <code>throw NotFoundException</code>.", "handlerPostava", 0],
+      ["global", "<b>GlobalExceptionHandler</b>: <code>NotFoundException</code> → 404. V03 je ovdje vraćao 400; V04 radi kao starter (<code>CreateProductCommandHandler</code> za nepostojeću kategoriju).", "global"],
+      ["odgovor", "Odgovor: <b>404</b>. Ništa nije upisano.", null, null, null, true],
+    ] },
+    "409": { naziv: "409 duplikat", koraci: s => [
+      ["klijent", "Klijent šalje broj indeksa <code>IB260001</code>, koji već ima Ana Anić.", null, null, zahtjev(s)],
+      ["kontroler", "Kontroler šalje command.", "kontrolerPost"],
+      ["behavior", "<b>ValidationBehavior</b> pokreće validator.", "behavior"],
+      ["validator", "Format je ispravan: <b>nema grešaka</b> i nema SQL-a. Validator ne zna šta je u tabeli Studenti.", "validator"],
+      ["handler", "Smjer nije poslan, pa handler odmah provjerava broj indeksa: <b>već postoji</b> → <code>throw ConflictException</code>.", "handlerPostava", 0],
+      ["global", "<b>GlobalExceptionHandler</b>: <code>ConflictException</code> → 409 s porukom iz izuzetka.", "global"],
+      ["odgovor", "Odgovor: <b>409</b>. Ništa nije upisano.", null, null, null, true],
+    ] },
+    "404": { naziv: "404 GET nepostojeći", koraci: s => [
+      ["klijent", "Klijent traži <b>GET /Studenti/999</b>.", null, null, zahtjev(s)],
+      ["kontroler", "Kontroler šalje query <b>StudentPoIdQuery</b>.", "kontrolerGet"],
+      ["behavior", "ValidationBehavior: za ovaj query <b>nema validatora</b>, pa odmah <code>next()</code>.", "behavior"],
+      ["handler", "Handler izvršava upit s projekcijom (student, smjer, upisi) i dobija <code>null</code> → <code>throw NotFoundException</code>.", "handlerGet", 0],
+      ["global", "<b>GlobalExceptionHandler</b>: <code>NotFoundException</code> → 404.", "global"],
+      ["odgovor", "Odgovor: <b>404</b>.", null, null, null, true],
+    ] },
+  };
+  const cijev = $("#cijev");
+  const elCv = Object.fromEntries(CVOROVI.map(([k, n, m]) => {
+    const d = novi("div", { className: "cvor" }); d.append(n, novi("small", {}, m)); cijev.append(d); return [k, d];
+  }));
+  let sc = "ok", koraci = [], i = 0, tajmer = null;
+  // redoslijed eksplicitno: ključeve "400", "404", "409" JavaScript inače slaže kao brojeve, ispred "ok"
+  for (const k of ["ok", "400", "404smjer", "409", "404"]) {
+    const b = novi("button", { type: "button" }, SCENARIJI[k].naziv); b.dataset.s = k;
+    b.addEventListener("click", () => { sc = k; reset(); });
+    $("#scenariji").append(b);
+  }
+  function reset() {
+    zaustavi();
+    document.querySelectorAll("#scenariji button").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === sc));
+    koraci = SCENARIJI[sc].koraci(D[sc]); i = 0; crtaj();
+  }
+  function crtaj() {
+    const s = D[sc], posjeceni = new Set(koraci.slice(0, i).map(k => k[0]));
+    const sviCv = new Set(koraci.map(k => k[0])); koraci.forEach(k => { if (k[3] != null) sviCv.add("baza"); });
+    koraci.slice(0, i).forEach(k => { if (k[3] != null) posjeceni.add("baza"); });
+    const sad = i ? koraci[i - 1] : null;
+    for (const [k, d] of Object.entries(elCv)) {
+      d.className = "cvor" + (sad && (sad[0] === k || (k === "baza" && sad[3] != null)) ? " aktivan" : posjeceni.has(k) ? " prosao" : "")
+        + (i === koraci.length && !sviCv.has(k) ? " preskocen" : "");
+    }
+    $("#br-korak").textContent = i; $("#br-ukupno").textContent = koraci.length;
+    const brSql = koraci.slice(0, i).filter(k => k[3] != null).length;
+    $("#br-sql").textContent = brSql;
+    const kraj = i === koraci.length;
+    $("#br-status").textContent = kraj ? s.status : "—";
+    $("#b-korak").disabled = kraj; $("#b-kraj").disabled = kraj;
+    if (!sad) {
+      $("#opis").innerHTML = `Zahtjev <b>${s.metoda} ${s.put.replace("/studenti", "/Studenti")}</b>. Pritisnite „Korak“.`;
+      $("#kod-fajl").textContent = "—"; $("#kod-tekst").textContent = ""; $("#sql").textContent = "—"; return;
+    }
+    $("#opis").innerHTML = sad[1];
+    if (sad[4]) { $("#kod-fajl").textContent = "HTTP zahtjev"; $("#kod-tekst").textContent = sad[4]; }
+    else if (sad[5]) { $("#kod-fajl").textContent = `HTTP ${s.status} · tijelo odgovora`; $("#kod-tekst").textContent = json(s.odgovor); }
+    else if (sad[2]) { $("#kod-fajl").textContent = KOD[sad[2]][0]; $("#kod-tekst").textContent = KOD[sad[2]][1]; }
+    $("#sql").textContent = sad[3] != null ? s.sql[sad[3]]
+      : brSql ? `(u ovom koraku nema SQL-a; do sada ${brSql})` : "(još nijedan SQL upit)";
+  }
+  function korak() { if (i < koraci.length) { i++; crtaj(); } if (i >= koraci.length) zaustavi(); }
+  function zaustavi() { clearInterval(tajmer); tajmer = null; }
+  $("#b-korak").addEventListener("click", () => { zaustavi(); korak(); });
+  $("#b-kraj").addEventListener("click", () => { if (!tajmer) tajmer = setInterval(korak, 450); });
+  $("#b-ispocetka").addEventListener("click", reset);
+  reset();
+
+  // ---------------- slajd 4: validator ili handler ----------------
+  const PRAVILA = [
+    ["Ime je obavezno i ima najviše 50 znakova.", "validator", "Zahtjev je neispravan sam po sebi: 400, handler se ne poziva."],
+    ["Broj indeksa je u formatu IB123456.", "validator", "Format se provjerava bez baze: 400."],
+    ["Ocjena je između 6 i 10.", "validator", "Raspon vrijednosti: 400 (zadatak 3)."],
+    ["Postoji smjer s poslanim SmjerId.", "handler", "Za provjeru treba baza, pa ide u handler: 404 (NotFoundException), kao za nepostojeću kategoriju u starteru. Validator ne pristupa bazi."],
+    ["Broj indeksa nije zauzet.", "handler", "Zahtjev je ispravan, ali je u sukobu s postojećim podatkom: 409 iz handlera (ConflictException)."],
+    ["Student kojeg mijenjamo (PUT /Studenti/5) postoji.", "handler", "Traženi zapis ne postoji: 404 iz handlera (NotFoundException)."],
+    ["Predmet s upisanim studentima se ne briše.", "handler", "Pravilo nad stanjem baze: 409 iz handlera (zadatak 4)."],
+  ];
+  let tacnih = 0, odg = 0;
+  PRAVILA.forEach(([tekst, tacno, obj]) => {
+    const red = novi("div", { className: "red" }), dug = novi("div", { className: "dugmad" });
+    for (const g of ["validator", "handler"]) {
+      const b = novi("button", { type: "button" }, g);
+      b.addEventListener("click", () => {
+        if (red.classList.contains("odgovoreno")) return;
+        const da = g === tacno; red.classList.add("odgovoreno", da ? "tacno" : "netacno");
+        b.setAttribute("aria-pressed", "true"); odg++; if (da) tacnih++;
+        red.querySelector(".obj").innerHTML = `<b class="${da ? "da" : "ne"}">${da ? "Tačno" : "Ne"}: ${tacno}.</b> ${obj}`;
+        $("#kviz-rez").textContent = `Odgovoreno ${odg} od ${PRAVILA.length}, tačno ${tacnih}.`;
+      });
+      dug.append(b);
+    }
+    red.append(novi("span", {}, tekst), dug, novi("div", { className: "obj" }));
+    $("#kviz").append(red);
+  });
+
+  // ---------------- slajd 5: Expression naspram Func ----------------
+  const PROJ = {
+    expr: { kod: "IQueryable<Student> upit = db.Studenti;\n…\nreturn await upit\n    .OrderBy(x => x.Prezime).ThenBy(x => x.Ime)\n    .Select(StudentResponse.Projekcija)   // Expression<Func<…>>\n    .ToListAsync(ct);",
+      obl: [["1", "EF Core čita stablo izraza i prevodi ga u SQL."], ["2", "Bazi idu samo kolone iz DTO-a i LEFT JOIN na Smjerovi."], ["3", "Ista projekcija u listi i poslije upisa (Dodaj)."]] },
+    func: { kod: "Func<Student, StudentResponse> f = StudentResponse.Projekcija.Compile();\n\nreturn db.Studenti\n    .OrderBy(x => x.Prezime).ThenBy(x => x.Ime)\n    .Select(f)          // Enumerable.Select: radi u memoriji\n    .ToList();",
+      obl: [["1", "Func je delegat, prevedena metoda: EF Core ne vidi šta je unutra, pa učita cijele redove."], ["2", "Nema JOIN-a: Smjer nije učitan, pa je naziv smjera null."], ["3", "Podaci su pogrešni, ali nema poruke o grešci ni upozorenja."]] },
+  };
+  function proj(k) {
+    $("#p-expr").setAttribute("aria-pressed", k === "expr"); $("#p-func").setAttribute("aria-pressed", k === "func");
+    $("#p-kod").textContent = PROJ[k].kod;
+    $("#p-obl").replaceChildren(...PROJ[k].obl.map(([b, t]) => { const d = novi("div"); d.append(novi("b", { className: "br" }, b), t); return d; }));
+    $("#p-sql").textContent = D[k].sql[0];
+    $("#p-json").textContent = json(D[k].odgovor[0]);
+  }
+  $("#p-expr").addEventListener("click", () => proj("expr")); $("#p-func").addEventListener("click", () => proj("func"));
+  proj("expr");
+
+  // ---------------- slajd 6: mapa MojaApp ↔ starter ----------------
+  const MAPA = [
+    ["Controllers/StudentiController.cs", "Market.API/Controllers/ProductCategoriesController.cs", "tanak kontroler koji koristi ISender", "Akcija CreateProductCategory: sender.Send(command), pa CreatedAtAction."],
+    ["Modules/Studenti/Queries/PoId/", "Market.Application/Modules/Catalog/ProductCategories/Queries/GetById/", "query + handler (+ DTO)", "GetProductCategoryByIdQueryHandler: projekcija u Select, null → MarketNotFoundException."],
+    ["Modules/Studenti/Commands/Dodaj/", "Market.Application/Modules/Catalog/ProductCategories/Commands/Create/", "command + handler + validator", "CreateProductCategoryCommandValidator: NotEmpty, MaximumLength; handler baca MarketConflictException za isti naziv."],
+    ["Common/Behaviors/ValidationBehavior.cs", "Market.Application/Common/Behaviors/ValidationBehavior.cs", "validacija prije handlera", "Isti kod: pokreću se svi validatori za zahtjev, zatim ValidationException ili next()."],
+    ["Common/Exceptions/", "Market.Application/Common/Exceptions/", "NotFound, Conflict…", "Starter ima i MarketForbiddenException (403), MarketUnauthorizedException (401) i MarketBusinessRuleException."],
+    ["Middleware/GlobalExceptionHandler.cs", "Market.Infrastructure/Common/MarketExceptionHandler.cs", "izuzetak → HTTP odgovor", "Starter vraća vlastiti ErrorDto (code, message, errors), a detalje greške samo u Developmentu."],
+    ["Data/AppDbContext.cs", "Market.Infrastructure/Database/DatabaseContext.cs", "pristup bazi", "Handleri u starteru dobijaju IAppDbContext (interfejs iz Market.Application/Abstractions), pa Application ne zavisi od Infrastructure."],
+    ["Models/", "Market.Domain/Entities/", "entiteti", "Entiteti startera nasljeđuju BaseEntity (Id, IsDeleted, CreatedAtUtc, ModifiedAtUtc)."],
+  ];
+  MAPA.forEach(([a, b, c, primjer]) => {
+    const tr = novi("tr"); tr.append(novi("td", {}, a), novi("td", {}, b), novi("td", {}, c));
+    tr.style.cursor = "pointer"; tr.tabIndex = 0;
+    const pokazi = () => { document.querySelectorAll("#mapa tr").forEach(x => x.classList.remove("vidi")); tr.classList.add("vidi"); $("#mapa-primjer").textContent = primjer; };
+    tr.addEventListener("click", pokazi); tr.addEventListener("keydown", e => { if (e.key === "Enter") pokazi(); });
+    $("#mapa").append(tr);
+  });
+
+  Prezentacija("rs1-v04-put-zahtjeva", () => {});
+})();
+</script>
+</body>
+</html>
