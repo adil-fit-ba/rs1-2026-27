@@ -31,7 +31,8 @@ def v04(p):
         k(p + "v04-nadogradnja-v03-na-cqrs.pdf", "Nadogradnja V03 na CQRS (PDF)", "Ista prezentacija za štampu ili čitanje bez interneta."),
         k(p + "v04-put-zahtjeva-kroz-slojeve.html", "Put zahtjeva kroz slojeve", "Živi primjer: zahtjev prolazi kroz kontroler, validator i handler korak po korak, sa SQL-om i odgovorom.")])
       + grupa("Kod", [
-        k(p + "V04-MojaApp-pocetni-kod-dotnet8.zip", "MojaApp: početni kod (ZIP)", "Rješenje vježbi 3, .NET 8. Od njega počinje nadogradnja.")]))
+        k(p + "V04-MojaApp-pocetni-kod-dotnet8.zip", "MojaApp: početni kod (ZIP)", "Rješenje vježbi 3, .NET 8. Od njega počinje nadogradnja."),
+        k("https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V04/rjesenje/MojaApp", "MojaApp: rješenje (GitHub)", "Kod nakon vježbi 4, u repozitoriju: folder nastava/V04/rjesenje.")]))
 
 
 def stranica(naslov, opis, tijelo):
