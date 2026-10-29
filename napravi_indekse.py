@@ -52,7 +52,7 @@ def v04(p):
         k(p + "samostalna-vjezba-nastavnik.html", "Samostalna vježba: entitet Nastavnik",
           "Nova entity klasa s GetById i Dodaj, po obrascu iz V04: model, migracija, query, command, validator, kontroler i provjera.", "istaknuto")])
       + grupa("Prezentacije", [
-        k(p + "v04-nadogradnja-v03-na-cqrs.html", "Nadogradnja V03 na CQRS", "Sedam koraka, komponenta po komponenta: paketi, izuzeci, GlobalExceptionHandler, ValidationBehavior, queries, commands, čišćenje (30 slajdova)."),
+        k(p + "v04-nadogradnja-v03-na-cqrs.html", "Nadogradnja V03 na CQRS", "Klasični kontroler naspram handlera, pa sedam koraka, komponenta po komponenta: paketi, izuzeci, GlobalExceptionHandler, ValidationBehavior, queries, commands, čišćenje (32 slajda)."),
         k(p + "v04-nadogradnja-v03-na-cqrs.pdf", "Nadogradnja V03 na CQRS (PDF)", "Ista prezentacija za štampu ili čitanje bez interneta."),
         k(p + "v04-put-zahtjeva-kroz-slojeve.html", "Put zahtjeva kroz slojeve", "Živi primjer: zahtjev prolazi kroz kontroler, validator i handler korak po korak, sa SQL-om i odgovorom.")])
       + grupa("Kod", [
@@ -143,9 +143,11 @@ vjezba = (
     '  <h1>Samostalna vježba: entitet Nastavnik</h1>\n'
     '  <p class="siva">Vježbe 4 · nova entity klasa s GetById i Dodaj, po obrascu iz V04 · <a href="../index.html">svi materijali</a></p>\n'
     '  <p class="cilj"><b>Cilj:</b> cijeli put za novi entitet, od modela do provjere u <code>.http</code> fajlu. '
-    'Infrastruktura iz V04 se ne mijenja: MediatR sam pronalazi nove handlere, a <code>AddValidatorsFromAssembly</code> novi validator, '
-    'pa <code>Program.cs</code> ostaje isti.</p>\n'
+    'Infrastruktura iz V04 se ne mijenja: MediatR sam pronalazi nove handlere (klase koje implementiraju <code>IRequestHandler</code> '
+    'u ovom projektu), a <code>AddValidatorsFromAssembly</code> novi validator, pa <code>Program.cs</code> ostaje isti.</p>\n'
     f'  <p><b>Polazna tačka:</b> vlastiti projekat nakon V04 ili <a href="{GH}">rješenje V04</a> (folder <code>nastava/V04/rjesenje</code>).</p>\n'
+    '  <p><b>Podsjetnik:</b> command nosi podatke, handler izvršava operaciju, a <code>ISender.Send</code> ih povezuje prema tipu commanda '
+    '(<a href="v04-nadogradnja-v03-na-cqrs.html#s3">prezentacija V04, slajdovi 3 i 4</a>).</p>\n'
     '  <h2>Koraci</h2>\n'
     '  <p class="siva">Istim redom kao postupak iz prezentacije V04. Poslije svakog koraka: build.</p>\n'
     + tabela([
@@ -159,7 +161,7 @@ vjezba = (
         ["7", "<code>NastavniciController</code> sa <code>ISender</code>: <code>GET /Nastavnici/{id}</code> i <code>POST /Nastavnici</code> (201, <code>CreatedAtAction</code>)", "<code>Controllers/NastavniciController.cs</code>"],
     ])
     + '  <h2>Pravila u validatoru</h2>\n'
-    '  <p class="siva">Validator ne pristupa bazi: provjerava samo podatke iz zahtjeva. Jedinstven email provjerava handler (409).</p>\n'
+    '  <p class="siva">Validator ne pristupa bazi podataka: provjerava samo podatke iz zahtjeva. Jedinstven email provjerava handler (409).</p>\n'
     '  <ul>\n'
     '    <li><code>Ime</code> i <code>Prezime</code>: obavezni, najviše 50 znakova.</li>\n'
     '    <li><code>Email</code>: obavezan, ispravan email (<code>EmailAddress()</code>), najviše 100 znakova.</li>\n'
