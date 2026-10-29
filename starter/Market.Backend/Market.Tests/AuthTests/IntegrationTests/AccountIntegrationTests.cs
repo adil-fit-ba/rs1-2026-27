@@ -83,7 +83,7 @@ public class AccountIntegrationTests
     }
 
     [Fact]
-    public async Task Post_Register_EmailAlreadyRegistered_ShouldReturnFieldErrorOnEmail()
+    public async Task Post_Register_EmailAlreadyRegistered_ShouldReturnConflict()
     {
         // Arrange: a seeded account, in different case
         var request = new
@@ -97,10 +97,11 @@ public class AccountIntegrationTests
         // Act
         var response = await CreateClient().PostAsJsonAsync("api/auth/register", request);
 
-        // Assert
-        var fieldError = Assert.Single(await ReadFieldErrorsAsync(response));
-        Assert.Equal("email", fieldError.Field);
-        Assert.Equal("Email je već registrovan.", fieldError.Message);
+        // Assert: the registered email needs the database, so RegisterCommandHandler checks it (409, not 400)
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorDto>();
+        Assert.Equal("entity.error", error!.Code);
+        Assert.Equal("Email je već registrovan.", error.Message);
     }
 
     [Theory]

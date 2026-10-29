@@ -66,7 +66,7 @@ public class ProductIntegrationTests
     }
 
     [Fact]
-    public async Task Post_Product_DuplicateNameInDifferentCase_ShouldReturnFieldError()
+    public async Task Post_Product_DuplicateNameInDifferentCase_ShouldReturnConflict()
     {
         // Arrange
         var admin = await _factory.GetAuthenticatedClientAsync();
@@ -79,10 +79,33 @@ public class ProductIntegrationTests
         var response = await admin.PostAsJsonAsync("/Products", new { Name = name.ToUpperInvariant(), Price = 1m, CategoryId = 1 });
 
         // Assert
+        // (the unique name needs the database, so the handler checks it: 409, not a field error from the validator)
         Assert.False(available!.Available);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var error = await response.Content.ReadFromJsonAsync<ErrorDto>();
-        Assert.Contains(error!.Errors!, e => e.Field == "name");
+        Assert.Equal("entity.error", error!.Code);
+        Assert.Equal("Proizvod sa ovim nazivom već postoji.", error.Message);
+    }
+
+    [Fact]
+    public async Task Put_Product_NameOfAnotherProduct_ShouldReturnConflict_ButOwnNameIsAllowed()
+    {
+        // Arrange
+        var admin = await _factory.GetAuthenticatedClientAsync();
+        var first = $"Prvi {Guid.NewGuid():N}";
+        var second = $"Drugi {Guid.NewGuid():N}";
+        await CreateProductAsync(admin, first, isEnabled: true);
+        var secondId = await CreateProductAsync(admin, second, isEnabled: true);
+        var categories = await admin.GetFromJsonAsync<PageResult<ListProductCategoriesQueryDto>>("/ProductCategories?onlyEnabled=true");
+        object Body(string name) => new { Name = name, Price = 10m, StockQuantity = 5, CategoryId = categories!.Items[0].Id, IsEnabled = true };
+
+        // Act
+        var duplicate = await admin.PutAsJsonAsync($"/Products/{secondId}", Body(first.ToUpperInvariant()));
+        var ownName = await admin.PutAsJsonAsync($"/Products/{secondId}", Body(second));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
+        Assert.True(ownName.IsSuccessStatusCode);
     }
 
     [Fact]

@@ -32,7 +32,9 @@ interface RegisterForm {
  * - pravilo lozinke kao na backendu (AppValidators.password) + hint ispod polja
  * - CROSS-FIELD validator "lozinke se ne podudaraju" (AppValidators.passwordsMatch na grupi),
  *   greška se prikazuje ispod polja potvrde (CrossFieldErrorStateMatcher)
- * - greške servera po polju (npr. "Email je već registrovan.") → applyServerErrors
+ * - greške servera po polju (validator na backendu, 400) → applyServerErrors
+ * - zauzet email provjerava handler na backendu (treba baza podataka): 409 i poruka
+ *   "Email je već registrovan." u banneru iznad forme (applyServerErrors vraća ErrorDto.message)
  * - backend odmah vraća tokene: snimaju se kao kod logina, pa i preusmjerenje radi kao login
  *   (?returnUrl ako je siguran, inače početna stranica korisnika)
  */

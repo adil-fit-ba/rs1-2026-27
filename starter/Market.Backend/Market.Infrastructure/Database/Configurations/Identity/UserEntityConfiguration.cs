@@ -8,6 +8,7 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<MarketUse
 
         b.HasKey(x => x.Id);
 
+        // RegisterCommandHandler checks the email first and returns 409; this index is the last guard.
         // Unique only among non-deleted users: a soft-deleted user keeps its row,
         // and without the filter its email could never be registered again.
         b.HasIndex(x => x.Email)

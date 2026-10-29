@@ -75,4 +75,23 @@ public class CurrenciesIntegrationTests
         var error = await response.Content.ReadFromJsonAsync<ErrorDto>();
         Assert.Contains("ExchangeRates", error!.Message);
     }
+
+    [Theory]
+    // The validator checks only the format of the code (no database access); whether the currency exists
+    // and is not the base currency needs the database, so CreateExchangeRateCommandHandler checks it.
+    [InlineData("XYZ", HttpStatusCode.NotFound)] // unknown currency → MarketNotFoundException
+    [InlineData("BAM", HttpStatusCode.Conflict)] // base currency → MarketBusinessRuleException
+    [InlineData("US", HttpStatusCode.BadRequest)] // wrong format → validator
+    public async Task Post_Rate_CurrencyCode_IsCheckedByValidatorOrHandler(string code, HttpStatusCode expected)
+    {
+        // Arrange
+        var client = await _factory.GetAuthenticatedClientAsync(); // admin
+
+        // Act
+        var response = await client.PostAsJsonAsync("/Currencies/rates",
+            new { CurrencyCode = code, RateToBase = 1.5m, ValidFromUtc = DateTime.UtcNow });
+
+        // Assert
+        Assert.Equal(expected, response.StatusCode);
+    }
 }

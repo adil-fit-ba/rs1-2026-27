@@ -2,20 +2,13 @@
 
 public sealed class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
 {
-    public CreateProductCommandValidator(IAppDbContext ctx)
+    public CreateProductCommandValidator()
     {
-        // Cascade.Stop: the database check runs only for a non-empty name of valid length.
+        // Only the request itself is checked here (no database access, see ValidationBehavior).
+        // The unique name needs the database, so it is checked by the handler (409).
         RuleFor(x => x.Name)
-            .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Naziv je obavezan.")
-            .MaximumLength(ProductEntity.Constraints.NameMaxLength).WithMessage($"Naziv može imati najviše {ProductEntity.Constraints.NameMaxLength} znakova.")
-            .MustAsync(async (name, ct) =>
-            {
-                // Case-insensitive; soft-deleted products are skipped by the global query filter.
-                var normalized = name.Trim().ToLower();
-                return !await ctx.Products.AnyAsync(p => p.Name.ToLower() == normalized, ct);
-            })
-            .WithMessage("Proizvod sa ovim nazivom već postoji.");
+            .MaximumLength(ProductEntity.Constraints.NameMaxLength).WithMessage($"Naziv može imati najviše {ProductEntity.Constraints.NameMaxLength} znakova.");
 
         RuleFor(x => x.Description)
             .MaximumLength(ProductEntity.Constraints.DescriptionMaxLength).WithMessage($"Opis može imati najviše {ProductEntity.Constraints.DescriptionMaxLength} znakova.");

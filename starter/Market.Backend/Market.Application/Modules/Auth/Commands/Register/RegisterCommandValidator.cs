@@ -2,7 +2,7 @@ namespace Market.Application.Modules.Auth.Commands.Register;
 
 public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {
-    public RegisterCommandValidator(IAppDbContext ctx)
+    public RegisterCommandValidator()
     {
         RuleFor(x => x.Firstname)
             .NotEmpty().WithMessage("Ime je obavezno.")
@@ -14,21 +14,15 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
             .MaximumLength(MarketUserEntity.Constraints.LastnameMaxLength)
             .WithMessage($"Prezime može imati najviše {MarketUserEntity.Constraints.LastnameMaxLength} znakova.");
 
-        // Cascade.Stop: the database check runs only for a valid email.
+        // Only the request itself is checked here (no database access, see ValidationBehavior).
+        // An email that is already registered needs the database, so it is checked by RegisterCommandHandler (409).
+        // Cascade.Stop: an empty email is reported only as "obavezan", not also as "nije ispravan".
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Email je obavezan.")
             .MaximumLength(MarketUserEntity.Constraints.EmailMaxLength)
             .WithMessage($"Email može imati najviše {MarketUserEntity.Constraints.EmailMaxLength} znakova.")
-            .EmailAddress().WithMessage("Email nije ispravan.")
-            .MustAsync(async (email, ct) =>
-            {
-                // Case-insensitive, like login; soft-deleted users are skipped by the global query filter
-                // (the unique index on Email also ignores them).
-                var normalized = email.Trim().ToLower();
-                return !await ctx.Users.AnyAsync(u => u.Email.ToLower() == normalized, ct);
-            })
-            .WithMessage("Email je već registrovan.");
+            .EmailAddress().WithMessage("Email nije ispravan.");
 
         RuleFor(x => x.Password)
             .ValidPassword();
