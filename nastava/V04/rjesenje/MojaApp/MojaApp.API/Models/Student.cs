@@ -9,7 +9,7 @@ public class Student
     public DateOnly? DatumRodjenja { get; set; }
     public DateTime DatumKreiranja { get; set; }
 
-    // 1:N – student pripada jednom smjeru. Nullable, jer studenti iz V02 već postoje u bazi bez smjera.
+    // 1:N – student pripada jednom smjeru. Nullable, jer studenti iz V02 već postoje u bazi podataka bez smjera.
     public int? SmjerId { get; set; }
     public Smjer? Smjer { get; set; }
 

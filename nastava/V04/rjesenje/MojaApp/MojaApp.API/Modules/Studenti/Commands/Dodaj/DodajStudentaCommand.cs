@@ -1,6 +1,7 @@
 namespace MojaApp.API.Modules.Studenti.Commands.Dodaj;
 
-// Command: mijenja podatke. Klijent ga šalje kao tijelo POST zahtjeva (umjesto StudentDodajRequest iz V03).
+// Command opisuje zahtjev za promjenu podataka; promjenu izvršava handler.
+// Klijent ga šalje kao tijelo POST zahtjeva (umjesto StudentDodajRequest iz V03).
 // Id i DatumKreiranja postavlja server, pa ih ovdje nema.
 public class DodajStudentaCommand : IRequest<StudentResponse>
 {

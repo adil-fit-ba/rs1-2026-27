@@ -1,6 +1,6 @@
 # MojaApp – RS1 vježbe 4, rješenje
 
-ASP.NET Core Web API (.NET 8), EF Core 8, SQL Server. Isti model i iste migracije kao u V03 (`Student`, `Smjer`, `Predmet`, `Upis`), pa radi baza iz V03.
+ASP.NET Core Web API (.NET 8), EF Core 8, SQL Server. Isti model i iste migracije kao u V03 (`Student`, `Smjer`, `Predmet`, `Upis`), pa radi baza podataka iz V03.
 
 V04 raspoređuje kod po obrascu iz startera za seminarski rad (`Market.Application\Modules\…`):
 
@@ -25,4 +25,4 @@ Statistika predmeta, `Smjerovi` i ostale akcije nad `Upisi` su ostale iz V03, di
 
 Odgovori s greškom (400, 404, 409) su u obliku ProblemDetails (`application/problem+json`). Greške validacije imaju `errors` po polju, kao u V02 i V03.
 
-Testiranje: `MojaApp.API/MojaApp.API.http`. Svi zahtjevi vraćaju iste statuse kao u V03, osim nepostojećeg smjera kod upisa ili izmjene studenta: V03 je vraćao 400, a V04 vraća 404. Validator ne pristupa bazi, pa postojanje smjera provjerava handler (`NotFoundException`), kao `CreateProductCommandHandler` u starteru.
+Testiranje: `MojaApp.API/MojaApp.API.http`. Svi zahtjevi vraćaju iste statuse kao u V03, osim nepostojećeg smjera kod upisa ili izmjene studenta: V03 je vraćao 400, a V04 vraća 404. Validator ne pristupa bazi podataka, pa postojanje smjera provjerava handler (`NotFoundException`), kao `CreateProductCommandHandler` u starteru.

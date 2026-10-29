@@ -3,7 +3,7 @@ using MojaApp.API.Models;
 
 namespace MojaApp.API.Data;
 
-// Most između C# koda i baze: svaki DbSet je jedna tabela.
+// Most između C# koda i baze podataka: svaki DbSet je jedna tabela.
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Student> Studenti => Set<Student>();

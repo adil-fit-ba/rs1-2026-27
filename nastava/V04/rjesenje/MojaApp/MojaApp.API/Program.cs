@@ -18,7 +18,7 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Baza: connection string "Main" iz appsettings.json.
+// Baza podataka: connection string "Main" iz appsettings.json.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Main")));
 

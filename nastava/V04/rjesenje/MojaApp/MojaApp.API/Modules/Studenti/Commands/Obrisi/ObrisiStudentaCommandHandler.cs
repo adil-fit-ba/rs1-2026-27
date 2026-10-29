@@ -7,7 +7,7 @@ public class ObrisiStudentaCommandHandler(AppDbContext db) : IRequestHandler<Obr
         Student student = await db.Studenti.FirstOrDefaultAsync(x => x.Id == request.Id, ct)
             ?? throw new NotFoundException($"Student (Id = {request.Id}) ne postoji."); // 404
 
-        // Upis ima OnDelete(Restrict). Provjera ovdje daje jasnu poruku (409) umjesto greške iz baze (500).
+        // Upis ima OnDelete(Restrict). Provjera ovdje daje jasnu poruku (409) umjesto greške iz baze podataka (500).
         if (await db.Upisi.AnyAsync(x => x.StudentId == request.Id, ct))
             throw new ConflictException("Student ima upisane predmete i ne može se obrisati."); // 409
 

@@ -4,7 +4,7 @@ public class DodajStudentaCommandHandler(AppDbContext db) : IRequestHandler<Doda
 {
     public async Task<StudentResponse> Handle(DodajStudentaCommand request, CancellationToken ct)
     {
-        // Format podataka je već provjerio validator. Ovdje su pravila koja zavise od stanja baze.
+        // Format podataka je već provjerio validator. Ovdje su pravila koja zavise od stanja baze podataka.
         if (request.SmjerId != null && !await db.Smjerovi.AnyAsync(x => x.Id == request.SmjerId, ct))
             throw new NotFoundException($"Smjer (Id = {request.SmjerId}) ne postoji."); // 404
 

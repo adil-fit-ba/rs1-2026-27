@@ -36,7 +36,7 @@ public class UpisiController(ISender sender, AppDbContext db) : ControllerBase
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState); // 400 s greškom po polju
 
-        // Jedinstven indeks (StudentId, PredmetId) bi odbio duplikat, ali kao izuzetak iz baze (500).
+        // Jedinstven indeks (StudentId, PredmetId) bi odbio duplikat, ali kao izuzetak iz baze podataka (500).
         // Zato provjera prije upisa i 409 s porukom.
         if (await db.Upisi.AnyAsync(x => x.StudentId == request.StudentId && x.PredmetId == request.PredmetId, ct))
             return Conflict("Student je već upisan na ovaj predmet.");

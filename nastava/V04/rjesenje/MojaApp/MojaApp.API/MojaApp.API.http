@@ -154,7 +154,7 @@ Content-Type: application/json
   "brojIndeksa": "123"
 }
 
-### Handler: nepostojeći smjer → NotFoundException → 404 (validator ne pristupa bazi)
+### Handler: nepostojeći smjer → NotFoundException → 404 (validator ne pristupa bazi podataka)
 POST {{MojaApp.API_HostAddress}}/studenti
 Content-Type: application/json
 
