@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RS1 V05 – zadaci: novi entiteti u Clean Architecture</title>
+<meta name="description" content="RS1 vježbe 5, zadaci za ponavljanje: entiteti Sala i Ispit s CRUD-om kroz Domain, Application, Infrastructure i API.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Raspored: mini-prezentacija od 10 slajdova; jedan slajd na ekranu (strelice), ili svi jedan ispod
+   drugog (način „Čitanje“). Papir je svijetao, svijet i putanje su na tamnoj podlozi kao u NetLogu. */
+:root {
+  --papir: #eef1f4; --list: #ffffff; --tinta: #17212b; --siva: #56636f; --linija: #d3dae1;
+  --narandza: #b9531a; --narandza-meko: #f6dfd0; --margina: #e5a3a3; --svijet: #0b0d10;
+  --za: #345da9; --protiv: #d73229; --neodlucni: #8d8d8d;
+  --f-naslov: "Bitter", "Georgia", "Cambria", serif;
+  --f-tekst: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+  --t-0: 0.83rem; --t-1: 1rem; --t-2: 1.17rem; --t-3: 1.5rem; --t-4: 2.2rem; --t-5: 3.1rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540;
+    --narandza: #f0894a; --narandza-meko: #3a2416; --margina: #6b3535; --za: #5b86d6; --protiv: #e5574e; --neodlucni: #9a9a9a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540;
+  --narandza: #f0894a; --narandza-meko: #3a2416; --margina: #6b3535; --za: #5b86d6; --protiv: #e5574e; --neodlucni: #9a9a9a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { font-size: 18px; }
+@media (max-width: 600px) { html { font-size: 16px; } }
+body { margin: 0; background: var(--papir); color: var(--tinta); font-family: var(--f-tekst); line-height: 1.55; }
+[hidden] { display: none !important; }
+a { color: var(--narandza); text-underline-offset: 0.15em; }
+:focus-visible { outline: 3px solid var(--narandza); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--f-naslov); text-wrap: balance; line-height: 1.18; margin: 0; }
+p { margin: 0; }
+code { font-family: var(--f-mono); font-size: 0.9em; }
+p code, li code, td code { background: var(--narandza-meko); padding: 0.05em 0.3em; border-radius: 3px; }
+.okvir { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.oznaka { font-family: var(--f-mono); font-size: var(--t-0); letter-spacing: 0.08em; text-transform: uppercase; color: var(--narandza); font-weight: 500; }
+.siva { color: var(--siva); }
+.mala { font-size: var(--t-0); }
+
+/* traka na vrhu */
+.vrh { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--papir); border-bottom: 1px solid var(--linija); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--papir); }
+.vrh .okvir { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding-block: 0.55rem; flex-wrap: wrap; }
+.vrh b { font-family: var(--f-naslov); font-weight: 700; }
+.nacin { display: flex; gap: 0.3rem; }
+button { font: 500 var(--t-0) var(--f-mono); border-radius: 4px; padding: 0.4rem 0.8rem; cursor: pointer;
+  border: 1px solid var(--narandza); background: transparent; color: var(--narandza); }
+button[aria-pressed="true"], button.glavno { background: var(--narandza); color: var(--list); }
+button:disabled { opacity: 0.45; cursor: default; }
+
+/* slajdovi */
+.slajd { padding-block: 2rem 6rem; scroll-margin-top: 3.4rem; }
+main.prezentacija .slajd { display: none; min-height: calc(100svh - 3.2rem); }
+main.prezentacija .slajd.aktivan { display: block; }
+main.citanje .slajd { border-bottom: 1px solid var(--linija); padding-block: 2.5rem; }
+.glava { display: grid; gap: 0.35rem; margin-bottom: 1.4rem; }
+.glava h2 { font-size: var(--t-4); max-width: 30ch; }
+.glava .podnaslov { font-size: var(--t-2); color: var(--siva); max-width: 52rem; }
+.dvije { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+.dvije > * { min-width: 0; }
+@media (max-width: 900px) { .dvije { grid-template-columns: minmax(0, 1fr); } }
+.tekst { display: grid; gap: 1rem; }
+.tekst ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
+.panel { background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 1rem; }
+.pitanje { background: var(--narandza-meko); border-radius: 4px; padding: 0.9rem 1rem; }
+.pitanje h3 { font-size: var(--t-1); margin-bottom: 0.25rem; }
+
+/* naslovni slajd */
+.naslovni { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 2.4rem; align-items: center; padding-top: 1rem; }
+.naslovni > * { min-width: 0; }
+.naslovni h1 { font-size: var(--t-5); letter-spacing: -0.01em; margin: 0.4rem 0 0.9rem; }
+.naslovni .teza { font-size: var(--t-3); font-family: var(--f-naslov); line-height: 1.3; }
+.naslovni .uvod { margin-top: 1rem; color: var(--siva); }
+@media (max-width: 900px) { .naslovni { grid-template-columns: minmax(0, 1fr); } }
+
+/* list papira: pravilo za model na papiru */
+.papir {
+  margin: 0; background-color: var(--list); border: 1px solid var(--linija); border-radius: 4px;
+  padding: 1rem 1.2rem 1.2rem 2.4rem; position: relative; line-height: 1.75rem;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.75rem - 1px), var(--linija) calc(1.75rem - 1px), var(--linija) 1.75rem);
+  background-position: 0 2.55rem;
+}
+.papir::before { content: ""; position: absolute; left: 1.5rem; top: 0; bottom: 0; width: 2px; background: var(--margina); }
+.papir figcaption { font-family: var(--f-mono); font-size: var(--t-0); color: var(--siva); letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.75rem; }
+.papir p, .papir li { font-family: var(--f-naslov); font-size: 1.08rem; }
+.papir ul { list-style: none; margin: 0; padding: 0 0 0 1.2rem; }
+.papir li::before { content: "→ "; color: var(--narandza); font-family: var(--f-tekst); }
+.papir b { color: var(--narandza); }
+
+/* kartice (pojava, sastavni dijelovi, koraci) */
+.kartice { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.kartica { background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 1rem; display: grid; gap: 0.6rem; align-content: start; }
+.kartica h3 { font-size: var(--t-2); }
+.kartica svg { width: 100%; height: auto; display: block; }
+.kartica ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.25rem; }
+.kartica .kod-cip { font-family: var(--f-mono); font-size: 0.78rem; color: var(--siva); border-top: 1px dashed var(--linija); padding-top: 0.5rem; }
+.korak-broj { font-family: var(--f-mono); font-weight: 500; color: var(--narandza); }
+
+/* SVG ilustracije: boje iz tokena */
+.il-osa { stroke: var(--siva); stroke-width: 1.5; }
+.il-tekst { fill: var(--siva); font: 13px var(--f-mono); }
+.il-tekst-veci { fill: var(--tinta); font: 600 15px var(--f-tekst); }
+.il-za { fill: var(--za); } .il-protiv { fill: var(--protiv); } .il-neo { fill: var(--neodlucni); }
+.il-prozor { fill: var(--narandza-meko); stroke: var(--narandza); stroke-dasharray: 4 3; }
+.il-strelica { stroke: var(--narandza); stroke-width: 2.5; fill: none; }
+.il-vrh { fill: var(--narandza); }
+.il-domet { fill: none; stroke: var(--narandza); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.il-svijet { fill: var(--svijet); }
+.il-kuca { fill: #eded2f; }
+.il-precrtano { stroke: var(--protiv); stroke-width: 3; }
+.il-oblak { fill: var(--list); stroke: var(--siva); stroke-width: 1.2; }
+
+/* kalkulator jednog susreta */
+.kalk { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 1.5rem; }
+.kalk > * { min-width: 0; }
+@media (max-width: 900px) { .kalk { grid-template-columns: minmax(0, 1fr); } }
+.klizaci { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 1.2rem; }
+@media (max-width: 520px) { .klizaci { grid-template-columns: minmax(0, 1fr); } }
+.klizac { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.klizac label { font-family: var(--f-mono); font-size: var(--t-0); }
+.klizac output { font-family: var(--f-mono); font-size: var(--t-0); font-variant-numeric: tabular-nums; }
+.klizac input { grid-column: 1 / -1; width: 100%; accent-color: var(--narandza); }
+.racun { font-family: var(--f-mono); font-size: 0.86rem; line-height: 1.7; background: var(--papir); border-radius: 4px; padding: 0.7rem 0.9rem; overflow-x: auto; white-space: pre; }
+.racun .da { color: var(--za); font-weight: 600; } .racun .ne { color: var(--protiv); font-weight: 600; }
+.dugmad { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+/* putanje stava */
+.putanje-okvir { background: var(--svijet); border-radius: 6px; padding: 0.6rem; }
+canvas.putanje { width: 100%; aspect-ratio: 2 / 1; display: block; }
+.izbor { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.izbor button { border-color: var(--linija); color: var(--siva); }
+.izbor button[aria-pressed="true"] { border-color: var(--narandza); color: var(--list); background: var(--narandza); }
+.legenda { display: flex; gap: 1rem; flex-wrap: wrap; font-size: var(--t-0); color: var(--siva); margin-top: 0.4rem; }
+.legenda i { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; margin-right: 0.35em; vertical-align: -0.05em; }
+.potpis { font-size: var(--t-0); color: var(--siva); margin-top: 0.4rem; }
+.potpis b { color: var(--tinta); font-weight: 600; }
+
+/* grafikoni iz mjerenja */
+svg.grafik { width: 100%; height: auto; display: block; overflow: visible; }
+.g-mreza { stroke: var(--linija); stroke-width: 1; } .g-os { stroke: var(--siva); stroke-width: 1; }
+.g-oznaka { fill: var(--siva); font: 12px var(--f-mono); } .g-naslov-x { fill: var(--siva); font: 12px var(--f-tekst); }
+.g-vrijednost { fill: var(--tinta); font: 500 12px var(--f-mono); }
+.g-raspon { stroke: var(--narandza); stroke-width: 3; stroke-linecap: round; opacity: 0.35; }
+.g-tacka { fill: var(--narandza); }
+.g-ref { stroke: var(--siva); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.g-ref-tekst { fill: var(--siva); font: italic 12px var(--f-tekst); }
+
+/* kod */
+.kodovi { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+.kodovi > * { min-width: 0; }
+@media (max-width: 900px) { .kodovi { grid-template-columns: minmax(0, 1fr); } }
+.kod { background: var(--list); border: 1px solid var(--linija); border-radius: 6px; overflow: hidden; }
+.kod .jezik { font-family: var(--f-mono); font-size: var(--t-0); padding: 0.4rem 0.8rem; border-bottom: 1px solid var(--linija); color: var(--siva); }
+.kod pre { margin: 0; padding: 0.8rem; overflow-x: auto; }
+.kod code { font-size: 14px; line-height: 1.55; white-space: pre; }
+.kod .kom { color: var(--siva); font-style: italic; }
+.kod mark { background: var(--narandza-meko); color: inherit; border-radius: 2px; padding: 0 0.15em; }
+.kod mark b { color: var(--narandza); font-family: var(--f-tekst); }
+.oblacici { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 1rem; margin-top: 1rem; }
+.oblacici div { border-left: 3px solid var(--narandza); padding-left: 0.8rem; }
+.oblacici b.br { font-family: var(--f-mono); color: var(--narandza); margin-right: 0.3rem; }
+
+/* probaj */
+.veze { display: grid; gap: 0.7rem; }
+.veze a { display: block; text-decoration: none; background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 0.8rem 1rem; color: var(--tinta); }
+.veze a:hover { border-color: var(--narandza); }
+.veze a b { color: var(--narandza); }
+.veze a span { display: block; color: var(--siva); font-size: var(--t-0); }
+.literatura { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; font-size: 0.92rem; }
+
+/* donja navigacija */
+.navigacija { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--papir); border-top: 1px solid var(--linija);
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.navigacija .okvir { display: flex; align-items: center; gap: 0.8rem; padding-block: 0.5rem; }
+.navigacija .naslov-slajda { flex: 1; min-width: 0; font-size: var(--t-0); color: var(--siva); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.navigacija .broj { font-family: var(--f-mono); font-size: var(--t-0); font-variant-numeric: tabular-nums; }
+.napredak { position: absolute; top: -1px; left: 0; height: 2px; background: var(--narandza); transition: width 0.25s; }
+main.citanje ~ .navigacija { display: none; }
+@media (prefers-reduced-motion: reduce) { .napredak { transition: none; } }
+
+</style>
+<style>
+.okvir.siroko { max-width: 1400px; }
+table.t { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+table.t th, table.t td { border-bottom: 1px solid var(--linija); padding: 0.4rem 0.5rem; text-align: left; vertical-align: top; }
+table.t th { font-size: 0.78rem; color: var(--siva); font-weight: 600; }
+table.t td.m { font-family: var(--f-mono); font-size: 0.78rem; overflow-wrap: anywhere; }
+table.t td.s { font-family: var(--f-mono); font-weight: 600; white-space: nowrap; }
+.s2 { color: var(--za); } .s4 { color: var(--protiv); }
+.tabela-okvir { overflow-x: auto; max-width: 100%; }
+.projekti { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 0.8rem; }
+.projekti .kartica h3 { font-family: var(--f-mono); font-size: 0.86rem; }
+.projekti .kartica ul { font-size: 0.86rem; }
+.projekti .kartica li code { font-size: 0.78rem; }
+.pravila { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+@media (max-width: 800px) { .pravila { grid-template-columns: minmax(0, 1fr); } }
+.pravila .panel h3 { font-size: var(--t-1); margin-bottom: 0.4rem; }
+.pravila .panel ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.3rem; font-size: 0.92rem; }
+.kod { position: relative; }
+.kod .jezik { padding-right: 6.5rem; }
+.kod pre { max-height: 26rem; }
+.kod code { font-size: 13px; }
+.kopiraj { position: absolute; top: 0.28rem; right: 0.4rem; z-index: 2; font: 600 0.72rem/1.2 var(--f-tekst); padding: 0.18rem 0.55rem;
+  border: 1px solid var(--linija); border-radius: 4px; background: var(--list); color: var(--siva); cursor: pointer; }
+.kopiraj:hover, .kopiraj:focus-visible { border-color: var(--narandza); color: var(--narandza); }
+.kopiraj.ok { border-color: var(--za); color: var(--za); }
+@media print { .kopiraj { display: none; } }
+.lista { display: grid; gap: 0.4rem; }
+.lista label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.6rem; align-items: start; background: var(--list); border: 1px solid var(--linija);
+  border-radius: 6px; padding: 0.5rem 0.75rem; cursor: pointer; }
+.lista input { accent-color: var(--narandza); width: 1.1rem; height: 1.1rem; margin-top: 0.2rem; }
+.lista small { display: block; color: var(--siva); font-size: var(--t-0); }
+.vazno { border-left: 4px solid var(--narandza); background: var(--list); padding: 0.7rem 0.9rem; border-radius: 0 6px 6px 0; }
+.vazno b { color: var(--narandza); }
+.tekst ol { margin: 0; padding-left: 1.3rem; display: grid; gap: 0.4rem; }
+.glava h2, .glava .podnaslov { overflow-wrap: anywhere; }
+.kartica code, .kartica li, .vazno code { overflow-wrap: anywhere; }
+.projekti > * { min-width: 0; }
+</style>
+</head>
+<body>
+
+<header class="vrh">
+  <div class="okvir">
+    <span><span class="oznaka">RS1 · Vježbe 5</span> &nbsp;<b>Zadaci: novi entiteti u Clean Architecture</b></span>
+    <div class="nacin" role="group" aria-label="Način prikaza">
+      <button type="button" id="nacin-prezentacija" aria-pressed="true">Prezentacija</button>
+      <button type="button" id="nacin-citanje" aria-pressed="false">Čitanje</button>
+    </div>
+  </div>
+</header>
+
+<main class="prezentacija" id="slajdovi">
+
+<!-- 1 ============================================================ -->
+<section class="slajd" id="s1" data-naslov="Zadaci za ponavljanje">
+  <div class="okvir naslovni">
+    <div>
+      <span class="oznaka">Razvoj softvera I · Vježbe 5 · samostalni rad</span>
+      <h1>Novi entiteti u Clean Architecture projektu</h1>
+      <p class="teza">Dva nova entiteta s potpunim CRUD-om, svaki dio u svom projektu.</p>
+      <p class="uvod">Polazna tačka je vlastiti MojaApp nakon nadogradnje na četiri projekta (Domain, Application, Infrastructure, API).
+        Sve što zadaci traže već postoji na entitetima Student i Predmet: CQRS s MediatR-om, validator bez pristupa bazi podataka, pravila nad bazom podataka u handleru,
+        Fluent API konfiguracija i migracija. Rješenja nema, jer je ovo ponavljanje gradiva.</p>
+      <p class="uvod">Očekivani statusi u .http blokovima provjereni su na referentnoj implementaciji koja se ne objavljuje: svih 27 zahtjeva, redom, nad bazom podataka s početnim podacima.</p>
+    </div>
+    <div class="kartice">
+      <div class="kartica"><h3><span class="korak-broj">1</span> Sala</h3>
+        <p>Entitet bez veza: lista s filterom, jedan zapis, dodavanje, izmjena i brisanje. Jedinstvena oznaka sale (409).</p><div class="kod-cip">/Sale · 5 endpointa</div></div>
+      <div class="kartica"><h3><span class="korak-broj">2</span> Ispit</h3>
+        <p>Ispitni termin: veze na Predmet i Salu. Sala ne smije imati dva ispita u isto vrijeme (409), a sala s ispitima se ne briše.</p><div class="kod-cip">/Ispiti · 5 endpointa</div></div>
+      <div class="kartica"><h3><span class="korak-broj">3</span> Raspored sale</h3>
+        <p>Jedan query s projekcijom: ispiti u jednoj sali, sortirani po datumu.</p><div class="kod-cip">GET /Sale/{id}/raspored</div></div>
+      <div class="kartica"><h3><span class="korak-broj">✓</span> Provjera</h3>
+        <p>Kontrolna lista: šta se gleda da bi rad bio u duhu Clean Architecture.</p><div class="kod-cip">kontroleri samo s ISender</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 ============================================================ -->
+<section class="slajd" id="s2" data-naslov="Zadatak 1: entitet Sala">
+  <div class="okvir siroko">
+    <div class="glava">
+      <span class="oznaka">Zadatak 1 · entitet bez veza</span>
+      <h2>Sala: model, konfiguracija i migracija</h2>
+      <p class="podnaslov">Sala u kojoj se održavaju ispiti. Prvo entitet i tabela, zatim CRUD na sljedećem slajdu.</p>
+    </div>
+    <div class="dvije">
+      <div class="tekst">
+        <div class="tabela-okvir"><table class="t">
+          <thead><tr><th>Svojstvo</th><th>Tip</th><th>Pravilo</th></tr></thead>
+          <tbody>
+            <tr><td class="m">Id</td><td class="m">int</td><td>primarni ključ</td></tr>
+            <tr><td class="m">Oznaka</td><td class="m">string</td><td>obavezno, najviše 20 znakova, <b>jedinstvena</b> (npr. <code>AMF1</code>)</td></tr>
+            <tr><td class="m">Naziv</td><td class="m">string</td><td>obavezan, najviše 100 znakova</td></tr>
+            <tr><td class="m">Kapacitet</td><td class="m">int</td><td>od 1 do 500 mjesta</td></tr>
+          </tbody>
+        </table></div>
+        <div class="tabela-okvir"><table class="t">
+          <thead><tr><th>Početni podaci (HasData)</th><th>Oznaka</th><th>Naziv</th><th>Kapacitet</th></tr></thead>
+          <tbody>
+            <tr><td class="m">Id = 1</td><td class="m">AMF1</td><td>Amfiteatar 1</td><td class="m">120</td></tr>
+            <tr><td class="m">Id = 2</td><td class="m">LAB2</td><td>Laboratorija 2</td><td class="m">24</td></tr>
+          </tbody>
+        </table></div>
+        <div class="vazno"><b>Tabela se zove <code>Sale</code>,</b> a <code>DbSet</code> u <code>IAppDbContext</code> i <code>AppDbContext</code> se zove <code>Sale</code>. Jedinstvenost oznake čuva jedinstveni indeks u konfiguraciji, a provjera u handleru vraća 409 prije nego što baza podataka odbije zapis.</div>
+      </div>
+      <div class="tekst">
+        <div class="projekti">
+          <div class="kartica"><h3>MojaApp.Domain</h3><ul><li><code>Entities/Sala.cs</code></li></ul></div>
+          <div class="kartica"><h3>MojaApp.Application</h3><ul><li><code>Abstractions/IAppDbContext.cs</code>: <code>DbSet&lt;Sala&gt; Sale</code></li></ul></div>
+          <div class="kartica"><h3>MojaApp.Infrastructure</h3><ul><li><code>Database/AppDbContext.cs</code>: <code>DbSet&lt;Sala&gt; Sale</code></li>
+            <li><code>Database/Configurations/SalaConfiguration.cs</code>: dužine, jedinstveni indeks na <code>Oznaka</code>, <code>HasData</code></li>
+            <li>migracija <code>Sale</code> (komanda ispod)</li></ul></div>
+        </div>
+        <div class="kod"><div class="jezik">PowerShell · folder gdje je .sln</div><pre><code>dotnet ef migrations add Sale --project MojaApp.Infrastructure --startup-project MojaApp.API
+dotnet ef database update --project MojaApp.Infrastructure --startup-project MojaApp.API</code></pre></div>
+        <p class="siva mala">Nova migracija nastaje pored postojećih, u <code>MojaApp.Infrastructure/Database/Migrations</code> (provjereno). U Package Manager Consoleu: Default project <code>MojaApp.Infrastructure</code>, startup projekat <code>MojaApp.API</code>, pa <code>Add-Migration Sale</code> i <code>Update-Database</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ============================================================ -->
+<section class="slajd" id="s3" data-naslov="Zadatak 1: CRUD za Sale">
+  <div class="okvir siroko">
+    <div class="glava">
+      <span class="oznaka">Zadatak 1 · CRUD</span>
+      <h2>Pet endpointa, pet zahtjeva za MediatR</h2>
+      <p class="podnaslov">Kontroler <code>SaleController</code> prima samo <code>ISender</code>. Svaki endpoint šalje jedan query ili command iz <code>MojaApp.Application/Modules/Sale</code>.</p>
+    </div>
+    <div class="dvije">
+      <div class="tekst">
+        <div class="tabela-okvir"><table class="t">
+          <thead><tr><th>Endpoint</th><th>Zahtjev (Application)</th><th>Odgovor</th></tr></thead>
+          <tbody>
+            <tr><td class="m">GET /Sale?minKapacitet=50</td><td class="m">Queries/Lista/ListaSalaQuery</td><td>200, <code>List&lt;SalaResponse&gt;</code> sortirano po oznaci. Bez parametra: sve sale.</td></tr>
+            <tr><td class="m">GET /Sale/{id}</td><td class="m">Queries/GetById/SalaGetByIdQuery</td><td>200 ili 404</td></tr>
+            <tr><td class="m">POST /Sale</td><td class="m">Commands/Dodaj/DodajSaluCommand</td><td>201 s <code>Location</code> zaglavljem, 400, 409</td></tr>
+            <tr><td class="m">PUT /Sale/{id}</td><td class="m">Commands/Uredi/UrediSaluCommand</td><td>204, 400, 404, 409</td></tr>
+            <tr><td class="m">DELETE /Sale/{id}</td><td class="m">Commands/Obrisi/ObrisiSaluCommand</td><td>204, 404 (od zadatka 2 i 409)</td></tr>
+          </tbody>
+        </table></div>
+        <p class="siva mala"><code>SalaResponse</code> (u <code>Dtos/</code>) ima <code>Id</code>, <code>Oznaka</code>, <code>Naziv</code> i <code>Kapacitet</code>. Projekcija ide u <code>Select</code> u handleru, kao za Predmete.</p>
+      </div>
+      <div class="pravila">
+        <div class="panel"><h3>Validator (400), bez baze podataka</h3><ul>
+          <li><code>Oznaka</code>: <code>NotEmpty</code>, <code>MaximumLength(20)</code></li>
+          <li><code>Naziv</code>: <code>NotEmpty</code>, <code>MaximumLength(100)</code></li>
+          <li><code>Kapacitet</code>: <code>InclusiveBetween(1, 500)</code></li>
+          <li>isti validator za Dodaj i Uredi (dvije klase, ista pravila)</li></ul></div>
+        <div class="panel"><h3>Handler (404, 409), s IAppDbContext</h3><ul>
+          <li>GetById, Uredi, Obrisi: nepostojeći Id → <code>NotFoundException</code> (404)</li>
+          <li>Dodaj: oznaka već postoji → <code>ConflictException</code> (409)</li>
+          <li>Uredi: oznaka postoji na <b>drugoj</b> sali → 409; ista sala smije zadržati svoju oznaku</li>
+          <li>Obrisi (poslije zadatka 2): sala ima ispite → 409</li></ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 ============================================================ -->
+<section class="slajd" id="s4" data-naslov="Zadatak 1: testiranje">
+  <div class="okvir siroko">
+    <div class="glava">
+      <span class="oznaka">Zadatak 1 · .http</span>
+      <h2>Zahtjevi i očekivani statusi</h2>
+      <p class="podnaslov">Dodajte ove zahtjeve na kraj <code>MojaApp.API.http</code> i pokrenite ih redom nad bazom podataka s početnim podacima. Status iz komentara mora se poklopiti.</p>
+    </div>
+    <div class="kod"><div class="jezik">MojaApp.API/MojaApp.API.http</div><pre><code>### Zadatak 1: sve sale (200, AMF1 pa LAB2)
+GET {{MojaApp.API_HostAddress}}/sale
+
+### Sale s najmanje 50 mjesta (200, samo AMF1)
+GET {{MojaApp.API_HostAddress}}/sale?minKapacitet=50
+
+### Sala po Id-u (200)
+GET {{MojaApp.API_HostAddress}}/sale/1
+
+### Nepostojeća sala (404)
+GET {{MojaApp.API_HostAddress}}/sale/999
+
+### Nova sala (201, Id = 3)
+POST {{MojaApp.API_HostAddress}}/sale
+Content-Type: application/json
+
+{ "oznaka": "UC3", "naziv": "Učionica 3", "kapacitet": 40 }
+
+### Ista oznaka (409)
+POST {{MojaApp.API_HostAddress}}/sale
+Content-Type: application/json
+
+{ "oznaka": "UC3", "naziv": "Druga učionica", "kapacitet": 30 }
+
+### Neispravni podaci (400: oznaka, naziv i kapacitet)
+POST {{MojaApp.API_HostAddress}}/sale
+Content-Type: application/json
+
+{ "oznaka": "", "naziv": "", "kapacitet": 0 }
+
+### Izmjena, ista oznaka iste sale (204)
+PUT {{MojaApp.API_HostAddress}}/sale/3
+Content-Type: application/json
+
+{ "oznaka": "UC3", "naziv": "Učionica 3 (renovirana)", "kapacitet": 45 }
+
+### Izmjena na oznaku druge sale (409)
+PUT {{MojaApp.API_HostAddress}}/sale/3
+Content-Type: application/json
+
+{ "oznaka": "LAB2", "naziv": "Učionica 3", "kapacitet": 45 }
+
+### Izmjena nepostojeće sale (404)
+PUT {{MojaApp.API_HostAddress}}/sale/999
+Content-Type: application/json
+
+{ "oznaka": "X1", "naziv": "X", "kapacitet": 10 }
+
+### Brisanje (204), pa ponovo (404)
+DELETE {{MojaApp.API_HostAddress}}/sale/3
+
+###
+DELETE {{MojaApp.API_HostAddress}}/sale/3</code></pre></div>
+  </div>
+</section>
+
+<!-- 5 ============================================================ -->
+<section class="slajd" id="s5" data-naslov="Zadatak 2: entitet Ispit">
+  <div class="okvir siroko">
+    <div class="glava">
+      <span class="oznaka">Zadatak 2 · veze</span>
+      <h2>Ispit: termin ispita iz predmeta u sali</h2>
+      <p class="podnaslov">Predmet ima više ispita, sala ima više ispita (dvije veze 1:N). Brisanje predmeta ili sale ne smije obrisati ispite: <code>OnDelete(DeleteBehavior.Restrict)</code>, kao za Upis.</p>
+    </div>
+    <div class="dvije">
+      <div class="tekst">
+        <div class="tabela-okvir"><table class="t">
+          <thead><tr><th>Svojstvo</th><th>Tip</th><th>Pravilo</th></tr></thead>
+          <tbody>
+            <tr><td class="m">Id</td><td class="m">int</td><td>primarni ključ</td></tr>
+            <tr><td class="m">PredmetId, Predmet</td><td class="m">int, Predmet</td><td>obavezna veza; <code>Predmet</code> dobija <code>List&lt;Ispit&gt; Ispiti</code></td></tr>
+            <tr><td class="m">SalaId, Sala</td><td class="m">int, Sala</td><td>obavezna veza; <code>Sala</code> dobija <code>List&lt;Ispit&gt; Ispiti</code></td></tr>
+            <tr><td class="m">Datum</td><td class="m">DateTime</td><td>datum i vrijeme početka ispita</td></tr>
+            <tr><td class="m">Napomena</td><td class="m">string?</td><td>nije obavezna, najviše 200 znakova</td></tr>
+          </tbody>
+        </table></div>
+        <div class="vazno"><b>Pravilo termina:</b> ista sala ne smije imati dva ispita s istim <code>Datum</code> (isti dan i isto vrijeme početka). Provjera je u handleru (409). Uz nju ide jedinstveni indeks na <code>(SalaId, Datum)</code> u konfiguraciji.</div>
+        <p class="siva mala">Početni podaci nisu obavezni. Migracija se zove <code>Ispiti</code>; komande su iste kao u zadatku 1.</p>
+      </div>
+      <div class="tekst">
+        <div class="tabela-okvir"><table class="t">
+          <thead><tr><th>Endpoint</th><th>Odgovor</th></tr></thead>
+          <tbody>
+            <tr><td class="m">GET /Ispiti?predmetId=1</td><td>200, lista sortirana po datumu; bez parametra svi ispiti. <code>IspitResponse</code>: <code>Id</code>, <code>PredmetId</code>, <code>Predmet</code> (naziv), <code>SalaId</code>, <code>Sala</code> (oznaka), <code>Datum</code>, <code>Napomena</code>.</td></tr>
+            <tr><td class="m">GET /Ispiti/{id}</td><td>200 ili 404</td></tr>
+            <tr><td class="m">POST /Ispiti</td><td>201, 400, 404 (predmet ili sala ne postoji), 409 (sala zauzeta)</td></tr>
+            <tr><td class="m">PUT /Ispiti/{id}</td><td>204, 400, 404, 409; ispit ne smeta sam sebi</td></tr>
+            <tr><td class="m">DELETE /Ispiti/{id}</td><td>204 ili 404</td></tr>
+          </tbody>
+        </table></div>
+        <div class="pravila">
+          <div class="panel"><h3>Validator (400)</h3><ul>
+            <li><code>PredmetId</code>, <code>SalaId</code>: <code>GreaterThan(0)</code></li>
+            <li><code>Datum</code>: <code>NotEmpty</code></li>
+            <li><code>Napomena</code>: <code>MaximumLength(200)</code></li></ul></div>
+          <div class="panel"><h3>Handler</h3><ul>
+            <li>predmet ne postoji → 404, sala ne postoji → 404</li>
+            <li>sala već ima ispit s istim <code>Datum</code> → 409</li>
+            <li>dopuniti <code>ObrisiSaluCommandHandler</code>: sala s ispitima → 409</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 ============================================================ -->
+<section class="slajd" id="s6" data-naslov="Zadatak 2 i 3: testiranje">
+  <div class="okvir siroko">
+    <div class="glava">
+      <span class="oznaka">Zadatak 2 i 3 · .http</span>
+      <h2>Ispiti, zauzeta sala i raspored</h2>
+      <p class="podnaslov">Zadatak 3 je jedan query: <code>GET /Sale/{id}/raspored</code> vraća ispite u toj sali (<code>Datum</code>, naziv predmeta, <code>Napomena</code>), sortirane po datumu; nepostojeća sala daje 404. Query je u <code>Modules/Sale/Queries/Raspored</code>, a akcija u <code>SaleController</code>.</p>
+    </div>
+    <div class="kod"><div class="jezik">MojaApp.API/MojaApp.API.http (poslije zahtjeva iz zadatka 1)</div><pre><code>### Zadatak 2: ispit iz RS1 u AMF1 (201, Id = 1)
+POST {{MojaApp.API_HostAddress}}/ispiti
+Content-Type: application/json
+
+{ "predmetId": 1, "salaId": 1, "datum": "2027-01-25T09:00:00", "napomena": "Prvi rok" }
+
+### Isti termin u istoj sali (409)
+POST {{MojaApp.API_HostAddress}}/ispiti
+Content-Type: application/json
+
+{ "predmetId": 2, "salaId": 1, "datum": "2027-01-25T09:00:00" }
+
+### Isti termin u drugoj sali (201, Id = 2)
+POST {{MojaApp.API_HostAddress}}/ispiti
+Content-Type: application/json
+
+{ "predmetId": 2, "salaId": 2, "datum": "2027-01-25T09:00:00" }
+
+### Nepostojeći predmet (404), nepostojeća sala (404), neispravni podaci (400)
+POST {{MojaApp.API_HostAddress}}/ispiti
+Content-Type: application/json
+
+{ "predmetId": 99, "salaId": 1, "datum": "2027-02-01T09:00:00" }
+
+###
+POST {{MojaApp.API_HostAddress}}/ispiti
+Content-Type: application/json
+
+{ "predmetId": 1, "salaId": 99, "datum": "2027-02-01T09:00:00" }
+
+###
+POST {{MojaApp.API_HostAddress}}/ispiti
+Content-Type: application/json
+
+{ "predmetId": 0, "salaId": 0 }
+
+### Ispiti iz RS1 (200, jedan ispit), pa svi (200, dva)
+GET {{MojaApp.API_HostAddress}}/ispiti?predmetId=1
+
+###
+GET {{MojaApp.API_HostAddress}}/ispiti
+
+### Pomjeranje ispita 2 u AMF1 u zauzeti termin (409), pa sat kasnije (204)
+PUT {{MojaApp.API_HostAddress}}/ispiti/2
+Content-Type: application/json
+
+{ "predmetId": 2, "salaId": 1, "datum": "2027-01-25T09:00:00" }
+
+###
+PUT {{MojaApp.API_HostAddress}}/ispiti/2
+Content-Type: application/json
+
+{ "predmetId": 2, "salaId": 1, "datum": "2027-01-25T10:00:00" }
+
+### Sala s ispitima se ne briše (409)
+DELETE {{MojaApp.API_HostAddress}}/sale/1
+
+### Zadatak 3: raspored AMF1 (200: 09:00 Razvoj softvera I, pa 10:00 Programiranje III), nepostojeća sala (404)
+GET {{MojaApp.API_HostAddress}}/sale/1/raspored
+
+###
+GET {{MojaApp.API_HostAddress}}/sale/999/raspored
+
+### Brisanje ispita (204), pa ponovo (404)
+DELETE {{MojaApp.API_HostAddress}}/ispiti/2
+
+###
+DELETE {{MojaApp.API_HostAddress}}/ispiti/2</code></pre></div>
+  </div>
+</section>
+
+<!-- 7 ============================================================ -->
+<section class="slajd" id="s7" data-naslov="Kontrolna lista">
+  <div class="okvir">
+    <div class="glava">
+      <span class="oznaka">Prije predaje</span>
+      <h2>Kontrolna lista</h2>
+      <p class="podnaslov">Svaka stavka se provjerava buildom, pretragom (Ctrl+Shift+F) ili zahtjevom iz .http fajla. Kvačice se pamte u ovom web pregledniku.</p>
+    </div>
+    <div class="dvije">
+      <div class="lista" id="lista"></div>
+      <div class="tekst">
+        <div class="pitanje"><h3>Redoslijed rada za svaki entitet</h3>
+          <ol>
+            <li>Domain: entitet.</li>
+            <li>Application: <code>DbSet</code> u <code>IAppDbContext</code>, DTO, queries i commands s handlerima i validatorima.</li>
+            <li>Infrastructure: <code>DbSet</code> u <code>AppDbContext</code>, konfiguracija, migracija, <code>database update</code>.</li>
+            <li>API: kontroler sa <code>ISender</code>, zahtjevi u .http fajlu.</li>
+            <li>Build, testiranje, commit.</li>
+          </ol></div>
+        <p class="siva">Zadaci su ponavljanje V02–V05. Obrazac za svaki dio postoji u projektu: <code>Modules/Predmeti</code> (CRUD, 409 za šifru), <code>Modules/Upisi</code> (veze, 404 za studenta i predmet), <code>UpisConfiguration</code> (Restrict, jedinstveni indeks na dvije kolone).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="navigacija" aria-label="Slajdovi">
+  <div class="napredak" id="napredak"></div>
+  <div class="okvir">
+    <button type="button" id="nazad" aria-label="Prethodni slajd">←</button>
+    <span class="naslov-slajda" id="naslov-slajda"></span>
+    <span class="broj" id="broj"></span>
+    <button type="button" id="naprijed" aria-label="Sljedeći slajd">→</button>
+  </div>
+</nav>
+
+<script>
+// Zajednički dio lekcija (isti kao u mini-prezentacijama blokova s vježbi 3): jedan slajd na ekranu ili svi jedan
+// ispod drugog (način „Čitanje“), strelice i prevlačenje, adresa #sN, zapamćen način prikaza.
+// Upotreba: Prezentacija("lekcija1", crtajVidljivo), gdje crtajVidljivo iscrta grafike na vidljivim slajdovima.
+window.Prezentacija = function (kljuc, crtajVidljivo) {
+  const $ = s => document.querySelector(s);
+  const main = $("#slajdovi"), slajdovi = [...document.querySelectorAll(".slajd")];
+  let tren = 0;
+  function prikazi(i, izHasha) {
+    tren = Math.max(0, Math.min(slajdovi.length - 1, i));
+    slajdovi.forEach((s, k) => s.classList.toggle("aktivan", k === tren));
+    $("#broj").textContent = `${tren + 1} / ${slajdovi.length}`;
+    $("#naslov-slajda").textContent = slajdovi[tren].dataset.naslov;
+    $("#napredak").style.width = `${((tren + 1) / slajdovi.length) * 100}%`;
+    $("#nazad").disabled = tren === 0; $("#naprijed").disabled = tren === slajdovi.length - 1;
+    if (!izHasha) { try { history.replaceState(null, "", "#" + slajdovi[tren].id); } catch (e) {} }
+    if (main.classList.contains("prezentacija")) window.scrollTo(0, 0);
+    crtajVidljivo();
+  }
+  $("#nazad").addEventListener("click", () => prikazi(tren - 1));
+  $("#naprijed").addEventListener("click", () => prikazi(tren + 1));
+  document.addEventListener("keydown", e => {
+    if (!main.classList.contains("prezentacija") || e.target.closest("input, textarea, select")) return;
+    if (["ArrowRight", "PageDown"].includes(e.key) || (e.key === " " && !e.target.closest("button"))) { e.preventDefault(); prikazi(tren + 1); }
+    if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); prikazi(tren - 1); }
+    if (e.key === "Home") prikazi(0);
+    if (e.key === "End") prikazi(slajdovi.length - 1);
+  });
+  let dodirX = null;
+  main.addEventListener("touchstart", e => { dodirX = e.touches[0].clientX; }, { passive: true });
+  main.addEventListener("touchend", e => {
+    if (dodirX === null || !main.classList.contains("prezentacija")) return;
+    const dx = e.changedTouches[0].clientX - dodirX; dodirX = null;
+    if (e.target.closest("input, select, canvas, .interaktivno")) return;
+    if (Math.abs(dx) > 70) prikazi(tren + (dx < 0 ? 1 : -1));
+  });
+  function nacin(citanje) {
+    main.classList.toggle("citanje", citanje); main.classList.toggle("prezentacija", !citanje);
+    $("#nacin-citanje").setAttribute("aria-pressed", citanje); $("#nacin-prezentacija").setAttribute("aria-pressed", !citanje);
+    try { localStorage.setItem(kljuc + "-nacin", citanje ? "citanje" : "prezentacija"); } catch (e) {}
+    if (citanje) requestAnimationFrame(() => slajdovi[tren].scrollIntoView());
+    crtajVidljivo();
+  }
+  $("#nacin-citanje").addEventListener("click", () => nacin(true));
+  $("#nacin-prezentacija").addEventListener("click", () => nacin(false));
+  addEventListener("resize", () => crtajVidljivo());
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => crtajVidljivo());
+
+  let pocetni = 0;
+  const h = location.hash.replace("#", ""), k = slajdovi.findIndex(s => s.id === h); if (k >= 0) pocetni = k;
+  let sacuvano = null; try { sacuvano = localStorage.getItem(kljuc + "-nacin"); } catch (e) {}
+  if (sacuvano === "citanje") nacin(true);
+  prikazi(pocetni, true);
+  if (main.classList.contains("prezentacija")) setTimeout(() => window.scrollTo(0, 0), 0);
+  addEventListener("hashchange", () => {
+    const i = slajdovi.findIndex(s => s.id === location.hash.replace("#", ""));
+    if (i >= 0 && i !== tren) { prikazi(i, true); if (main.classList.contains("citanje")) slajdovi[i].scrollIntoView(); }
+  });
+  return { prikazi };
+};
+
+// Zajedničke pomoćne funkcije za grafike (SVG) i brojeve.
+window.Pomoc = (() => {
+  const SVG = "http://www.w3.org/2000/svg";
+  const el = (ime, atr = {}, tekst) => { const e = document.createElementNS(SVG, ime); for (const [k, v] of Object.entries(atr)) e.setAttribute(k, v); if (tekst !== undefined) e.textContent = tekst; return e; };
+  const zarez = (x, d = 2) => x.toFixed(d).replace(".", ",").replace("-", "−");
+  const pct = x => `${Math.round(x * 100)}%`;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  // mulberry32: ponovljivi slučajni brojevi za ilustracije u web pregledniku
+  const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  return { el, zarez, pct, css, rng };
+})();
+
+</script>
+<script>
+(function () {
+  const LISTA = [
+    ["Build bez grešaka i upozorenja", "dotnet build u folderu gdje je .sln."],
+    ["Entiteti su u Domain", "Sala.cs i Ispit.cs u MojaApp.Domain/Entities; Domain i dalje nema ni pakete ni reference."],
+    ["Kontroleri imaju samo ISender", "Ctrl+Shift+F „AppDbContext“ u MojaApp.API: nema rezultata."],
+    ["Handleri koriste IAppDbContext", "Nijedan handler ne traži AppDbContext; Application ne referencira Infrastructure."],
+    ["Validator ne pristupa bazi podataka", "U validatorima nema IAppDbContext; 404 i 409 bacaju handleri."],
+    ["Konfiguracija u Infrastructure", "SalaConfiguration i IspitConfiguration u Database/Configurations; jedinstveni indeksi i Restrict."],
+    ["Migracije u Infrastructure", "Sale i Ispiti u MojaApp.Infrastructure/Database/Migrations; dotnet ef migrations list nema (Pending)."],
+    ["Svi zahtjevi iz .http vraćaju očekivani status", "Zadatak 1, 2 i 3, redom, nad bazom podataka s početnim podacima."],
+    ["Commit po zadatku", "Jedan zadatak, jedan commit, s porukom koja kaže šta je dodano."],
+  ];
+  const KLJUC = "rs1-v05-zadaci-lista";
+  let stanje = {}; try { stanje = JSON.parse(localStorage.getItem(KLJUC) || "{}"); } catch (e) {}
+  const lista = document.querySelector("#lista");
+  LISTA.forEach(([naslov, detalj], i) => {
+    const l = document.createElement("label"), c = document.createElement("input"), s = document.createElement("span"), m = document.createElement("small");
+    c.type = "checkbox"; c.checked = !!stanje[i];
+    c.addEventListener("change", () => { stanje[i] = c.checked; try { localStorage.setItem(KLJUC, JSON.stringify(stanje)); } catch (e) {} });
+    m.textContent = detalj; s.append(document.createTextNode(naslov), m); l.append(c, s); lista.append(l);
+  });
+  Prezentacija("rs1-v05-zadaci", () => {});
+})();
+</script>
+<script>
+// Dugme „Kopiraj“ u svakom bloku koda (.kod s <pre>): mini-prezentacije i HTML prezentacije iz lib.js.
+// Tekst se uzima iz innerText, pa ostaju prelomi redova i kad su redovi <span> s display: block.
+(function () {
+  async function uClipboard(t) {
+    try { await navigator.clipboard.writeText(t); return true; }
+    catch (e) {
+      // rezerva kad Clipboard API nije dostupan (stariji web preglednik, stranica bez HTTPS-a)
+      const a = document.createElement("textarea");
+      a.value = t; a.setAttribute("readonly", ""); a.style.position = "fixed"; a.style.opacity = "0";
+      document.body.append(a); a.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      a.remove(); return ok;
+    }
+  }
+  function dodaj() {
+    document.querySelectorAll(".kod").forEach((k) => {
+      const pre = k.querySelector("pre");
+      if (!pre || k.querySelector(".kopiraj")) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "kopiraj"; b.textContent = "Kopiraj"; b.setAttribute("aria-label", "Kopiraj kod");
+      b.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const t = pre.innerText.replace(/ /g, " ").replace(/[ \t]+$/gm, "").replace(/\n+$/, "");
+        const ok = await uClipboard(t);
+        b.textContent = ok ? "Kopirano" : "Nije kopirano"; b.classList.toggle("ok", ok);
+        clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = "Kopiraj"; b.classList.remove("ok"); }, 1500);
+      });
+      k.append(b);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", dodaj); else dodaj();
+})();
+
+</script>
+</body>
+</html>

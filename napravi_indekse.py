@@ -63,7 +63,12 @@ GH5 = "https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje
 
 
 def v05(p):
-    return (grupa("Samostalne vježbe", [
+    return (grupa("Postojeći projekat na Clean Architecture", [
+        k(p + "v05-postojeci-projekat-na-clean-architecture.html", "Postojeći projekat na Clean Architecture, korak po korak",
+          "Projekat nakon V04 u pet koraka postaje Domain, Application, Infrastructure i API, uz istu bazu podataka. Solution Explorer po koraku: klik na fajl pokazuje kod s označenim izmjenama.", "istaknuto"),
+        k(p + "v05-zadaci-clean-architecture.html", "Zadaci: Sala, Ispit i raspored sale",
+          "Novi entiteti s CRUD-om u Clean Architecture projektu: validator, handler (404, 409), konfiguracija, migracija i .http sa očekivanim statusima.")])
+      + grupa("Samostalne vježbe", [
         k(p + "samostalne-vjezbe.html", "Samostalne vježbe: Nastavnik, obrisani predmeti, vraćanje, brisanje smjera",
           "Četiri zadatka nad rješenjem V05: novi entitet u četiri projekta, IgnoreQueryFilters, vraćanje obrisanog zapisa i zaštita povezanih podataka.", "istaknuto")])
       + grupa("Prezentacije", [
