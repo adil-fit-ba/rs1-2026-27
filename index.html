@@ -52,25 +52,27 @@ footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--siva); border-top:
   <h1>Razvoj softvera I: materijali s vježbi</h1>
   <p class="siva">Stranice rade u web pregledniku, bez instalacije. Prezentacije se listaju strelicama ← →; opcija „Čitanje“ prikazuje sve slajdove na jednoj stranici.</p>
   <h2>Vježbe 5 (05.11.2026.): Clean Architecture i soft delete</h2>
-  <h3>Postojeći projekat na Clean Architecture</h3>
+  <p class="siva">Redoslijed rada: 1 → 2 → 3 na času, 4 kao nastavak. Svaki korak počinje od projekta iz prethodnog koraka.</p>
+  <h3>1. Početni kod</h3>
+  <div class="veze">
+    <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V04/rjesenje/MojaApp"><b>MojaApp: rješenje V04 (GitHub)</b><span>Polazna tačka časa: vlastiti projekat nakon V04 ili folder nastava/V04/rjesenje.</span></a>
+  </div>
+  <h3>2. Postojeći projekat na Clean Architecture</h3>
   <div class="veze">
     <a href="vjezbe-05/v05-postojeci-projekat-na-clean-architecture.html" class="istaknuto"><b>Postojeći projekat na Clean Architecture, korak po korak</b><span>Projekat nakon V04 u pet koraka postaje Domain, Application, Infrastructure i API, uz istu bazu podataka. Solution Explorer po koraku: klik na fajl pokazuje kod s označenim izmjenama.</span></a>
-    <a href="vjezbe-05/v05-zadaci-clean-architecture.html"><b>Zadaci: Sala, Ispit i raspored sale</b><span>Novi entiteti s CRUD-om u Clean Architecture projektu: validator, handler (404, 409), konfiguracija, migracija i .http sa očekivanim statusima.</span></a>
-  </div>
-  <h3>Samostalne vježbe</h3>
-  <div class="veze">
-    <a href="vjezbe-05/samostalne-vjezbe.html" class="istaknuto"><b>Samostalne vježbe: Nastavnik, obrisani predmeti, vraćanje, brisanje smjera</b><span>Četiri zadatka nad rješenjem V05: novi entitet u četiri projekta, IgnoreQueryFilters, vraćanje obrisanog zapisa i zaštita povezanih podataka.</span></a>
-  </div>
-  <h3>Prezentacije</h3>
-  <div class="veze">
-    <a href="vjezbe-05/v05-clean-architecture-i-soft-delete.html"><b>Clean Architecture i soft delete</b><span>Nadogradnja V04 u osam koraka: četiri projekta, IAppDbContext, BaseEntity, soft delete, global query filter i nova baza podataka (29 slajdova).</span></a>
-    <a href="vjezbe-05/v05-clean-architecture-i-soft-delete.pdf"><b>Clean Architecture i soft delete (PDF)</b><span>Ista prezentacija za štampu ili čitanje bez interneta.</span></a>
+    <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje-clean-architecture/MojaApp"><b>Rješenje koraka 2 (GitHub)</b><span>V04 u četiri projekta, svi kontroleri kroz MediatR, ista baza podataka: folder nastava/V05/rjesenje-clean-architecture.</span></a>
     <a href="vjezbe-05/v05-slojevi-clean-architecture.html"><b>Slojevi Clean Architecture</b><span>Interaktivno: klik na sloj pokazuje projekat, reference i kod; put zahtjeva POST /Studenti u osam koraka; kviz „u koji projekat ide“.</span></a>
   </div>
-  <h3>Kod</h3>
+  <h3>3. Zadaci: novi CRUD na gotov projekat</h3>
   <div class="veze">
-    <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V04/rjesenje/MojaApp"><b>MojaApp: početni kod (GitHub)</b><span>Rješenje vježbi 4, folder nastava/V04/rjesenje. Od njega počinje nadogradnja.</span></a>
-    <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje/MojaApp"><b>MojaApp: rješenje V05 (GitHub)</b><span>Kod nakon vježbi 5, folder nastava/V05/rjesenje: četiri projekta, nova baza podataka MojaApp_V05.</span></a>
+    <a href="vjezbe-05/v05-zadaci-clean-architecture.html" class="istaknuto"><b>Zadaci: Sala, Ispit i raspored sale</b><span>Polazna tačka je projekat iz koraka 2. Novi entiteti s CRUD-om: validator, handler (404, 409), konfiguracija, migracija i .http sa očekivanim statusima.</span></a>
+  </div>
+  <h3>4. Nastavak: BaseEntity i soft delete</h3>
+  <div class="veze">
+    <a href="vjezbe-05/v05-clean-architecture-i-soft-delete.html"><b>Clean Architecture i soft delete</b><span>Osam koraka od V04: koraci 1–5 su podjela na četiri projekta (ovdje bez starih migracija), zatim BaseEntity, soft delete, global query filter i nova baza podataka MojaApp_V05 (29 slajdova).</span></a>
+    <a href="vjezbe-05/v05-clean-architecture-i-soft-delete.pdf"><b>Clean Architecture i soft delete (PDF)</b><span>Ista prezentacija za štampu ili čitanje bez interneta.</span></a>
+    <a href="vjezbe-05/samostalne-vjezbe.html"><b>Samostalne vježbe: Nastavnik, obrisani predmeti, vraćanje, brisanje smjera</b><span>Polazna tačka je rješenje V05. Četiri zadatka: novi entitet s BaseEntity, IgnoreQueryFilters, vraćanje obrisanog zapisa i zaštita povezanih podataka.</span></a>
+    <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje/MojaApp"><b>MojaApp: rješenje V05 (GitHub)</b><span>Kod nakon vježbi 5, folder nastava/V05/rjesenje: četiri projekta, BaseEntity, soft delete, nova baza podataka MojaApp_V05.</span></a>
   </div>
   <h2>Vježbe 4 (29.10.2026.): CQRS, MediatR i validacija</h2>
   <h3>Samostalna vježba</h3>

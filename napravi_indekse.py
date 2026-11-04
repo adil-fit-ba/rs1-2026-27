@@ -62,22 +62,27 @@ def v04(p):
 GH5 = "https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje/MojaApp"
 
 
+GH5CA = "https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje-clean-architecture/MojaApp"
+
+
 def v05(p):
-    return (grupa("Postojeći projekat na Clean Architecture", [
+    return ('  <p class="siva">Redoslijed rada: 1 → 2 → 3 na času, 4 kao nastavak. Svaki korak počinje od projekta iz prethodnog koraka.</p>\n'
+      + grupa("1. Početni kod", [
+        k(GH, "MojaApp: rješenje V04 (GitHub)", "Polazna tačka časa: vlastiti projekat nakon V04 ili folder nastava/V04/rjesenje.")])
+      + grupa("2. Postojeći projekat na Clean Architecture", [
         k(p + "v05-postojeci-projekat-na-clean-architecture.html", "Postojeći projekat na Clean Architecture, korak po korak",
           "Projekat nakon V04 u pet koraka postaje Domain, Application, Infrastructure i API, uz istu bazu podataka. Solution Explorer po koraku: klik na fajl pokazuje kod s označenim izmjenama.", "istaknuto"),
-        k(p + "v05-zadaci-clean-architecture.html", "Zadaci: Sala, Ispit i raspored sale",
-          "Novi entiteti s CRUD-om u Clean Architecture projektu: validator, handler (404, 409), konfiguracija, migracija i .http sa očekivanim statusima.")])
-      + grupa("Samostalne vježbe", [
-        k(p + "samostalne-vjezbe.html", "Samostalne vježbe: Nastavnik, obrisani predmeti, vraćanje, brisanje smjera",
-          "Četiri zadatka nad rješenjem V05: novi entitet u četiri projekta, IgnoreQueryFilters, vraćanje obrisanog zapisa i zaštita povezanih podataka.", "istaknuto")])
-      + grupa("Prezentacije", [
-        k(p + "v05-clean-architecture-i-soft-delete.html", "Clean Architecture i soft delete", "Nadogradnja V04 u osam koraka: četiri projekta, IAppDbContext, BaseEntity, soft delete, global query filter i nova baza podataka (29 slajdova)."),
-        k(p + "v05-clean-architecture-i-soft-delete.pdf", "Clean Architecture i soft delete (PDF)", "Ista prezentacija za štampu ili čitanje bez interneta."),
+        k(GH5CA, "Rješenje koraka 2 (GitHub)", "V04 u četiri projekta, svi kontroleri kroz MediatR, ista baza podataka: folder nastava/V05/rjesenje-clean-architecture."),
         k(p + "v05-slojevi-clean-architecture.html", "Slojevi Clean Architecture", "Interaktivno: klik na sloj pokazuje projekat, reference i kod; put zahtjeva POST /Studenti u osam koraka; kviz „u koji projekat ide“.")])
-      + grupa("Kod", [
-        k(GH, "MojaApp: početni kod (GitHub)", "Rješenje vježbi 4, folder nastava/V04/rjesenje. Od njega počinje nadogradnja."),
-        k(GH5, "MojaApp: rješenje V05 (GitHub)", "Kod nakon vježbi 5, folder nastava/V05/rjesenje: četiri projekta, nova baza podataka MojaApp_V05.")]))
+      + grupa("3. Zadaci: novi CRUD na gotov projekat", [
+        k(p + "v05-zadaci-clean-architecture.html", "Zadaci: Sala, Ispit i raspored sale",
+          "Polazna tačka je projekat iz koraka 2. Novi entiteti s CRUD-om: validator, handler (404, 409), konfiguracija, migracija i .http sa očekivanim statusima.", "istaknuto")])
+      + grupa("4. Nastavak: BaseEntity i soft delete", [
+        k(p + "v05-clean-architecture-i-soft-delete.html", "Clean Architecture i soft delete", "Osam koraka od V04: koraci 1–5 su podjela na četiri projekta (ovdje bez starih migracija), zatim BaseEntity, soft delete, global query filter i nova baza podataka MojaApp_V05 (29 slajdova)."),
+        k(p + "v05-clean-architecture-i-soft-delete.pdf", "Clean Architecture i soft delete (PDF)", "Ista prezentacija za štampu ili čitanje bez interneta."),
+        k(p + "samostalne-vjezbe.html", "Samostalne vježbe: Nastavnik, obrisani predmeti, vraćanje, brisanje smjera",
+          "Polazna tačka je rješenje V05. Četiri zadatka: novi entitet s BaseEntity, IgnoreQueryFilters, vraćanje obrisanog zapisa i zaštita povezanih podataka."),
+        k(GH5, "MojaApp: rješenje V05 (GitHub)", "Kod nakon vježbi 5, folder nastava/V05/rjesenje: četiri projekta, BaseEntity, soft delete, nova baza podataka MojaApp_V05.")]))
 
 
 KOPIRAJ = io.open(os.path.join(REPO, "kopiraj-kod.js"), encoding="utf-8").read()
