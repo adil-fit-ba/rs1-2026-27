@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Infrastructure: pristup bazi podataka (EF Core, SQL Server) i migracije.
+       Zavisi od Application (implementira IAppDbContext) i od Domain (entiteti). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.21" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MojaApp.Application\MojaApp.Application.csproj" />
+    <ProjectReference Include="..\MojaApp.Domain\MojaApp.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
