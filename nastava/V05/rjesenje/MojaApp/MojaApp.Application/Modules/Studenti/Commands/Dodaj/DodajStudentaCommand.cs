@@ -1,0 +1,13 @@
+namespace MojaApp.Application.Modules.Studenti.Commands.Dodaj;
+
+// Command opisuje zahtjev za promjenu podataka; promjenu izvršava handler.
+// Klijent ga šalje kao tijelo POST zahtjeva (umjesto StudentDodajRequest iz V03).
+// Id i CreatedAtUtc postavlja server, pa ih ovdje nema.
+public class DodajStudentaCommand : IRequest<StudentResponse>
+{
+    public string Ime { get; set; } = "";
+    public string Prezime { get; set; } = "";
+    public string BrojIndeksa { get; set; } = "";
+    public DateOnly? DatumRodjenja { get; set; }
+    public int? SmjerId { get; set; } // smjer nije obavezan
+}

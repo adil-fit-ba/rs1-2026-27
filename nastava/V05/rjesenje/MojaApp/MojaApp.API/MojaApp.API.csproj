@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- API: kontroleri, GlobalExceptionHandler i Program.cs (startup projekat).
+       Zavisi od Application (MediatR zahtjevi) i Infrastructure (samo za registraciju u Program.cs). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Tools (i Design) trebaju startup projektu za Add-Migration i Update-Database. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.21">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MojaApp.Application\MojaApp.Application.csproj" />
+    <ProjectReference Include="..\MojaApp.Infrastructure\MojaApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
