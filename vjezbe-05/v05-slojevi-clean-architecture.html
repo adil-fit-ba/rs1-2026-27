@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slojevi Clean Architecture</title>
+<meta name="description" content="RS1 vježbe 5: Clean Architecture u MojaApp, sloj po sloj, put zahtjeva POST /Studenti i kviz.">
+<style>
+:root { --papir:#eef1f4; --list:#fff; --tinta:#17212b; --siva:#56636f; --linija:#d3dae1; --akcent:#b9531a; --akcent-meko:#fbeee5;
+  --domain:#1b2a4a; --domain-tx:#fff; --app:#e6eefb; --app-l:#345da9; --spolj:#f6e9e9; --spolj-l:#b23b3b; --baza:#e9eef2; --baza-l:#56636f;
+  --kod-bg:#14213d; --kod-tx:#f3f5f8; --kod-kom:#f2c14e; --ok:#1d7a4a; --ne:#b23b3b;
+  --f-naslov: Cambria, Georgia, serif; --f-tekst: "Segoe UI", "Helvetica Neue", Arial, sans-serif; --f-mono: Consolas, "Courier New", monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --papir:#10161c; --list:#18212a; --tinta:#e3e9ee; --siva:#9ba8b4; --linija:#2a3540;
+  --akcent:#f0894a; --akcent-meko:#2c2119; --domain:#0b1320; --app:#1b2840; --app-l:#7aa2e3; --spolj:#2c1d1f; --spolj-l:#e07a7a; --baza:#1d252e; --baza-l:#9ba8b4;
+  --kod-bg:#0b1320; --ok:#5ec48a; --ne:#e07a7a; color-scheme: dark; } }
+:root[data-theme="dark"] { --papir:#10161c; --list:#18212a; --tinta:#e3e9ee; --siva:#9ba8b4; --linija:#2a3540;
+  --akcent:#f0894a; --akcent-meko:#2c2119; --domain:#0b1320; --app:#1b2840; --app-l:#7aa2e3; --spolj:#2c1d1f; --spolj-l:#e07a7a; --baza:#1d252e; --baza-l:#9ba8b4;
+  --kod-bg:#0b1320; --ok:#5ec48a; --ne:#e07a7a; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--papir); color: var(--tinta); font: 16px/1.5 var(--f-tekst); }
+main { max-width: 1180px; margin: 0 auto; padding: 1.5rem 16px 3rem; }
+h1, h2, h3 { font-family: var(--f-naslov); line-height: 1.2; margin: 0 0 .4rem; }
+h1 { font-size: 2rem; } h2 { font-size: 1.5rem; margin-top: 2.4rem; padding-top: 1rem; border-top: 1px solid var(--linija); } h3 { font-size: 1.15rem; }
+.oznaka { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--akcent); }
+.siva { color: var(--siva); } a { color: var(--akcent); }
+code { font-family: var(--f-mono); font-size: .9em; overflow-wrap: anywhere; }
+.raspored { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 1.4rem; align-items: start; margin-top: 1rem; }
+@media (max-width: 860px) { .raspored { grid-template-columns: minmax(0, 1fr); } }
+.krugovi { background: var(--list); border: 1px solid var(--linija); border-radius: 8px; padding: .8rem; }
+.krugovi svg { width: 100%; height: auto; display: block; }
+.krugovi .zona { cursor: pointer; stroke-width: 3; transition: opacity .15s; }
+.krugovi .zona:hover, .krugovi .zona:focus-visible { opacity: .85; outline: none; }
+.krugovi .aktivna { stroke-width: 6; }
+.krugovi text { pointer-events: none; font-family: var(--f-tekst); }
+.dugmad { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+.dugmad button, .stepper button, .kviz button { font: 600 .9rem var(--f-tekst); padding: .4rem .8rem; border-radius: 6px; border: 1px solid var(--linija); background: var(--list); color: var(--tinta); cursor: pointer; }
+.dugmad button[aria-pressed="true"] { border-color: var(--akcent); background: var(--akcent-meko); }
+.panel { background: var(--list); border: 1px solid var(--linija); border-radius: 8px; padding: 1rem 1.1rem; min-width: 0; }
+.panel dl { display: grid; grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr); gap: .3rem .8rem; margin: .6rem 0; }
+.panel dt { color: var(--siva); font-size: .9rem; } .panel dd { margin: 0; }
+.dva { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .8rem; }
+@media (max-width: 700px) { .dva { grid-template-columns: minmax(0, 1fr); } }
+.kod { position: relative; background: var(--kod-bg); color: var(--kod-tx); border-radius: 6px; margin: .5rem 0; min-width: 0; }
+.kod .jezik { font: 600 .78rem var(--f-tekst); color: #c9d3e0; padding: .45rem 6.5rem .35rem .8rem; border-bottom: 1px solid rgb(255 255 255 / .12); overflow-wrap: anywhere; }
+.kod pre { margin: 0; padding: .6rem .8rem; overflow-x: auto; font: .84rem/1.5 var(--f-mono); }
+.kod .kom { color: var(--kod-kom); }
+.kopiraj { position: absolute; top: .3rem; right: .4rem; font: 600 .74rem/1.2 var(--f-tekst); padding: .2rem .6rem; border: 1px solid rgb(255 255 255 / .4); border-radius: 4px; background: var(--kod-bg); color: #fff; cursor: pointer; }
+.kopiraj.ok { border-color: #7fd4a0; }
+.stepper { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin: .6rem 0; }
+.tacke { display: flex; gap: .3rem; flex-wrap: wrap; }
+.tacke span { width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; font: 600 .8rem var(--f-tekst); border: 1px solid var(--linija); background: var(--list); color: var(--siva); }
+.tacke span.tren { background: var(--akcent); color: #fff; border-color: var(--akcent); }
+.sloj-oznaka { display: inline-block; font: 600 .78rem var(--f-tekst); padding: .1rem .5rem; border-radius: 999px; border: 1px solid; margin-right: .4rem; }
+.s-domain { color: var(--domain-tx); background: var(--domain); border-color: var(--domain); }
+.s-application { color: var(--app-l); background: var(--app); border-color: var(--app-l); }
+.s-infrastructure, .s-api { color: var(--spolj-l); background: var(--spolj); border-color: var(--spolj-l); }
+.s-baza { color: var(--baza-l); background: var(--baza); border-color: var(--baza-l); }
+.kviz ol { padding-left: 1.4rem; } .kviz li { margin: .55rem 0; }
+.kviz .izbor { display: inline-flex; flex-wrap: wrap; gap: .3rem; margin-left: .3rem; }
+.kviz button { padding: .2rem .55rem; font-size: .82rem; }
+.kviz button.tacno { border-color: var(--ok); color: var(--ok); } .kviz button.netacno { border-color: var(--ne); color: var(--ne); text-decoration: line-through; }
+.kviz .obj { display: block; font-size: .9rem; color: var(--siva); }
+footer { margin-top: 2.5rem; font-size: .85rem; color: var(--siva); border-top: 1px solid var(--linija); padding-top: .8rem; }
+</style>
+</head>
+<body>
+<main>
+  <span class="oznaka">Razvoj softvera I · Vježbe 5 · FIT UNMO 2026/27</span>
+  <h1>Clean Architecture u MojaApp</h1>
+  <p class="siva">Četiri projekta rješenja V05. Klik na krug (ili dugme ispod njega) pokazuje šta je u projektu, šta smije referencirati i gdje je isto u starteru. Sav kod je iz rješenja V05.</p>
+
+  <div class="raspored">
+    <div class="krugovi">
+      <svg viewBox="0 0 400 428" role="img" aria-label="Koncentrični krugovi: API i Infrastructure spolja, Application u sredini, Domain u centru">
+        <defs><marker id="vrh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--akcent)"/></marker></defs>
+        <path class="zona" data-sloj="api" tabindex="0" role="button" aria-label="API" d="M200,10 A190,190 0 0 0 200,390 Z" fill="var(--spolj)" stroke="var(--spolj-l)"/>
+        <path class="zona" data-sloj="infrastructure" tabindex="0" role="button" aria-label="Infrastructure" d="M200,10 A190,190 0 0 1 200,390 Z" fill="var(--spolj)" stroke="var(--spolj-l)"/>
+        <circle class="zona" data-sloj="application" tabindex="0" role="button" aria-label="Application" cx="200" cy="200" r="128" fill="var(--app)" stroke="var(--app-l)"/>
+        <circle class="zona" data-sloj="domain" tabindex="0" role="button" aria-label="Domain" cx="200" cy="200" r="64" fill="var(--domain)" stroke="var(--akcent)"/>
+        <text x="95" y="62" text-anchor="middle" font-size="17" font-weight="700" fill="var(--spolj-l)">API</text>
+        <text x="296" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="var(--spolj-l)">Infrastructure</text>
+        <text x="200" y="104" text-anchor="middle" font-size="16" font-weight="700" fill="var(--app-l)">Application</text>
+        <text x="200" y="198" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">Domain</text>
+        <text x="200" y="218" text-anchor="middle" font-size="11" fill="#d7deea">entiteti</text>
+        <text x="200" y="283" text-anchor="middle" font-size="10" fill="var(--siva)">handleri · validatori · IAppDbContext</text>
+        <line x1="22" y1="200" x2="66" y2="200" stroke="var(--akcent)" stroke-width="2.5" marker-end="url(#vrh)"/>
+        <line x1="378" y1="200" x2="334" y2="200" stroke="var(--akcent)" stroke-width="2.5" marker-end="url(#vrh)"/>
+        <line x1="80" y1="200" x2="130" y2="200" stroke="var(--akcent)" stroke-width="2.5" marker-end="url(#vrh)"/>
+        <line x1="320" y1="200" x2="270" y2="200" stroke="var(--akcent)" stroke-width="2.5" marker-end="url(#vrh)"/>
+        <text x="200" y="418" text-anchor="middle" font-size="11" fill="var(--siva)">strelica = zavisnost (ProjectReference), samo prema unutra</text>
+      </svg>
+      <div class="dugmad" role="group" aria-label="Izbor sloja">
+        <button type="button" data-sloj="domain">Domain</button>
+        <button type="button" data-sloj="application">Application</button>
+        <button type="button" data-sloj="infrastructure">Infrastructure</button>
+        <button type="button" data-sloj="api">API</button>
+      </div>
+    </div>
+    <section class="panel" aria-live="polite">
+      <h3 id="p-naslov"></h3>
+      <p id="p-uloga"></p>
+      <dl>
+        <dt>Referencira</dt><dd id="p-ref"></dd>
+        <dt>NuGet paketi</dt><dd id="p-paketi"></dd>
+        <dt>Ne smije</dt><dd id="p-nesmije"></dd>
+        <dt>U starteru</dt><dd id="p-starter"></dd>
+      </dl>
+      <div class="dva">
+        <div class="kod"><div class="jezik" id="p-stablo-n">folderi</div><pre><code id="p-stablo"></code></pre></div>
+        <div class="kod"><div class="jezik" id="p-kod-n"></div><pre><code id="p-kod"></code></pre></div>
+      </div>
+    </section>
+  </div>
+
+  <h2>Put zahtjeva POST /Studenti kroz slojeve</h2>
+  <p class="siva">Osam koraka, od kontrolera do baze podataka i nazad. Aktivni sloj je označen i na krugovima iznad.</p>
+  <div class="stepper">
+    <button type="button" id="nazad">← Nazad</button>
+    <div class="tacke" id="tacke" aria-hidden="true"></div>
+    <button type="button" id="naprijed">Naprijed →</button>
+  </div>
+  <section class="panel" aria-live="polite">
+    <h3><span class="sloj-oznaka" id="k-sloj"></span><span id="k-naslov"></span></h3>
+    <p id="k-opis"></p>
+    <div class="kod"><div class="jezik" id="k-put"></div><pre><code id="k-kod"></code></pre></div>
+  </section>
+
+  <h2>Kviz: u koji projekat ide?</h2>
+  <p class="siva">Za samostalnu vježbu 1 (entitet Nastavnik) i za seminarski rad. Klik na projekat pokazuje da li je izbor tačan.</p>
+  <section class="panel kviz"><ol id="kviz"></ol></section>
+
+  <footer>Razvoj softvera I, FIT UNMO 2026/27. Kod: rješenje V05 (MojaApp, .NET 8), testirano 04.11.2026. Starter: <a href="https://github.com/adil-fit-ba/rs1-2026-27">github.com/adil-fit-ba/rs1-2026-27</a>.</footer>
+</main>
+<script>
+const P = {"slojevi": {"domain": {"naslov": "Domain", "projekat": "MojaApp.Domain", "boja": "domain", "uloga": "Entiteti i BaseEntity: podaci kojima aplikacija upravlja. Ništa o bazi podataka, HTTP-u ni MediatR-u.", "referencira": "ništa", "paketi": "nema", "nesmije": "Application, Infrastructure, API: Domain je u centru i ne zna za spoljne krugove.", "starter": "Market.Domain (Entities/…, Common/BaseEntity.cs)", "stablo": ["MojaApp.Domain/", "├─ Common/", "│  └─ BaseEntity.cs", "└─ Entities/", "   ├─ Predmet.cs", "   ├─ Smjer.cs", "   ├─ Student.cs", "   └─ Upis.cs"], "putanja": "MojaApp.Domain/Common/BaseEntity.cs", "kod": ["namespace MojaApp.Domain.Common;", "", "// Zajednička polja svih entiteta (kao Market.Domain/Common/BaseEntity.cs u starteru).", "// Vrijednosti CreatedAtUtc, ModifiedAtUtc i IsDeleted postavlja AppDbContext pri SaveChanges, ne handler.", "public class BaseEntity", "{", "    public int Id { get; set; }", "", "    // Soft delete: zapis se ne briše iz tabele, nego dobija IsDeleted = true.", "    public bool IsDeleted { get; set; }", "", "    public DateTime CreatedAtUtc { get; set; }", "    public DateTime? ModifiedAtUtc { get; set; } // null dok zapis nije mijenjan", "}"]}, "application": {"naslov": "Application", "projekat": "MojaApp.Application", "boja": "application", "uloga": "Šta aplikacija radi: commands, queries, handleri, validatori, DTO i izuzeci. Bazi podataka pristupa preko interfejsa IAppDbContext.", "referencira": "Domain", "paketi": "MediatR 12.5.0, FluentValidation 12.2.0 (+ DependencyInjectionExtensions), Microsoft.EntityFrameworkCore 8.0.21", "nesmije": "Infrastructure i API. Kružna referenca Application → Infrastructure daje grešku MSB4006 pri buildu (izmjereno).", "starter": "Market.Application (Modules/…, Abstractions/IAppDbContext.cs, Common/Behaviors)", "stablo": ["MojaApp.Application/", "├─ Abstractions/", "│  └─ IAppDbContext.cs", "├─ Common/", "│  ├─ Behaviors/", "│  │  └─ ValidationBehavior.cs", "│  └─ Exceptions/", "│     ├─ ConflictException.cs", "│     └─ NotFoundException.cs", "├─ Dtos/", "│  ├─ PredmetResponse.cs", "│  ├─ PredmetStatistikaResponse.cs", "│  ├─ SmjerResponse.cs", "│  ├─ StudentDetaljiResponse.cs", "│  ├─ StudentResponse.cs", "│  └─ UpisResponse.cs", "├─ Modules/", "│  ├─ Predmeti/  Commands/, Queries/", "│  ├─ Smjerovi/  Commands/, Queries/", "│  ├─ Studenti/  Commands/, Queries/", "│  └─ Upisi/  Commands/, Queries/", "├─ DependencyInjection.cs", "└─ GlobalUsings.cs"], "putanja": "MojaApp.Application/Abstractions/IAppDbContext.cs", "kod": ["public interface IAppDbContext", "{", "    DbSet<Student> Studenti { get; }", "    DbSet<Smjer> Smjerovi { get; }", "    DbSet<Predmet> Predmeti { get; }", "    DbSet<Upis> Upisi { get; }", "", "    Task<int> SaveChangesAsync(CancellationToken ct);", "}"]}, "infrastructure": {"naslov": "Infrastructure", "projekat": "MojaApp.Infrastructure", "boja": "spoljni", "uloga": "Kako se podaci čuvaju: AppDbContext (implementira IAppDbContext), konfiguracije entiteta, soft delete, global query filter i migracije.", "referencira": "Application, Domain", "paketi": "Microsoft.EntityFrameworkCore.SqlServer 8.0.21", "nesmije": "API. Infrastructure ne zna za kontrolere ni HTTP.", "starter": "Market.Infrastructure (Database/DatabaseContext.cs, DatabaseConfiguration.cs, Configurations/…)", "stablo": ["MojaApp.Infrastructure/", "├─ Database/", "│  ├─ Configurations/", "│  │  ├─ PredmetConfiguration.cs", "│  │  ├─ Seed.cs", "│  │  ├─ SmjerConfiguration.cs", "│  │  ├─ StudentConfiguration.cs", "│  │  └─ UpisConfiguration.cs", "│  ├─ Migrations/  (Pocetna)", "│  └─ AppDbContext.cs", "├─ DatabaseInitializer.cs", "├─ DependencyInjection.cs", "└─ GlobalUsings.cs"], "putanja": "MojaApp.Infrastructure/Database/AppDbContext.cs", "kod": ["public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IAppDbContext", "{", "    public DbSet<Student> Studenti => Set<Student>();", "    public DbSet<Smjer> Smjerovi => Set<Smjer>();", "    public DbSet<Predmet> Predmeti => Set<Predmet>();", "    public DbSet<Upis> Upisi => Set<Upis>();", "", "    // OnModelCreating, global query filter i SaveChangesAsync: soft delete …", "}"]}, "api": {"naslov": "API", "projekat": "MojaApp.API", "boja": "spoljni", "uloga": "HTTP: kontroleri (samo ISender), GlobalExceptionHandler, Program.cs i appsettings.json. Startup projekat.", "referencira": "Application, Infrastructure (Infrastructure samo zbog Program.cs)", "paketi": "Microsoft.EntityFrameworkCore.Tools 8.0.21, Swashbuckle.AspNetCore 6.6.2", "nesmije": "Kontroleri ne koriste AppDbContext: sve ide kroz MediatR.", "starter": "Market.API (Controllers/…, Program.cs, DependencyInjection.cs)", "stablo": ["MojaApp.API/", "├─ Controllers/", "│  ├─ PredmetiController.cs", "│  ├─ SmjeroviController.cs", "│  ├─ StudentiController.cs", "│  └─ UpisiController.cs", "├─ Middleware/", "│  └─ GlobalExceptionHandler.cs", "├─ appsettings.Development.json", "├─ appsettings.json", "├─ GlobalUsings.cs", "└─ Program.cs"], "putanja": "MojaApp.API/Program.cs", "kod": ["// Svaki sloj registruje svoje servise (kao u starteru):", "// Application: MediatR, validatori, ValidationBehavior.", "builder.Services.AddApplication();", "// Infrastructure: AppDbContext (SQL Server) i IAppDbContext.", "builder.Services.AddInfrastructure(builder.Configuration);"]}}, "koraci": [{"sloj": "api", "naslov": "Kontroler prima zahtjev i šalje command", "opis": "ASP.NET Core od JSON tijela pravi DodajStudentaCommand. Kontroler ga šalje kroz ISender; ne zna koji handler će ga obraditi.", "putanja": "MojaApp.API/Controllers/StudentiController.cs", "kod": ["[HttpPost]", "public async Task<ActionResult<StudentResponse>> Dodaj(DodajStudentaCommand command, CancellationToken ct)", "{", "    StudentResponse student = await sender.Send(command, ct);", "    return CreatedAtAction(nameof(GetById), new { id = student.Id }, student); // 201", "}"]}, {"sloj": "application", "naslov": "ValidationBehavior pokreće validatore", "opis": "MediatR prije handlera izvrši pipeline behavior. Ako pravilo ne prođe, baca ValidationException i handler se ne poziva (400).", "putanja": "MojaApp.Application/Common/Behaviors/ValidationBehavior.cs", "kod": ["public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)", "{", "    List<ValidationFailure> greske = [];", "", "    var context = new ValidationContext<TRequest>(request);", "    foreach (IValidator<TRequest> validator in validators)", "    {", "        ValidationResult rezultat = await validator.ValidateAsync(context, ct);", "        greske.AddRange(rezultat.Errors);", "    }", "", "    if (greske.Count != 0)", "        throw new ValidationException(greske);", "", "    return await next();", "}"]}, {"sloj": "application", "naslov": "Validator provjerava samo podatke iz zahtjeva", "opis": "Bez baze podataka: obavezna polja, dužine i format broja indeksa.", "putanja": "MojaApp.Application/Modules/Studenti/Commands/Dodaj/DodajStudentaCommandValidator.cs", "kod": ["RuleFor(x => x.Ime)", "    .NotEmpty().WithMessage(\"Ime je obavezno.\")", "    .MaximumLength(50).WithMessage(\"Ime može imati najviše 50 znakova.\");", "", "RuleFor(x => x.Prezime)", "    .NotEmpty().WithMessage(\"Prezime je obavezno.\")", "    .MaximumLength(50).WithMessage(\"Prezime može imati najviše 50 znakova.\");", "", "RuleFor(x => x.BrojIndeksa)", "    .Matches(@\"^IB\\d{6}$\").WithMessage(\"Broj indeksa mora biti u formatu IB123456.\");"]}, {"sloj": "application", "naslov": "Handler: pravila nad bazom podataka i novi Student", "opis": "Handler vidi samo IAppDbContext. Nepostojeći smjer daje 404, zauzet broj indeksa 409. Klasa Student je iz Domain.", "putanja": "MojaApp.Application/Modules/Studenti/Commands/Dodaj/DodajStudentaCommandHandler.cs", "kod": ["if (request.SmjerId != null && !await db.Smjerovi.AnyAsync(x => x.Id == request.SmjerId, ct))", "    throw new NotFoundException($\"Smjer (Id = {request.SmjerId}) ne postoji.\"); // 404", "", "if (await db.Studenti.AnyAsync(x => x.BrojIndeksa == request.BrojIndeksa, ct))", "    throw new ConflictException($\"Student s brojem indeksa {request.BrojIndeksa} već postoji.\"); // 409", "", "Student student = new()", "{", "    Ime = request.Ime,", "    Prezime = request.Prezime,", "    BrojIndeksa = request.BrojIndeksa,", "    DatumRodjenja = request.DatumRodjenja,", "    SmjerId = request.SmjerId,", "};", "", "db.Studenti.Add(student);", "await db.SaveChangesAsync(ct);"]}, {"sloj": "infrastructure", "naslov": "AppDbContext prije snimanja postavlja CreatedAtUtc", "opis": "Iza IAppDbContext je AppDbContext iz Infrastructure (registrovan u AddInfrastructure). SaveChangesAsync za novi entitet postavlja vrijeme kreiranja.", "putanja": "MojaApp.Infrastructure/Database/AppDbContext.cs", "kod": ["public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)", "{", "    DateTime sada = DateTime.UtcNow;", "", "    foreach (var entry in ChangeTracker.Entries<BaseEntity>())", "    {", "        switch (entry.State)", "        {", "            case EntityState.Added:", "                entry.Entity.CreatedAtUtc = sada;", "                entry.Entity.IsDeleted = false;", "                break;", "        …", "    }", "}"]}, {"sloj": "baza", "naslov": "EF Core šalje INSERT u SQL Server", "opis": "Stvarni SQL iz loga (POST /Studenti, test 04.11.2026). CreatedAtUtc i IsDeleted su kolone iz BaseEntity.", "putanja": "SQL iz loga", "kod": ["INSERT INTO [Studenti] ([BrojIndeksa], [CreatedAtUtc], [DatumRodjenja], [Ime],", "    [IsDeleted], [ModifiedAtUtc], [Prezime], [SmjerId])", "OUTPUT INSERTED.[Id]", "VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);"]}, {"sloj": "application", "naslov": "Handler čita odgovor projekcijom", "opis": "Isti upit kao u listi studenata. Global query filter dodaje WHERE IsDeleted = 0 i u LEFT JOIN prema smjeru.", "putanja": "MojaApp.Application/Modules/Studenti/Commands/Dodaj/DodajStudentaCommandHandler.cs", "kod": ["StudentResponse response = await db.Studenti", "    .Where(x => x.Id == student.Id)", "    .Select(x => new StudentResponse", "    {", "        Id = x.Id,", "        ImePrezime = x.Ime + \" \" + x.Prezime,", "        BrojIndeksa = x.BrojIndeksa,", "        DatumRodjenja = x.DatumRodjenja,", "        Smjer = x.Smjer != null ? x.Smjer.Naziv : null, // LEFT JOIN Smjerovi", "    })", "    .FirstAsync(ct);", "", "return response;"]}, {"sloj": "api", "naslov": "Kontroler vraća 201 Created", "opis": "CreatedAtAction dodaje zaglavlje Location: /Studenti/{id}, a tijelo je StudentResponse iz Application.", "putanja": "MojaApp.Application/Dtos/StudentResponse.cs", "kod": ["public class StudentResponse", "{", "    public int Id { get; set; }", "    public string ImePrezime { get; set; } = \"\";", "    public string BrojIndeksa { get; set; } = \"\";", "    public DateOnly? DatumRodjenja { get; set; }", "    public string? Smjer { get; set; } // naziv smjera, ne cijeli entitet", "}"]}], "kviz": [["Klasa Nastavnik : BaseEntity", "domain", "Entitet: samo svojstva, bez EF Core."], ["NastavnikConfiguration (IEntityTypeConfiguration<Nastavnik>)", "infrastructure", "Fluent API je dio EF Core konfiguracije, kao PredmetConfiguration."], ["DbSet<Nastavnik> Nastavnici { get; } u IAppDbContext", "application", "Interfejs je u Application, da ga handleri mogu koristiti."], ["DodajNastavnikaCommandValidator", "application", "Validatori su uz command, u Modules."], ["NastavniciController", "api", "Kontroler je HTTP sloj i koristi samo ISender."], ["Migracija Nastavnici", "infrastructure", "Migracije su u projektu u kojem je AppDbContext (Database/Migrations)."], ["NastavnikResponse (DTO)", "application", "Odgovor queryja; DTO su u Application/Dtos."], ["GlobalExceptionHandler", "api", "Pretvara izuzetak u HTTP odgovor: zna za HTTP, pa je u API-ju."], ["SaveChangesAsync koji Remove pretvara u UPDATE IsDeleted = 1", "infrastructure", "Dio AppDbContext-a, kao DatabaseConfiguration.cs u starteru."], ["NotFoundException", "application", "Handler je baca; ne zna za HTTP status, to radi GlobalExceptionHandler."], ["Connection string \"Main\"", "api", "appsettings.json startup projekta; AddInfrastructure ga čita iz IConfiguration."], ["BaseEntity", "domain", "Zajednička polja svih entiteta: Domain/Common."]]};
+const IME = { domain: "Domain", application: "Application", infrastructure: "Infrastructure", api: "API", baza: "SQL Server" };
+const $ = (s) => document.querySelector(s);
+const boji = (lines) => lines.map((l) => {
+  const e = l.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const i = e.indexOf("//");
+  return i >= 0 && !e.slice(0, i).includes('"') ? e.slice(0, i) + '<span class="kom">' + e.slice(i) + "</span>" : e;
+}).join("\n");
+function oznaci(sloj) {
+  document.querySelectorAll(".zona").forEach((z) => z.classList.toggle("aktivna", z.dataset.sloj === sloj));
+  document.querySelectorAll(".dugmad button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.sloj === sloj));
+}
+function sloj(k) {
+  const s = P.slojevi[k];
+  $("#p-naslov").textContent = s.naslov + " · " + s.projekat;
+  $("#p-uloga").textContent = s.uloga;
+  $("#p-ref").textContent = s.referencira; $("#p-paketi").textContent = s.paketi;
+  $("#p-nesmije").textContent = s.nesmije; $("#p-starter").textContent = s.starter;
+  $("#p-stablo").textContent = s.stablo.join("\n");
+  $("#p-kod-n").textContent = s.putanja; $("#p-kod").innerHTML = boji(s.kod);
+  oznaci(k);
+}
+document.querySelectorAll("[data-sloj]").forEach((z) => {
+  z.addEventListener("click", () => sloj(z.dataset.sloj));
+  z.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sloj(z.dataset.sloj); } });
+});
+let tren = 0;
+const tacke = $("#tacke");
+P.koraci.forEach((_, i) => { const t = document.createElement("span"); t.textContent = i + 1; tacke.append(t); });
+function korak(i) {
+  tren = Math.max(0, Math.min(P.koraci.length - 1, i));
+  const k = P.koraci[tren];
+  $("#k-sloj").textContent = IME[k.sloj]; $("#k-sloj").className = "sloj-oznaka s-" + k.sloj;
+  $("#k-naslov").textContent = (tren + 1) + ". " + k.naslov; $("#k-opis").textContent = k.opis;
+  $("#k-put").textContent = k.putanja; $("#k-kod").innerHTML = boji(k.kod);
+  [...tacke.children].forEach((t, j) => t.classList.toggle("tren", j === tren));
+  $("#nazad").disabled = tren === 0; $("#naprijed").disabled = tren === P.koraci.length - 1;
+  if (k.sloj !== "baza") sloj(k.sloj); else oznaci(null);
+}
+$("#nazad").addEventListener("click", () => korak(tren - 1));
+$("#naprijed").addEventListener("click", () => korak(tren + 1));
+const kviz = $("#kviz");
+P.kviz.forEach(([stavka, tacno, obj]) => {
+  const li = document.createElement("li");
+  li.innerHTML = "<code></code><span class='izbor'></span><span class='obj' hidden></span>";
+  li.querySelector("code").textContent = stavka; li.querySelector(".obj").textContent = obj;
+  ["domain", "application", "infrastructure", "api"].forEach((s) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = IME[s];
+    b.addEventListener("click", () => {
+      const ok = s === tacno; b.classList.add(ok ? "tacno" : "netacno");
+      if (ok) { li.querySelector(".obj").hidden = false; li.querySelectorAll("button").forEach((x) => x.disabled = true); }
+    });
+    li.querySelector(".izbor").append(b);
+  });
+  kviz.append(li);
+});
+sloj("domain"); korak(0); sloj("domain");
+</script>
+<script>
+// Dugme „Kopiraj“ u svakom bloku koda (.kod s <pre>): mini-prezentacije i HTML prezentacije iz lib.js.
+// Tekst se uzima iz innerText, pa ostaju prelomi redova i kad su redovi <span> s display: block.
+(function () {
+  async function uClipboard(t) {
+    try { await navigator.clipboard.writeText(t); return true; }
+    catch (e) {
+      // rezerva kad Clipboard API nije dostupan (stariji web preglednik, stranica bez HTTPS-a)
+      const a = document.createElement("textarea");
+      a.value = t; a.setAttribute("readonly", ""); a.style.position = "fixed"; a.style.opacity = "0";
+      document.body.append(a); a.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      a.remove(); return ok;
+    }
+  }
+  function dodaj() {
+    document.querySelectorAll(".kod").forEach((k) => {
+      const pre = k.querySelector("pre");
+      if (!pre || k.querySelector(".kopiraj")) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "kopiraj"; b.textContent = "Kopiraj"; b.setAttribute("aria-label", "Kopiraj kod");
+      b.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const t = pre.innerText.replace(/ /g, " ").replace(/[ \t]+$/gm, "").replace(/\n+$/, "");
+        const ok = await uClipboard(t);
+        b.textContent = ok ? "Kopirano" : "Nije kopirano"; b.classList.toggle("ok", ok);
+        clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = "Kopiraj"; b.classList.remove("ok"); }, 1500);
+      });
+      k.append(b);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", dodaj); else dodaj();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Samostalne vježbe V05</title>
+<meta name="description" content="RS1 vježbe 5: Nastavnik u četiri projekta, obrisani predmeti, vraćanje obrisanog predmeta i brisanje smjera.">
+<style>
+:root { --papir: #eef1f4; --list: #fff; --tinta: #17212b; --siva: #56636f; --linija: #d3dae1; --narandza: #b9531a; --narandza-meko: #fbeee5;
+  --za: #345da9; --kod-bg: #14213d; --kod-tx: #f3f5f8; --kod-kom: #f2c14e;
+  --f-naslov: Cambria, Georgia, serif; --f-tekst: "Segoe UI", "Helvetica Neue", Arial, sans-serif; --f-mono: Consolas, "Courier New", monospace; }
+@media (prefers-color-scheme: dark) { :root { --papir: #10161c; --list: #18212a; --tinta: #e3e9ee; --siva: #9ba8b4; --linija: #2a3540; --narandza: #f0894a; --narandza-meko: #2c2119; --za: #7aa2e3; --kod-bg: #0b1320; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--papir); color: var(--tinta); font: 17px/1.5 var(--f-tekst); }
+main { max-width: 960px; margin: 0 auto; padding: 2rem max(16px, env(safe-area-inset-left)) 3rem; }
+h1, h2, h3 { font-family: var(--f-naslov); line-height: 1.2; margin: 0 0 0.4rem; }
+h1 { font-size: 2.1rem; } h2 { font-size: 1.6rem; margin-top: 2.6rem; padding-top: 1.2rem; border-top: 1px solid var(--linija); }
+h3 { font-size: 1.2rem; margin-top: 1.6rem; }
+.oznaka { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--narandza); }
+.siva { color: var(--siva); }
+.veze { display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); margin-top: 0.8rem; }
+.veze a { display: block; text-decoration: none; background: var(--list); border: 1px solid var(--linija); border-radius: 6px; padding: 0.8rem 1rem; color: var(--tinta); }
+.veze a:hover, .veze a:focus-visible { border-color: var(--narandza); }
+.veze b { color: var(--narandza); }
+.veze span { display: block; color: var(--siva); font-size: 0.9rem; }
+.veze a.istaknuto { background: var(--narandza-meko); border: 2px solid var(--narandza); }
+.veze a.istaknuto b::after { content: " →"; }
+a { color: var(--narandza); }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--list); border: 1px solid var(--linija); border-radius: 3px; padding: 0 0.25em; overflow-wrap: anywhere; }
+.tab-okvir { overflow-x: auto; margin: 0.6rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; background: var(--list); }
+th, td { border: 1px solid var(--linija); padding: 0.4rem 0.55rem; text-align: left; vertical-align: top; }
+th { background: var(--kod-bg); color: #fff; font-weight: 600; }
+ul { padding-left: 1.3rem; } li { margin: 0.2rem 0; }
+.cilj { background: var(--list); border-left: 4px solid var(--narandza); padding: 0.7rem 1rem; border-radius: 4px; }
+.kod { position: relative; background: var(--kod-bg); color: var(--kod-tx); border-radius: 6px; margin: 0.6rem 0; }
+.kod .jezik { font: 600 0.78rem var(--f-tekst); color: #c9d3e0; padding: 0.5rem 6.5rem 0.4rem 0.9rem; border-bottom: 1px solid rgb(255 255 255 / 0.12); }
+.kod pre { margin: 0; padding: 0.7rem 0.9rem; overflow-x: auto; font: 0.86rem/1.5 var(--f-mono); }
+.kod .kom { color: var(--kod-kom); }
+.kod code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+.kopiraj { position: absolute; top: 0.32rem; right: 0.45rem; z-index: 2; font: 600 0.74rem/1.2 var(--f-tekst); padding: 0.2rem 0.6rem;
+  border: 1px solid rgb(255 255 255 / 0.4); border-radius: 4px; background: var(--kod-bg); color: #fff; cursor: pointer; }
+.kopiraj:hover, .kopiraj:focus-visible { border-color: var(--narandza); }
+.kopiraj.ok { border-color: #7fd4a0; }
+@media print { .kopiraj { display: none; } }
+footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--siva); border-top: 1px solid var(--linija); padding-top: 0.8rem; }
+</style>
+</head>
+<body>
+<main>
+  <span class="oznaka">Razvoj softvera I · FIT UNMO 2026/27</span>
+  <h1>Samostalne vježbe: soft delete u četiri projekta</h1>
+  <p class="siva">Vježbe 5 · četiri zadatka nad rješenjem V05 · <a href="../index.html">svi materijali</a></p>
+  <p class="cilj"><b>Cilj:</b> isti postupak kao na vježbama, na novim primjerima: svaki dio koda u svom projektu, soft delete i global query filter rade sami, a ono što filter i indeks ne mogu (povezani zapisi, obrisani zapisi) rješava handler.</p>
+  <p><b>Polazna tačka:</b> vlastiti projekat nakon V05 ili <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje/MojaApp">rješenje V05</a> (folder <code>nastava/V05/rjesenje</code>). Očekivani statusi u tabelama su provjereni na rješenju (LocalDB, 04.11.2026).</p>
+  <p><b>Podsjetnik:</b> validator ne pristupa bazi podataka; nepostojeći zapis je 404 (<code>NotFoundException</code>), sukob s postojećim podacima 409 (<code>ConflictException</code>), oboje iz handlera (<a href="v05-clean-architecture-i-soft-delete.html#s23">prezentacija V05, korak 7</a>).</p>
+  <h2>Vježba 1: entitet Nastavnik u četiri projekta</h2>
+  <p class="siva">Kao Nastavnik iz V04, ali s BaseEntity, soft delete-om i brisanjem. Poslije svakog koraka: build.</p>
+  <div class="tab-okvir"><table><tr><th>#</th><th>Šta</th><th>Projekat i fajl</th></tr><tr><td>1</td><td><code>Nastavnik : BaseEntity</code>: <code>Ime</code>, <code>Prezime</code>, <code>Email</code>, <code>Zvanje</code> (nije obavezno)</td><td>Domain: <code>Entities/Nastavnik.cs</code></td></tr><tr><td>2</td><td>Konfiguracija: tabela <code>Nastavnici</code>; <code>Ime</code> i <code>Prezime</code> do 50 znakova, <code>Email</code> do 100, <code>Zvanje</code> do 50; jedinstven <code>Email</code> s <code>HasFilter("[IsDeleted] = 0")</code></td><td>Infrastructure: <code>Database/Configurations/NastavnikConfiguration.cs</code></td></tr><tr><td>3</td><td><code>DbSet&lt;Nastavnik&gt; Nastavnici</code> u interfejsu i u klasi</td><td>Application: <code>IAppDbContext.cs</code>; Infrastructure: <code>AppDbContext.cs</code></td></tr><tr><td>4</td><td>Migracija <code>Nastavnici</code>; primjenjuje je <code>MigrateAsync</code> pri pokretanju</td><td>Infrastructure: <code>Database/Migrations/</code></td></tr><tr><td>5</td><td><code>NastavnikResponse</code> (<code>Id</code>, <code>ImePrezime</code>, <code>Email</code>, <code>Zvanje</code>) i <code>NastavnikGetByIdQuery</code> s handlerom (404)</td><td>Application: <code>Dtos/</code>, <code>Modules/Nastavnici/Queries/GetById/</code></td></tr><tr><td>6</td><td><code>DodajNastavnikaCommand</code>, validator i handler: isti email među neobrisanim nastavnicima → 409</td><td>Application: <code>Modules/Nastavnici/Commands/Dodaj/</code></td></tr><tr><td>7</td><td><code>ObrisiNastavnikaCommand</code> i handler: <code>Remove</code> (soft delete); nepostojeći → 404</td><td>Application: <code>Modules/Nastavnici/Commands/Obrisi/</code></td></tr><tr><td>8</td><td><code>NastavniciController</code> sa <code>ISender</code>: <code>GET /Nastavnici/{id}</code>, <code>POST</code> (201), <code>DELETE</code> (204)</td><td>API: <code>Controllers/NastavniciController.cs</code></td></tr></table></div>
+  <div class="kod"><div class="jezik">Package Manager Console</div><pre><code>Add-Migration Nastavnici -Project MojaApp.Infrastructure -StartupProject MojaApp.API -OutputDir Database\Migrations</code></pre></div>
+  <p class="siva">Validator: <code>Ime</code> i <code>Prezime</code> obavezni, do 50 znakova; <code>Email</code> obavezan, <code>EmailAddress()</code>, do 100; <code>Zvanje</code> do 50.</p>
+  <div class="tab-okvir"><table><tr><th>Zahtjev</th><th>Očekivano</th></tr><tr><td><code>POST /Nastavnici</code> s ispravnim podacima</td><td>201, <code>Location: /Nastavnici/{id}</code></td></tr><tr><td><code>POST</code> s istim emailom</td><td>409</td></tr><tr><td><code>POST</code> s praznim imenom i emailom <code>abc</code></td><td>400, greške za <code>Ime</code> i <code>Email</code></td></tr><tr><td><code>GET /Nastavnici/{id}</code>; <code>GET /Nastavnici/999</code></td><td>200; 404</td></tr><tr><td><code>DELETE /Nastavnici/{id}</code>, pa <code>GET</code> istog Id-a</td><td>204, pa 404</td></tr><tr><td><code>DELETE</code> istog Id-a ponovo</td><td>404</td></tr><tr><td><code>POST</code> s emailom obrisanog nastavnika</td><td>201 (indeks s filterom)</td></tr></table></div>
+  <h2>Vježba 2: lista obrisanih predmeta</h2>
+  <p><code>GET /Predmeti/obrisani</code> vraća obrisane predmete: <code>Id</code>, <code>Naziv</code>, <code>Sifra</code> i <code>ObrisanUtc</code> (vrijednost <code>ModifiedAtUtc</code>), od najnovijeg. Query <code>ObrisaniPredmetiQuery</code> u <code>Modules/Predmeti/Queries/Obrisani/</code>.</p>
+  <ul>
+    <li>Global query filter skriva obrisane, pa upit počinje s <code>db.Predmeti.IgnoreQueryFilters()</code>, a zatim <code>Where(x =&gt; x.IsDeleted)</code>.</li>
+    <li>Bez <code>IgnoreQueryFilters()</code> lista je uvijek prazna, jer filter već dodaje <code>IsDeleted = 0</code>.</li>
+    <li>Ruta <code>obrisani</code> ne smeta ruti <code>{id:int}</code>: ograničenje <code>:int</code> ne prihvata tekst.</li>
+  </ul>
+  <div class="tab-okvir"><table><tr><th>Zahtjev</th><th>Očekivano</th></tr><tr><td><code>GET /Predmeti/obrisani</code> na novoj bazi podataka</td><td>200, <code>[]</code></td></tr><tr><td><code>POST /Predmeti</code>, pa <code>DELETE</code> tog predmeta, pa <code>GET /Predmeti/obrisani</code></td><td>200, lista s tim predmetom</td></tr></table></div>
+  <h2>Vježba 3: vraćanje obrisanog predmeta</h2>
+  <p><code>PUT /Predmeti/{id}/vrati</code>: command <code>VratiPredmetCommand</code> u <code>Modules/Predmeti/Commands/Vrati/</code>. Handler nalazi predmet s <code>IgnoreQueryFilters()</code> i postavlja <code>IsDeleted = false</code>; <code>SaveChangesAsync</code> sam upisuje <code>ModifiedAtUtc</code>.</p>
+  <div class="tab-okvir"><table><tr><th>Zahtjev</th><th>Očekivano</th></tr><tr><td><code>PUT /Predmeti/{id}/vrati</code> za obrisan predmet</td><td>204, a zatim <code>GET /Predmeti/{id}</code> → 200</td></tr><tr><td>isti zahtjev za predmet koji nije obrisan; <code>PUT /Predmeti/999/vrati</code></td><td>404; 404</td></tr><tr><td>predmet je obrisan, pa je dodan novi s istom šifrom; zatim <code>vrati</code> za obrisani</td><td>409 (dva aktivna predmeta s istom šifrom nisu dozvoljena)</td></tr></table></div>
+  <h2>Vježba 4: brisanje smjera</h2>
+  <p><code>DELETE /Smjerovi/{id}</code>: command <code>ObrisiSmjerCommand</code> u <code>Modules/Smjerovi/Commands/Obrisi/</code>. <code>OnDelete(Restrict)</code> između studenta i smjera ne djeluje na soft delete (UPDATE), pa handler provjerava studente.</p>
+  <div class="tab-okvir"><table><tr><th>Zahtjev</th><th>Očekivano</th></tr><tr><td><code>DELETE /Smjerovi/1</code> (smjer ima studente)</td><td>409</td></tr><tr><td><code>DELETE /Smjerovi/99</code></td><td>404</td></tr><tr><td>smjer bez studenata (npr. nakon <code>PUT /Studenti/2</code> bez <code>smjerId</code>), pa <code>DELETE /Smjerovi/2</code></td><td>204; <code>GET /Smjerovi</code> ga više nema</td></tr><tr><td><code>POST /Studenti</code> s <code>smjerId</code> obrisanog smjera</td><td>404 (handler iz V04, filter ga ne vidi)</td></tr></table></div>
+  <p class="siva">Zahtjevi za kraj fajla <code>MojaApp.API.http</code> (Id-ovi zavise od redoslijeda zahtjeva):</p>
+  <div class="kod"><div class="jezik">MojaApp.API.http</div><pre><code><span class="kom">### Vježba 1: novi nastavnik (201)</span>
+POST {{MojaApp.API_HostAddress}}/nastavnici
+Content-Type: application/json
+
+{
+  &quot;ime&quot;: &quot;Lejla&quot;,
+  &quot;prezime&quot;: &quot;Lejlić&quot;,
+  &quot;email&quot;: &quot;lejla.lejlic@example.com&quot;,
+  &quot;zvanje&quot;: &quot;docent&quot;
+}
+
+<span class="kom">### Isti email (409)</span>
+POST {{MojaApp.API_HostAddress}}/nastavnici
+Content-Type: application/json
+
+{
+  &quot;ime&quot;: &quot;Lejla&quot;,
+  &quot;prezime&quot;: &quot;Druga&quot;,
+  &quot;email&quot;: &quot;lejla.lejlic@example.com&quot;
+}
+
+<span class="kom">### Brisanje (204), pa ponovo GET (404); isti email se zatim može upisati (201)</span>
+DELETE {{MojaApp.API_HostAddress}}/nastavnici/1
+
+<span class="kom">### Vježba 2: obrisani predmeti</span>
+GET {{MojaApp.API_HostAddress}}/predmeti/obrisani
+
+<span class="kom">### Vježba 3: vraćanje obrisanog predmeta (204; nije obrisan 404; aktivna ista šifra 409)</span>
+PUT {{MojaApp.API_HostAddress}}/predmeti/4/vrati
+
+<span class="kom">### Vježba 4: brisanje smjera sa studentima (409)</span>
+DELETE {{MojaApp.API_HostAddress}}/smjerovi/1</code></pre></div>
+  <h2>Dodatno</h2>
+  <ul>
+    <li><code>ObrisanUtc</code> u odgovoru nema oznaku <code>Z</code>: SQL Server ne čuva vrstu vremena (<code>DateTimeKind</code>). Starter to rješava pretvaračem u <code>Market.Infrastructure/Database/DatabaseConfiguration.cs</code> (<code>UtcDateTimeConverter</code>); isti pretvarač se može dodati u MojaApp.</li>
+    <li><code>CreatedAtUtc</code> i <code>ModifiedAtUtc</code> u <code>StudentDetaljiResponse</code>.</li>
+  </ul>
+  <p class="siva">Rad ide kao u V02–V04: issue, grana, commit po koraku i pull request.</p>
+
+  <footer>Razvoj softvera I, Fakultet informacijskih tehnologija, Univerzitet „Džemal Bijedić“ u Mostaru, 2026/27.
+  Početni projekat za seminarski rad: <a href="https://github.com/adil-fit-ba/rs1-2026-27">github.com/adil-fit-ba/rs1-2026-27</a>.</footer>
+</main>
+<script>
+// Dugme „Kopiraj“ u svakom bloku koda (.kod s <pre>): mini-prezentacije i HTML prezentacije iz lib.js.
+// Tekst se uzima iz innerText, pa ostaju prelomi redova i kad su redovi <span> s display: block.
+(function () {
+  async function uClipboard(t) {
+    try { await navigator.clipboard.writeText(t); return true; }
+    catch (e) {
+      // rezerva kad Clipboard API nije dostupan (stariji web preglednik, stranica bez HTTPS-a)
+      const a = document.createElement("textarea");
+      a.value = t; a.setAttribute("readonly", ""); a.style.position = "fixed"; a.style.opacity = "0";
+      document.body.append(a); a.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+      a.remove(); return ok;
+    }
+  }
+  function dodaj() {
+    document.querySelectorAll(".kod").forEach((k) => {
+      const pre = k.querySelector("pre");
+      if (!pre || k.querySelector(".kopiraj")) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "kopiraj"; b.textContent = "Kopiraj"; b.setAttribute("aria-label", "Kopiraj kod");
+      b.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const t = pre.innerText.replace(/ /g, " ").replace(/[ \t]+$/gm, "").replace(/\n+$/, "");
+        const ok = await uClipboard(t);
+        b.textContent = ok ? "Kopirano" : "Nije kopirano"; b.classList.toggle("ok", ok);
+        clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = "Kopiraj"; b.classList.remove("ok"); }, 1500);
+      });
+      k.append(b);
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", dodaj); else dodaj();
+})();
+</script>
+</body>
+</html>

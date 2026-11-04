@@ -59,6 +59,21 @@ def v04(p):
         k(p + "V04-MojaApp-pocetni-kod-dotnet8.zip", "MojaApp: početni kod (ZIP)", "Rješenje vježbi 3, .NET 8. Od njega počinje nadogradnja."),
         k(GH, "MojaApp: rješenje (GitHub)", "Kod nakon vježbi 4, u repozitoriju: folder nastava/V04/rjesenje.")]))
 
+GH5 = "https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V05/rjesenje/MojaApp"
+
+
+def v05(p):
+    return (grupa("Samostalne vježbe", [
+        k(p + "samostalne-vjezbe.html", "Samostalne vježbe: Nastavnik, obrisani predmeti, vraćanje, brisanje smjera",
+          "Četiri zadatka nad rješenjem V05: novi entitet u četiri projekta, IgnoreQueryFilters, vraćanje obrisanog zapisa i zaštita povezanih podataka.", "istaknuto")])
+      + grupa("Prezentacije", [
+        k(p + "v05-clean-architecture-i-soft-delete.html", "Clean Architecture i soft delete", "Nadogradnja V04 u osam koraka: četiri projekta, IAppDbContext, BaseEntity, soft delete, global query filter i nova baza podataka (29 slajdova)."),
+        k(p + "v05-clean-architecture-i-soft-delete.pdf", "Clean Architecture i soft delete (PDF)", "Ista prezentacija za štampu ili čitanje bez interneta."),
+        k(p + "v05-slojevi-clean-architecture.html", "Slojevi Clean Architecture", "Interaktivno: klik na sloj pokazuje projekat, reference i kod; put zahtjeva POST /Studenti u osam koraka; kviz „u koji projekat ide“.")])
+      + grupa("Kod", [
+        k(GH, "MojaApp: početni kod (GitHub)", "Rješenje vježbi 4, folder nastava/V04/rjesenje. Od njega počinje nadogradnja."),
+        k(GH5, "MojaApp: rješenje V05 (GitHub)", "Kod nakon vježbi 5, folder nastava/V05/rjesenje: četiri projekta, nova baza podataka MojaApp_V05.")]))
+
 
 KOPIRAJ = io.open(os.path.join(REPO, "kopiraj-kod.js"), encoding="utf-8").read()
 
@@ -191,8 +206,125 @@ io.open(os.path.join(REPO, "vjezbe-04", "samostalna-vjezba-nastavnik.html"), "w"
     stranica("Samostalna vježba: entitet Nastavnik", "RS1 vježbe 4: nova entity klasa Nastavnik s GetById i Dodaj, po obrascu iz V04.", vjezba, skripta=True))
 print("vjezbe-04/samostalna-vjezba-nastavnik.html")
 
+HTTP5 = """### Vježba 1: novi nastavnik (201)
+POST {{MojaApp.API_HostAddress}}/nastavnici
+Content-Type: application/json
+
+{
+  "ime": "Lejla",
+  "prezime": "Lejlić",
+  "email": "lejla.lejlic@example.com",
+  "zvanje": "docent"
+}
+
+### Isti email (409)
+POST {{MojaApp.API_HostAddress}}/nastavnici
+Content-Type: application/json
+
+{
+  "ime": "Lejla",
+  "prezime": "Druga",
+  "email": "lejla.lejlic@example.com"
+}
+
+### Brisanje (204), pa ponovo GET (404); isti email se zatim može upisati (201)
+DELETE {{MojaApp.API_HostAddress}}/nastavnici/1
+
+### Vježba 2: obrisani predmeti
+GET {{MojaApp.API_HostAddress}}/predmeti/obrisani
+
+### Vježba 3: vraćanje obrisanog predmeta (204; nije obrisan 404; aktivna ista šifra 409)
+PUT {{MojaApp.API_HostAddress}}/predmeti/4/vrati
+
+### Vježba 4: brisanje smjera sa studentima (409)
+DELETE {{MojaApp.API_HostAddress}}/smjerovi/1"""
+
+vjezbe5 = (
+    '  <h1>Samostalne vježbe: soft delete u četiri projekta</h1>\n'
+    '  <p class="siva">Vježbe 5 · četiri zadatka nad rješenjem V05 · <a href="../index.html">svi materijali</a></p>\n'
+    '  <p class="cilj"><b>Cilj:</b> isti postupak kao na vježbama, na novim primjerima: svaki dio koda u svom projektu, '
+    'soft delete i global query filter rade sami, a ono što filter i indeks ne mogu (povezani zapisi, obrisani zapisi) rješava handler.</p>\n'
+    f'  <p><b>Polazna tačka:</b> vlastiti projekat nakon V05 ili <a href="{GH5}">rješenje V05</a> (folder <code>nastava/V05/rjesenje</code>). '
+    'Očekivani statusi u tabelama su provjereni na rješenju (LocalDB, 04.11.2026).</p>\n'
+    '  <p><b>Podsjetnik:</b> validator ne pristupa bazi podataka; nepostojeći zapis je 404 (<code>NotFoundException</code>), '
+    'sukob s postojećim podacima 409 (<code>ConflictException</code>), oboje iz handlera '
+    '(<a href="v05-clean-architecture-i-soft-delete.html#s23">prezentacija V05, korak 7</a>).</p>\n'
+    '  <h2>Vježba 1: entitet Nastavnik u četiri projekta</h2>\n'
+    '  <p class="siva">Kao Nastavnik iz V04, ali s BaseEntity, soft delete-om i brisanjem. Poslije svakog koraka: build.</p>\n'
+    + tabela([
+        ["#", "Šta", "Projekat i fajl"],
+        ["1", "<code>Nastavnik : BaseEntity</code>: <code>Ime</code>, <code>Prezime</code>, <code>Email</code>, <code>Zvanje</code> (nije obavezno)", "Domain: <code>Entities/Nastavnik.cs</code>"],
+        ["2", "Konfiguracija: tabela <code>Nastavnici</code>; <code>Ime</code> i <code>Prezime</code> do 50 znakova, <code>Email</code> do 100, <code>Zvanje</code> do 50; jedinstven <code>Email</code> s <code>HasFilter(\"[IsDeleted] = 0\")</code>", "Infrastructure: <code>Database/Configurations/NastavnikConfiguration.cs</code>"],
+        ["3", "<code>DbSet&lt;Nastavnik&gt; Nastavnici</code> u interfejsu i u klasi", "Application: <code>IAppDbContext.cs</code>; Infrastructure: <code>AppDbContext.cs</code>"],
+        ["4", "Migracija <code>Nastavnici</code>; primjenjuje je <code>MigrateAsync</code> pri pokretanju", "Infrastructure: <code>Database/Migrations/</code>"],
+        ["5", "<code>NastavnikResponse</code> (<code>Id</code>, <code>ImePrezime</code>, <code>Email</code>, <code>Zvanje</code>) i <code>NastavnikGetByIdQuery</code> s handlerom (404)", "Application: <code>Dtos/</code>, <code>Modules/Nastavnici/Queries/GetById/</code>"],
+        ["6", "<code>DodajNastavnikaCommand</code>, validator i handler: isti email među neobrisanim nastavnicima → 409", "Application: <code>Modules/Nastavnici/Commands/Dodaj/</code>"],
+        ["7", "<code>ObrisiNastavnikaCommand</code> i handler: <code>Remove</code> (soft delete); nepostojeći → 404", "Application: <code>Modules/Nastavnici/Commands/Obrisi/</code>"],
+        ["8", "<code>NastavniciController</code> sa <code>ISender</code>: <code>GET /Nastavnici/{id}</code>, <code>POST</code> (201), <code>DELETE</code> (204)", "API: <code>Controllers/NastavniciController.cs</code>"],
+    ])
+    + kod("Package Manager Console", "Add-Migration Nastavnici -Project MojaApp.Infrastructure -StartupProject MojaApp.API -OutputDir Database\\Migrations", kom="#")
+    + '  <p class="siva">Validator: <code>Ime</code> i <code>Prezime</code> obavezni, do 50 znakova; <code>Email</code> obavezan, <code>EmailAddress()</code>, do 100; <code>Zvanje</code> do 50.</p>\n'
+    + tabela([
+        ["Zahtjev", "Očekivano"],
+        ["<code>POST /Nastavnici</code> s ispravnim podacima", "201, <code>Location: /Nastavnici/{id}</code>"],
+        ["<code>POST</code> s istim emailom", "409"],
+        ["<code>POST</code> s praznim imenom i emailom <code>abc</code>", "400, greške za <code>Ime</code> i <code>Email</code>"],
+        ["<code>GET /Nastavnici/{id}</code>; <code>GET /Nastavnici/999</code>", "200; 404"],
+        ["<code>DELETE /Nastavnici/{id}</code>, pa <code>GET</code> istog Id-a", "204, pa 404"],
+        ["<code>DELETE</code> istog Id-a ponovo", "404"],
+        ["<code>POST</code> s emailom obrisanog nastavnika", "201 (indeks s filterom)"],
+    ])
+    + '  <h2>Vježba 2: lista obrisanih predmeta</h2>\n'
+    '  <p><code>GET /Predmeti/obrisani</code> vraća obrisane predmete: <code>Id</code>, <code>Naziv</code>, <code>Sifra</code> i <code>ObrisanUtc</code> '
+    '(vrijednost <code>ModifiedAtUtc</code>), od najnovijeg. Query <code>ObrisaniPredmetiQuery</code> u <code>Modules/Predmeti/Queries/Obrisani/</code>.</p>\n'
+    '  <ul>\n'
+    '    <li>Global query filter skriva obrisane, pa upit počinje s <code>db.Predmeti.IgnoreQueryFilters()</code>, a zatim <code>Where(x =&gt; x.IsDeleted)</code>.</li>\n'
+    '    <li>Bez <code>IgnoreQueryFilters()</code> lista je uvijek prazna, jer filter već dodaje <code>IsDeleted = 0</code>.</li>\n'
+    '    <li>Ruta <code>obrisani</code> ne smeta ruti <code>{id:int}</code>: ograničenje <code>:int</code> ne prihvata tekst.</li>\n'
+    '  </ul>\n'
+    + tabela([
+        ["Zahtjev", "Očekivano"],
+        ["<code>GET /Predmeti/obrisani</code> na novoj bazi podataka", "200, <code>[]</code>"],
+        ["<code>POST /Predmeti</code>, pa <code>DELETE</code> tog predmeta, pa <code>GET /Predmeti/obrisani</code>", "200, lista s tim predmetom"],
+    ])
+    + '  <h2>Vježba 3: vraćanje obrisanog predmeta</h2>\n'
+    '  <p><code>PUT /Predmeti/{id}/vrati</code>: command <code>VratiPredmetCommand</code> u <code>Modules/Predmeti/Commands/Vrati/</code>. '
+    'Handler nalazi predmet s <code>IgnoreQueryFilters()</code> i postavlja <code>IsDeleted = false</code>; '
+    '<code>SaveChangesAsync</code> sam upisuje <code>ModifiedAtUtc</code>.</p>\n'
+    + tabela([
+        ["Zahtjev", "Očekivano"],
+        ["<code>PUT /Predmeti/{id}/vrati</code> za obrisan predmet", "204, a zatim <code>GET /Predmeti/{id}</code> → 200"],
+        ["isti zahtjev za predmet koji nije obrisan; <code>PUT /Predmeti/999/vrati</code>", "404; 404"],
+        ["predmet je obrisan, pa je dodan novi s istom šifrom; zatim <code>vrati</code> za obrisani", "409 (dva aktivna predmeta s istom šifrom nisu dozvoljena)"],
+    ])
+    + '  <h2>Vježba 4: brisanje smjera</h2>\n'
+    '  <p><code>DELETE /Smjerovi/{id}</code>: command <code>ObrisiSmjerCommand</code> u <code>Modules/Smjerovi/Commands/Obrisi/</code>. '
+    '<code>OnDelete(Restrict)</code> između studenta i smjera ne djeluje na soft delete (UPDATE), pa handler provjerava studente.</p>\n'
+    + tabela([
+        ["Zahtjev", "Očekivano"],
+        ["<code>DELETE /Smjerovi/1</code> (smjer ima studente)", "409"],
+        ["<code>DELETE /Smjerovi/99</code>", "404"],
+        ["smjer bez studenata (npr. nakon <code>PUT /Studenti/2</code> bez <code>smjerId</code>), pa <code>DELETE /Smjerovi/2</code>", "204; <code>GET /Smjerovi</code> ga više nema"],
+        ["<code>POST /Studenti</code> s <code>smjerId</code> obrisanog smjera", "404 (handler iz V04, filter ga ne vidi)"],
+    ])
+    + '  <p class="siva">Zahtjevi za kraj fajla <code>MojaApp.API.http</code> (Id-ovi zavise od redoslijeda zahtjeva):</p>\n'
+    + kod("MojaApp.API.http", HTTP5)
+    + '  <h2>Dodatno</h2>\n'
+    '  <ul>\n'
+    '    <li><code>ObrisanUtc</code> u odgovoru nema oznaku <code>Z</code>: SQL Server ne čuva vrstu vremena (<code>DateTimeKind</code>). '
+    'Starter to rješava pretvaračem u <code>Market.Infrastructure/Database/DatabaseConfiguration.cs</code> (<code>UtcDateTimeConverter</code>); isti pretvarač se može dodati u MojaApp.</li>\n'
+    '    <li><code>CreatedAtUtc</code> i <code>ModifiedAtUtc</code> u <code>StudentDetaljiResponse</code>.</li>\n'
+    '  </ul>\n'
+    '  <p class="siva">Rad ide kao u V02–V04: issue, grana, commit po koraku i pull request.</p>\n'
+)
+os.makedirs(os.path.join(REPO, "vjezbe-05"), exist_ok=True)
+io.open(os.path.join(REPO, "vjezbe-05", "samostalne-vjezbe.html"), "w", encoding="utf-8", newline="\n").write(
+    stranica("Samostalne vježbe V05", "RS1 vježbe 5: Nastavnik u četiri projekta, obrisani predmeti, vraćanje obrisanog predmeta i brisanje smjera.", vjezbe5, skripta=True))
+print("vjezbe-05/samostalne-vjezbe.html")
+
 uvod = '  <p class="siva">Stranice rade u web pregledniku, bez instalacije. Prezentacije se listaju strelicama ← →; opcija „Čitanje“ prikazuje sve slajdove na jednoj stranici.</p>\n'
 tijelo = ('  <h1>Razvoj softvera I: materijali s vježbi</h1>\n' + uvod
+          + '  <h2>Vježbe 5 (05.11.2026.): Clean Architecture i soft delete</h2>\n' + v05("vjezbe-05/")
           + '  <h2>Vježbe 4 (29.10.2026.): CQRS, MediatR i validacija</h2>\n' + v04("vjezbe-04/"))
 io.open(os.path.join(REPO, "index.html"), "w", encoding="utf-8", newline="\n").write(
     stranica("RS1 2026/27: materijali s vježbi", "Prezentacije, živi primjeri i kod s vježbi iz Razvoja softvera I, FIT UNMO 2026/27.", tijelo))
