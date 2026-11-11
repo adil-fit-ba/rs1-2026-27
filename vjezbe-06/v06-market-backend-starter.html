@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RS1 V06 – Market Backend starter</title>
-<meta name="description" content="RS1 vježbe 6: Market Backend starter na .NET 8. Razlike u odnosu na MojaApp V05, put zahtjeva, JWT i pristup endpointima, CRUD nad kategorijama, vježba u paru i priprema za narudžbu sa stavkama.">
+<meta name="description" content="RS1 vježbe 6: Market Backend starter na .NET 8. Razlike u odnosu na MojaApp V05, put zahtjeva, JWT i pristup endpointima, CRUD nad kategorijama, samostalna vježba i priprema za narudžbu sa stavkama.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -291,7 +291,7 @@ table.t td.br { font-family: var(--f-mono); white-space: nowrap; }
       <p class="teza">Isti slojevi kao u MojaApp V05, uz prijavu, jedinstven oblik greške i gotove module.</p>
       <p class="uvod">Market Backend je backend početnog projekta za projektni zadatak. Za vježbe je pripremljen na .NET 8, s bazom podataka na LocalDB-u.
         Slajdovi prikazuju stvarni kod iz ZIP-a za V06, a svi odgovori API-ja snimljeni su na novoj bazi podataka.</p>
-      <p class="uvod">Na ovom času: pokretanje, put zahtjeva, JWT, CRUD nad kategorijama i vježba u paru. Na narednom času: narudžba sa stavkama (master–child).</p>
+      <p class="uvod">Na ovom času: pokretanje, put zahtjeva, JWT, CRUD nad kategorijama i samostalna vježba. Na narednom času: narudžba sa stavkama (master–child).</p>
     </div>
     <div class="kartice">
       <div class="kartica"><h3><span class="korak-broj">Market.API</span></h3><p>Kontroleri, JWT, autorizacija i Swagger.</p><div class="kod-cip">Controllers/, Filters/</div></div>
@@ -436,10 +436,10 @@ dotnet run --project Market.API --launch-profile https</code></pre></div>
 </section>
 
 <!-- 9 ============================================================ -->
-<section class="slajd" id="s9" data-naslov="Vježba u paru">
+<section class="slajd" id="s9" data-naslov="Samostalna vježba">
   <div class="okvir siroko">
     <div class="glava">
-      <span class="oznaka">Vježba u paru</span>
+      <span class="oznaka">Samostalna vježba</span>
       <h2>Novo polje kroz sve slojeve: opis kategorije</h2>
       <p class="podnaslov">Kategoriji se dodaje neobavezan opis <code>Description</code> dužine do 500 znakova. Poslije svakog koraka uraditi build.</p>
     </div>
@@ -459,8 +459,8 @@ dotnet ef migrations add CategoryDescription --project Market.Infrastructure --s
           <tr><td><code>PUT</code> s opisom od 501 znaka</td><td><code>400</code>, poruka validatora za polje <code>description</code></td></tr>
           <tr><td><code>PUT</code> bez polja <code>description</code></td><td><code>204</code>; <code>GET</code> vraća <code>"description": null</code></td></tr>
         </tbody></table></div>
-        <div class="pitanje"><h3>Pitanje za par</h3><p>Zašto <code>PUT</code> bez polja <code>description</code> briše opis? <code>PUT</code> šalje cijelo stanje kategorije: polje koje nije poslano dobija vrijednost <code>null</code>, a handler je upisuje.</p></div>
-        <div class="pitanje"><h3>Dodatno, za parove koji završe ranije</h3><p><code>PUT /ProductCategories/{id}/name</code>, po uzoru na <code>…/disable</code> i <code>…/enable</code>: u tijelu je samo naziv, a ID je iz rute.
+        <div class="pitanje"><h3>Pitanje</h3><p>Zašto <code>PUT</code> bez polja <code>description</code> briše opis? <code>PUT</code> šalje cijelo stanje kategorije: polje koje nije poslano dobija vrijednost <code>null</code>, a handler je upisuje.</p></div>
+        <div class="pitanje"><h3>Dodatno, za one koji završe ranije</h3><p><code>PUT /ProductCategories/{id}/name</code>, po uzoru na <code>…/disable</code> i <code>…/enable</code>: u tijelu je samo naziv, a ID je iz rute.
           Validator provjerava naziv na isti način kao <code>UpdateProductCategoryCommandValidator</code>, a handler provjerava postoji li druga kategorija s istim nazivom (<code>409</code>). Naredni <code>GET</code> pokazuje novi naziv, a <code>isEnabled</code> i <code>description</code> ostaju isti.</p></div>
         <p class="izmjereno">Provjereno na kopiji ZIP-a za V06: build s <b>0 upozorenja</b>, testovi <b>67/67</b>, svi zahtjevi iz tabele daju očekivane statuse.</p>
       </div>
@@ -500,7 +500,7 @@ dotnet ef migrations add CategoryDescription --project Market.Infrastructure --s
       <div class="tekst">
         <div class="pitanje"><h3>Do narednog časa</h3><p>Pročitati <code>CreateOrderCommandHandler</code>, <code>UpdateOrderCommandHandler</code> i njihove validatore (slajd 8, folder <code>Modules/Sales/Orders</code>).
           Na narednom času se isti obrazac primjenjuje na drugi par entiteta 1:N.</p></div>
-        <div class="pitanje"><h3>Grana i commit</h3><p>Vježbu u paru raditi na posebnoj grani, npr. <code>git switch -c v06-opis-kategorije</code>, s commitom poslije svakog koraka.</p></div>
+        <div class="pitanje"><h3>Grana i commit</h3><p>Vježbu raditi na posebnoj grani, npr. <code>git switch -c v06-opis-kategorije</code>, s commitom poslije svakog koraka.</p></div>
         <div class="veze">
           <a href="V06-Market-Backend-starter-dotnet8_v2.zip"><b>Market Backend starter (ZIP)</b><span>Početni kod za V06, .NET 8.</span></a>
           <a href="https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V06/pocetni/Market.Backend"><b>Isti kod na GitHubu</b><span>Folder nastava/V06/pocetni.</span></a>

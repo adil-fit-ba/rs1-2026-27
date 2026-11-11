@@ -96,7 +96,7 @@ def v06(p):
         k(GH6, "Isti kod na GitHubu", "Folder nastava/V06/pocetni, s README-jem: pokretanje, demonstracijski računi, testovi i migracije.")])
       + grupa("2. Market Backend: od MojaApp do startera", [
         k(m, "Mini-prezentacija V06", "Pokretanje i paging, poređenje s MojaApp V05, put zahtjeva, JWT i tri nivoa pristupa, CRUD nad kategorijama sa snimljenim odgovorima, Solution Explorer sa stvarnim kodom (11 slajdova).", "istaknuto")])
-      + grupa("3. Vježba u paru", [
+      + grupa("3. Samostalna vježba", [
         k(m + "#s9", "Opis kategorije kroz sve slojeve", "Novo polje Description: entitet, konfiguracija, migracija, command, validator, handler i DTO, s provjerama u Swaggeru.", "istaknuto")])
       + grupa("4. Priprema za naredni čas", [
         k(m + "#s10", "Narudžba sa stavkama", "Create i update u jednom zahtjevu: izmjena, uklanjanje i dodavanje stavke, neispravna stavka bez djelimičnog snimanja."),
