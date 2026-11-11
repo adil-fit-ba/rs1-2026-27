@@ -85,6 +85,24 @@ def v05(p):
         k(GH5, "MojaApp: rješenje V05 (GitHub)", "Kod nakon vježbi 5, folder nastava/V05/rjesenje: četiri projekta, BaseEntity, soft delete, nova baza podataka MojaApp_V05.")]))
 
 
+GH6 = "https://github.com/adil-fit-ba/rs1-2026-27/tree/main/nastava/V06/pocetni/Market.Backend"
+
+
+def v06(p):
+    m = p + "v06-market-backend-starter.html"
+    return ('  <p class="siva">Novi početni kod: backend početnog projekta za projektni zadatak (Market), pripremljen na .NET 8 i LocalDB. Na narednom času isti projekat se koristi za narudžbu sa stavkama.</p>\n'
+      + grupa("1. Početni kod", [
+        k(p + "V06-Market-Backend-starter-dotnet8.zip", "Market Backend starter (ZIP)", "Šest projekata na .NET 8, baza podataka Market_V06 na LocalDB-u, 67 testova. Raspakovati u kratku putanju, npr. C:\\RS1\\V06."),
+        k(GH6, "Isti kod na GitHubu", "Folder nastava/V06/pocetni, s README-jem: pokretanje, demonstracijski računi, testovi i migracije.")])
+      + grupa("2. Market Backend: od MojaApp do startera", [
+        k(m, "Mini-prezentacija V06", "Pokretanje i paging, poređenje s MojaApp V05, put zahtjeva, JWT i tri nivoa pristupa, CRUD nad kategorijama sa snimljenim odgovorima, Solution Explorer sa stvarnim kodom (11 slajdova).", "istaknuto")])
+      + grupa("3. Vježba u paru", [
+        k(m + "#s9", "Opis kategorije kroz sve slojeve", "Novo polje Description: entitet, konfiguracija, migracija, command, validator, handler i DTO, s provjerama u Swaggeru.", "istaknuto")])
+      + grupa("4. Priprema za naredni čas", [
+        k(m + "#s10", "Narudžba sa stavkama", "Create i update u jednom zahtjevu: izmjena, uklanjanje i dodavanje stavke, neispravna stavka bez djelimičnog snimanja."),
+        k(m + "#s11", "Kontrolna lista za novi CRUD", "Redoslijed za svaku novu backend funkcionalnost na starteru.")]))
+
+
 KOPIRAJ = io.open(os.path.join(REPO, "kopiraj-kod.js"), encoding="utf-8").read()
 
 
@@ -334,6 +352,7 @@ print("vjezbe-05/samostalne-vjezbe.html")
 
 uvod = '  <p class="siva">Stranice rade u web pregledniku, bez instalacije. Prezentacije se listaju strelicama ← →; opcija „Čitanje“ prikazuje sve slajdove na jednoj stranici.</p>\n'
 tijelo = ('  <h1>Razvoj softvera I: materijali s vježbi</h1>\n' + uvod
+          + '  <h2>Vježbe 6 (12.11.2026.): Market Backend starter</h2>\n' + v06("vjezbe-06/")
           + '  <h2>Vježbe 5 (05.11.2026.): Clean Architecture i soft delete</h2>\n' + v05("vjezbe-05/")
           + '  <h2>Vježbe 4 (29.10.2026.): CQRS, MediatR i validacija</h2>\n' + v04("vjezbe-04/"))
 io.open(os.path.join(REPO, "index.html"), "w", encoding="utf-8", newline="\n").write(
