@@ -92,7 +92,7 @@ def v06(p):
     m = p + "v06-market-backend-starter.html"
     return ('  <p class="siva">Novi početni kod: backend početnog projekta za projektni zadatak (Market), pripremljen na .NET 8 i LocalDB. Na narednom času isti projekat se koristi za narudžbu sa stavkama.</p>\n'
       + grupa("1. Početni kod", [
-        k(p + "V06-Market-Backend-starter-dotnet8.zip", "Market Backend starter (ZIP)", "Šest projekata na .NET 8, baza podataka Market_V06 na LocalDB-u, 67 testova. Raspakovati u kratku putanju, npr. C:\\RS1\\V06."),
+        k(p + "V06-Market-Backend-starter-dotnet8_v2.zip", "Market Backend starter (ZIP)", "Šest projekata na .NET 8, baza podataka Market_V06 na LocalDB-u, 67 testova. Raspakovati u kratku putanju, npr. C:\\RS1\\V06."),
         k(GH6, "Isti kod na GitHubu", "Folder nastava/V06/pocetni, s README-jem: pokretanje, demonstracijski računi, testovi i migracije.")])
       + grupa("2. Market Backend: od MojaApp do startera", [
         k(m, "Mini-prezentacija V06", "Pokretanje i paging, poređenje s MojaApp V05, put zahtjeva, JWT i tri nivoa pristupa, CRUD nad kategorijama sa snimljenim odgovorima, Solution Explorer sa stvarnim kodom (11 slajdova).", "istaknuto")])
